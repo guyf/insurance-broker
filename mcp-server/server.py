@@ -22,7 +22,8 @@ load_dotenv()
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger(__name__)
 
-mcp = FastMCP("insurance-broker-mcp")
+_port = int(os.environ.get("PORT", 8000))
+mcp = FastMCP("insurance-broker-mcp", host="0.0.0.0", port=_port)
 
 EMBED_MODEL = "text-embedding-3-small"
 RENEWAL_WARN_DAYS = 60
@@ -157,6 +158,4 @@ def get_renewal_calendar() -> str:
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    import uvicorn
-    port = int(os.environ.get("PORT", 8000))
-    uvicorn.run(mcp.sse_app(), host="0.0.0.0", port=port)
+    mcp.run(transport="sse")
