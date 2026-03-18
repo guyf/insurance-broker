@@ -42,10 +42,18 @@ insurance-broker/
 │   ├── store.py                      # Supabase upsert with dedup
 │   ├── requirements.txt
 │   └── .env.example
-└── mcp-server/
-    ├── server.py                     # FastMCP SSE server, 3 tools
+├── mcp-server/
+│   ├── server.py                     # FastMCP SSE server, 3 tools
+│   ├── requirements.txt
+│   ├── Procfile                      # Railway start command
+│   ├── railway.toml
+│   └── .env.example
+└── quote-mcp/
+    ├── server.py                     # FastMCP streamable-http, 4 tools
+    ├── pricer.py                     # Deterministic home/motor/pet pricing
+    ├── photo_analyzer.py             # GPT-4o-mini vision → asset details
     ├── requirements.txt
-    ├── Procfile                      # Railway start command
+    ├── Procfile
     ├── railway.toml
     └── .env.example
 ```
@@ -120,6 +128,31 @@ RLS is enabled from day one. Phase 1 allows service role only.
 | `Cars/…` | asset | car | — |
 | `Bikes/…` | asset | bike | — |
 | `Appliances & Machines/…` | asset | appliance | — |
+
+## Quote MCP Server (Railway)
+
+**URL:** `https://<quote-mcp-railway-url>/mcp` ← fill in after deployment
+
+**Four tools:**
+- `get_home_quote(...)` — illustrative home/buildings/contents quote (3 insurers)
+- `get_motor_quote(...)` — illustrative motor insurance quote (3 insurers)
+- `get_pet_quote(...)` — illustrative pet insurance quote (3 insurers)
+- `analyze_photo(image_url, asset_type)` — GPT-4o-mini vision → asset details JSON
+
+**No Supabase needed** — purely stateless, only requires `OPENAI_API_KEY`.
+
+**Claude Desktop config:**
+```json
+"insurance-quote-mcp": {
+  "command": "npx",
+  "args": ["-y", "supergateway", "--streamableHttp",
+           "https://<quote-mcp-railway-url>/mcp"]
+}
+```
+
+**Deploy:** Add as a second Railway service in the same project, pointing root to `quote-mcp/`.
+
+---
 
 ## Phase 2 (Future)
 

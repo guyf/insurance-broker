@@ -22,6 +22,24 @@ their actual policy documents.
 
 ---
 
+## Getting Insurance Quotes
+
+Use tools from the `insurance-quote-mcp` server to generate illustrative quotes:
+
+- **`get_home_quote(...)`** — home, buildings, or contents insurance quote
+- **`get_motor_quote(...)`** — motor insurance quote
+- **`get_pet_quote(...)`** — pet insurance quote
+- **`analyze_photo(image_url, asset_type)`** — extract property/vehicle/pet details
+  from a photo, then use the returned fields to call the appropriate quote tool
+
+Collect the required parameters conversationally. If the user offers a photo,
+call `analyze_photo` first and confirm the extracted details before quoting.
+
+Always present quotes as illustrative only and remind the user to speak to an
+FCA-authorised broker for actual cover.
+
+---
+
 ## Document Access
 
 Documents are stored in a vector database and accessed via MCP tools from the
