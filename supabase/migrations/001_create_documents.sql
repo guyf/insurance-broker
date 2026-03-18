@@ -1,6 +1,6 @@
 create extension if not exists vector with schema extensions;
 
-create table public.documents (
+create table if not exists public.documents (
   id          uuid primary key default gen_random_uuid(),
   user_id     uuid references auth.users(id) on delete cascade,  -- null in Phase 1
   content     text not null,
@@ -10,15 +10,16 @@ create table public.documents (
   created_at  timestamptz not null default now()
 );
 
-create unique index documents_chunk_hash_idx on public.documents (chunk_hash);
-create index documents_metadata_gin_idx on public.documents using gin (metadata);
-create index documents_embedding_idx on public.documents
+create unique index if not exists documents_chunk_hash_idx on public.documents (chunk_hash);
+create index if not exists documents_metadata_gin_idx on public.documents using gin (metadata);
+create index if not exists documents_embedding_idx on public.documents
   using hnsw (embedding extensions.vector_cosine_ops)
   with (m = 16, ef_construction = 64);
 
 alter table public.documents enable row level security;
 
 -- Phase 1: service role only (ingestion script). Phase 2: add per-user policies.
+drop policy if exists "service_role_all" on public.documents;
 create policy "service_role_all" on public.documents
   using (auth.role() = 'service_role');
 
