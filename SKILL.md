@@ -22,46 +22,37 @@ their actual policy documents.
 
 ---
 
-## Document Locations
+## Document Access
 
-Always read from these directories. They are synced from Google Drive and
-available on the local filesystem:
+Documents are stored in a vector database and accessed via MCP tools from the
+`insurance-broker-mcp` server:
 
-**Policies directory:**
-```
-~/Library/CloudStorage/GoogleDrive-guyfarley@gmail.com/My Drive/AI Broker/personal data/
-```
+- **`search_insurance_docs(query, policy_type?, limit?)`** — semantic search across all
+  policy and asset documents. Use for any question about coverage, terms, exclusions, limits.
+- **`list_policies()`** — lists all documents in the knowledge base. Use first to check
+  what's available.
+- **`get_renewal_calendar()`** — all policies with recorded renewal dates, sorted
+  chronologically. Use for renewal overview requests.
 
-Look for subfolders organised by insurance type. Common names to look for:
-- `home`, `buildings`, `house` — buildings insurance
-- `contents` — contents insurance
-- `car`, `vehicle`, `motor` — car/vehicle insurance
-- `travel` — travel insurance
-- `phone`, `mobile`, `gadget` — phone/gadget insurance
-
-**Assets directory:**
-Within the same parent folder, look for subfolders containing:
-- Lists of valuables, electronics, vehicles
-- Property details
-- Anything that might need insuring
+`policy_type` values: `car`, `home`, `breakdown`, `life`, `phone`, `travel`, `asset`
 
 ---
 
 ## How to Handle Requests
 
-### Step 1 — Find and read the relevant documents
+### Step 1 — Retrieve relevant document content
 
-Before answering any question:
-1. List the contents of the policies directory to see what's available
-2. Identify which policy or policies are relevant to the question
-3. Read the relevant PDF(s) — focus on:
-   - Schedule/summary pages (usually first few pages)
-   - Relevant sections (e.g. "What is covered", "Exclusions", "Limits")
-   - Renewal date and premium amount
-4. Also check the assets directory if the question involves a specific item
+1. Call `list_policies()` to confirm what documents are in the knowledge base.
+2. Call `search_insurance_docs(query)` with a focused query. Use `policy_type` filter
+   when the question is clearly about one insurance type.
+3. If results are weak (similarity < 0.75), retry with rephrased query — policy documents
+   use formal language (try both "accidental damage" and "damage by accident").
+4. For gap analysis: run multiple searches across asset types + call `list_policies()`.
+5. For renewal questions: call `get_renewal_calendar()` directly.
 
-Never answer from general insurance knowledge alone — always read the actual
-documents first.
+If `list_policies()` shows no document for a policy the user mentions, say clearly that
+the document is not in the knowledge base and suggest adding it to Google Drive and
+re-running `python ingest.py`.
 
 ### Step 2 — Answer the question
 
