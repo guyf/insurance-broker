@@ -131,7 +131,7 @@ RLS is enabled from day one. Phase 1 allows service role only.
 
 ## Quote MCP Server (Railway)
 
-**URL:** `https://<quote-mcp-railway-url>/mcp` ← fill in after deployment
+**URL:** `https://alluring-prosperity-production-5644.up.railway.app/mcp`
 
 **Four tools:**
 - `get_home_quote(...)` — illustrative home/buildings/contents quote (3 insurers)
@@ -146,7 +146,7 @@ RLS is enabled from day one. Phase 1 allows service role only.
 "insurance-quote-mcp": {
   "command": "npx",
   "args": ["-y", "supergateway", "--streamableHttp",
-           "https://<quote-mcp-railway-url>/mcp"]
+           "https://alluring-prosperity-production-5644.up.railway.app/mcp"]
 }
 ```
 
