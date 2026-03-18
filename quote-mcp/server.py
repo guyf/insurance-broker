@@ -9,6 +9,7 @@ Exposes four tools to Claude:
   - analyze_photo
 """
 
+
 import json
 import logging
 import os

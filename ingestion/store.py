@@ -9,17 +9,24 @@ logger = logging.getLogger(__name__)
 UPSERT_BATCH_SIZE = 50
 
 
+HASH_BATCH_SIZE = 50
+
+
 def get_existing_hashes(hashes: list[str], client: Client) -> set[str]:
     """Return the subset of hashes already present in the DB."""
     if not hashes:
         return set()
-    response = (
-        client.table("documents")
-        .select("chunk_hash")
-        .in_("chunk_hash", hashes)
-        .execute()
-    )
-    return {row["chunk_hash"] for row in response.data}
+    existing: set[str] = set()
+    for i in range(0, len(hashes), HASH_BATCH_SIZE):
+        batch = hashes[i : i + HASH_BATCH_SIZE]
+        response = (
+            client.table("documents")
+            .select("chunk_hash")
+            .in_("chunk_hash", batch)
+            .execute()
+        )
+        existing.update(row["chunk_hash"] for row in response.data)
+    return existing
 
 
 def upsert_chunks(
