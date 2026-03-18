@@ -26,7 +26,7 @@ logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger(__name__)
 
 _port = int(os.environ.get("PORT", 8001))
-mcp = FastMCP("insurance-quote-mcp", host="0.0.0.0", port=_port)
+mcp = FastMCP("insurance-quote-mcp", host="0.0.0.0", port=_port, stateless_http=True)
 
 
 # ---------------------------------------------------------------------------
