@@ -59,4 +59,4 @@ language sql as $$
     metadata->>'premium'
   from public.documents
   where metadata ? 'renewal_date'
-  order by renewal_date; $$;
+  order by metadata->>'renewal_date'; $$;
