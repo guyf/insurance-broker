@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Insurance Broker — Architecture Diagrams</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0f172a;
+      --surface:   #1e293b;
+      --border:    #334155;
+      --text:      #e2e8f0;
+      --muted:     #94a3b8;
+      --teal:      #0d9488;
+      --teal-dim:  #134e4a;
+      --purple:    #7c3aed;
+      --purple-dim:#3b0764;
+      --green:     #16a34a;
+      --green-dim: #14532d;
+      --blue:      #2563eb;
+      --blue-dim:  #1e3a8a;
+      --amber:     #d97706;
+      --amber-dim: #78350f;
+      --rose:      #e11d48;
+      --rose-dim:  #881337;
+      --slate:     #475569;
+      --mono:      'Courier New', Courier, monospace;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    /* ── Sticky nav ── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: #0a1120;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 0;
+      padding: 0 2rem;
+      height: 48px;
+    }
+    nav .brand {
+      font-weight: 700;
+      font-size: 15px;
+      color: var(--text);
+      margin-right: 2rem;
+      white-space: nowrap;
+    }
+    nav a {
+      color: var(--muted);
+      text-decoration: none;
+      padding: 0 1rem;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      font-size: 13px;
+      border-bottom: 2px solid transparent;
+      transition: color .15s, border-color .15s;
+    }
+    nav a:hover { color: var(--text); border-bottom-color: var(--teal); }
+
+    /* ── Sections ── */
+    section {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 3rem 2rem 5rem;
+    }
+    section h2 {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 0.35rem;
+    }
+    section .subtitle {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 2.5rem;
+    }
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 0;
+    }
+
+    /* ══════════════════════════════════════════
+       DIAGRAM 1 — LOGICAL
+    ══════════════════════════════════════════ */
+    .logical-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      position: relative;
+    }
+
+    .layer {
+      display: flex;
+      align-items: stretch;
+      min-height: 80px;
+      border-radius: 0;
+      overflow: visible;
+    }
+    .layer-label {
+      width: 160px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-right: 1rem;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .layer-content {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.75rem 1.25rem;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      position: relative;
+    }
+    /* Arrow connector between layers */
+    .layer-arrow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 32px;
+      margin-left: 160px;
+      color: var(--muted);
+      font-size: 20px;
+      line-height: 1;
+    }
+
+    /* Layer colour themes */
+    .layer-user    .layer-content { background: #1a1f2e; border-color: #3b4a6b; }
+    .layer-skill   .layer-content { background: #1a1a2e; border-color: #4c4c9c; }
+    .layer-bridge  .layer-content { background: #1a2535; border-color: var(--slate); }
+    .layer-mcp     .layer-content { background: var(--teal-dim); border-color: var(--teal); }
+    .layer-ai      .layer-content { background: var(--purple-dim); border-color: var(--purple); }
+    .layer-data    .layer-content { background: var(--green-dim); border-color: var(--green); }
+    .layer-ingest  .layer-content { background: var(--amber-dim); border-color: var(--amber); }
+    .layer-source  .layer-content { background: var(--blue-dim); border-color: var(--blue); }
+
+    .comp-box {
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 8px;
+      padding: 0.5rem 0.9rem;
+      min-width: 160px;
+    }
+    .comp-box .comp-title {
+      font-weight: 700;
+      font-size: 13px;
+      margin-bottom: 0.2rem;
+    }
+    .comp-box .comp-detail {
+      font-size: 11px;
+      color: var(--muted);
+      font-family: var(--mono);
+      line-height: 1.6;
+    }
+    .comp-box .tool-list {
+      margin-top: 0.35rem;
+      list-style: none;
+      padding: 0;
+    }
+    .comp-box .tool-list li {
+      font-size: 11px;
+      font-family: var(--mono);
+      color: #a5f3fc;
+      line-height: 1.7;
+    }
+    .comp-box .tool-list li::before { content: "▸ "; opacity: .6; }
+
+    /* flow arrow label */
+    .arrow-label {
+      font-size: 11px;
+      color: var(--muted);
+      font-family: var(--mono);
+    }
+
+    /* ══════════════════════════════════════════
+       DIAGRAM 2 — PHYSICAL
+    ══════════════════════════════════════════ */
+    .physical-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      grid-template-rows: auto auto auto;
+      gap: 1.5rem;
+    }
+
+    .svc-box {
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      padding: 1.1rem 1.2rem;
+      background: var(--surface);
+    }
+    .svc-box h3 {
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 0.6rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .svc-box .badge {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .05em;
+      padding: 1px 6px;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+    .badge-local  { background: var(--slate);      color: #fff; }
+    .badge-railway{ background: #7c3aed;            color: #fff; }
+    .badge-openai { background: #0d9488;            color: #fff; }
+    .badge-supa   { background: #16a34a;            color: #fff; }
+    .badge-github { background: #374151;            color: #fff; }
+
+    .svc-row {
+      display: flex;
+      align-items: baseline;
+      gap: 0.4rem;
+      margin-bottom: 0.3rem;
+      font-size: 12px;
+    }
+    .svc-row .k { color: var(--muted); white-space: nowrap; min-width: 80px; }
+    .svc-row .v { font-family: var(--mono); color: #a5f3fc; word-break: break-all; }
+    .svc-row .v.amber  { color: #fbbf24; }
+    .svc-row .v.purple { color: #c4b5fd; }
+    .svc-row .v.green  { color: #86efac; }
+
+    /* span a box across columns */
+    .span2 { grid-column: span 2; }
+    .span3 { grid-column: span 3; }
+
+    /* Connections table */
+    .conn-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      margin-top: 0.5rem;
+    }
+    .conn-table th {
+      text-align: left;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      padding: 0.4rem 0.75rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .conn-table td {
+      padding: 0.45rem 0.75rem;
+      border-bottom: 1px solid rgba(255,255,255,.04);
+      vertical-align: top;
+    }
+    .conn-table tr:last-child td { border-bottom: none; }
+    .conn-table .from-to { font-family: var(--mono); font-size: 11px; color: var(--text); }
+    .conn-table .label   { font-family: var(--mono); font-size: 11px; color: #fbbf24; }
+    .conn-table .detail  { font-size: 11px; color: var(--muted); }
+
+    /* API panel */
+    .api-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 1.5rem;
+      margin-top: 1.5rem;
+    }
+    .api-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem 1.1rem;
+    }
+    .api-panel h4 {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      margin-bottom: 0.6rem;
+      color: var(--muted);
+    }
+    .api-panel .sig {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: #a5f3fc;
+      line-height: 2;
+    }
+    .api-panel .sig .fn { color: #c4b5fd; }
+    .api-panel .sig .param { color: #fbbf24; }
+    .api-panel .sig .opt { color: var(--muted); }
+
+    /* SVG connector diagram */
+    .svg-connectors {
+      display: block;
+      width: 100%;
+      margin: 1.5rem 0 0.5rem;
+      overflow: visible;
+    }
+
+    /* Responsive helper */
+    @media (max-width: 900px) {
+      .physical-grid { grid-template-columns: 1fr; }
+      .span2, .span3 { grid-column: span 1; }
+      .api-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══ Sticky Nav ══ -->
+<nav>
+  <span class="brand">Insurance Broker</span>
+  <a href="#logical">Logical Architecture</a>
+  <a href="#physical">Physical Architecture</a>
+</nav>
+
+<!-- ══════════════════════════════════════════════════
+     SECTION 1 — LOGICAL
+══════════════════════════════════════════════════ -->
+<section id="logical">
+  <h2>Logical Architecture</h2>
+  <p class="subtitle">Conceptual layers and data-flow — what each component <em>is</em> and how information moves through the system.</p>
+
+  <div class="logical-stack">
+
+    <!-- User -->
+    <div class="layer layer-user">
+      <div class="layer-label">User</div>
+      <div class="layer-content">
+        <div class="comp-box">
+          <div class="comp-title">Claude Desktop</div>
+          <div class="comp-detail">MCP host · chat UI · streams responses</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="layer-arrow">↕ <span class="arrow-label" style="font-size:11px;margin-left:6px;">loads skill instructions at startup</span></div>
+
+    <!-- Skill -->
+    <div class="layer layer-skill">
+      <div class="layer-label">Skill</div>
+      <div class="layer-content">
+        <div class="comp-box">
+          <div class="comp-title">SKILL.md</div>
+          <div class="comp-detail">Broker persona &amp; rules<br/>Quote instructions &amp; caveats</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="layer-arrow">↕ <span class="arrow-label" style="font-size:11px;margin-left:6px;">stdio (MCP protocol)</span></div>
+
+    <!-- Bridge -->
+    <div class="layer layer-bridge">
+      <div class="layer-label">Bridge</div>
+      <div class="layer-content">
+        <div class="comp-box">
+          <div class="comp-title">supergateway</div>
+          <div class="comp-detail">Local npx process<br/>stdio ↔ HTTP translation<br/>Runs alongside Claude Desktop</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="layer-arrow">↕ <span class="arrow-label" style="font-size:11px;margin-left:6px;">HTTPS · streamable-http MCP</span></div>
+
+    <!-- MCP Servers -->
+    <div class="layer layer-mcp">
+      <div class="layer-label">MCP Servers</div>
+      <div class="layer-content" style="gap:1.5rem;">
+        <div class="comp-box">
+          <div class="comp-title">insurance-broker-mcp</div>
+          <div class="comp-detail">FastMCP · SSE server<br/>Deployed on Railway</div>
+          <ul class="tool-list">
+            <li>search_insurance_docs</li>
+            <li>list_policies</li>
+            <li>get_renewal_calendar</li>
+          </ul>
+        </div>
+        <div class="comp-box">
+          <div class="comp-title">insurance-quote-mcp</div>
+          <div class="comp-detail">FastMCP · streamable-http<br/>Deployed on Railway</div>
+          <ul class="tool-list">
+            <li>get_home_quote</li>
+            <li>get_motor_quote</li>
+            <li>get_pet_quote</li>
+            <li>analyze_photo</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="layer-arrow">↕ <span class="arrow-label" style="font-size:11px;margin-left:6px;">REST API calls (embeddings · chat completions)</span></div>
+
+    <!-- AI Services -->
+    <div class="layer layer-ai">
+      <div class="layer-label">AI Services</div>
+      <div class="layer-content" style="gap:1.5rem;">
+        <div class="comp-box">
+          <div class="comp-title">OpenAI — Embeddings</div>
+          <div class="comp-detail">text-embedding-3-small<br/>1536-dim vectors<br/>Used by broker-mcp + ingestion</div>
+        </div>
+        <div class="comp-box">
+          <div class="comp-title">OpenAI — Vision</div>
+          <div class="comp-detail">gpt-4o-mini<br/>analyze_photo tool<br/>Returns asset detail JSON</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="layer-arrow">↕ <span class="arrow-label" style="font-size:11px;margin-left:6px;">RPC calls over HTTPS (Supabase PostgREST)</span></div>
+
+    <!-- Data -->
+    <div class="layer layer-data">
+      <div class="layer-label">Data</div>
+      <div class="layer-content">
+        <div class="comp-box">
+          <div class="comp-title">Supabase</div>
+          <div class="comp-detail">Postgres + pgvector<br/>Table: public.documents<br/>HNSW index (cosine) · RLS enabled</div>
+          <ul class="tool-list" style="color:#86efac;">
+            <li style="color:#86efac;">search_documents(embedding, count, filter)</li>
+            <li style="color:#86efac;">list_policies()</li>
+            <li style="color:#86efac;">get_renewal_calendar()</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="layer-arrow">↕ <span class="arrow-label" style="font-size:11px;margin-left:6px;">chunk → embed → upsert (one-off CLI)</span></div>
+
+    <!-- Ingestion -->
+    <div class="layer layer-ingest">
+      <div class="layer-label">Ingestion</div>
+      <div class="layer-content" style="gap:1rem;">
+        <div class="comp-box">
+          <div class="comp-title">ingest.py</div>
+          <div class="comp-detail">CLI entry point<br/>--dry-run · --force · --path</div>
+        </div>
+        <div style="color:var(--amber);font-size:18px;">→</div>
+        <div class="comp-box">
+          <div class="comp-title">chunk.py</div>
+          <div class="comp-detail">pdfplumber extraction<br/>tiktoken chunking</div>
+        </div>
+        <div style="color:var(--amber);font-size:18px;">→</div>
+        <div class="comp-box">
+          <div class="comp-title">embed.py</div>
+          <div class="comp-detail">OpenAI embeddings<br/>batched API calls</div>
+        </div>
+        <div style="color:var(--amber);font-size:18px;">→</div>
+        <div class="comp-box">
+          <div class="comp-title">store.py</div>
+          <div class="comp-detail">Supabase upsert<br/>sha256 dedup by chunk_hash</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="layer-arrow">↕ <span class="arrow-label" style="font-size:11px;margin-left:6px;">local CloudStorage mount (read-only)</span></div>
+
+    <!-- Source -->
+    <div class="layer layer-source">
+      <div class="layer-label">Source</div>
+      <div class="layer-content">
+        <div class="comp-box">
+          <div class="comp-title">Google Drive PDFs</div>
+          <div class="comp-detail">Mounted via Google Drive app<br/>~/Library/CloudStorage/…/AI Broker/<br/>Insurance/ · Cars/ · Bikes/ · Appliances &amp; Machines/</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /logical-stack -->
+</section>
+
+<hr class="divider" />
+
+<!-- ══════════════════════════════════════════════════
+     SECTION 2 — PHYSICAL
+══════════════════════════════════════════════════ -->
+<section id="physical">
+  <h2>Physical Architecture</h2>
+  <p class="subtitle">Actual services, URLs, environment variables, credentials, and deployment details.</p>
+
+  <!-- Service Boxes Grid -->
+  <div class="physical-grid">
+
+    <!-- Developer Mac -->
+    <div class="svc-box span3" style="border-color:#475569;">
+      <h3><span class="badge badge-local">Local</span> Developer Mac</h3>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;">
+        <div>
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:.5rem;">Claude Desktop</div>
+          <div class="svc-row"><span class="k">Config:</span><span class="v">~/.claude/claude_desktop_config.json</span></div>
+          <div class="svc-row"><span class="k">Skill:</span><span class="v">SKILL.md (broker persona)</span></div>
+          <div class="svc-row"><span class="k">MCP clients:</span><span class="v">insurance-broker-mcp<br/>insurance-quote-mcp</span></div>
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:.5rem;">supergateway (npx)</div>
+          <div class="svc-row"><span class="k">Command:</span><span class="v">npx -y supergateway</span></div>
+          <div class="svc-row"><span class="k">Flags:</span><span class="v">--streamableHttp &lt;url&gt;</span></div>
+          <div class="svc-row"><span class="k">Role:</span><span class="v">stdio ↔ HTTP bridge</span></div>
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:.5rem;">Ingestion Pipeline</div>
+          <div class="svc-row"><span class="k">Entry:</span><span class="v">ingestion/ingest.py</span></div>
+          <div class="svc-row"><span class="k">Drive:</span><span class="v">~/Library/CloudStorage/<br/>GoogleDrive-…/My Drive/<br/>AI Broker/personal data/</span></div>
+          <div class="svc-row"><span class="k">Env:</span><span class="v amber">SUPABASE_SERVICE_ROLE_KEY<br/>OPENAI_API_KEY</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Railway broker-mcp -->
+    <div class="svc-box" style="border-color:#7c3aed;">
+      <h3><span class="badge badge-railway">Railway</span> insurance-broker-mcp</h3>
+      <div class="svc-row"><span class="k">URL:</span><span class="v">insurance-broker-production-85e3<br/>.up.railway.app/mcp</span></div>
+      <div class="svc-row"><span class="k">Protocol:</span><span class="v">streamable-http (MCP)</span></div>
+      <div class="svc-row"><span class="k">Framework:</span><span class="v">FastMCP (Python)</span></div>
+      <div class="svc-row"><span class="k">Start:</span><span class="v">Procfile → uvicorn</span></div>
+      <div class="svc-row"><span class="k">Build:</span><span class="v">nixpacks (auto-detect)</span></div>
+      <div class="svc-row"><span class="k">Root:</span><span class="v">/mcp-server</span></div>
+      <div class="svc-row"><span class="k">Env vars:</span><span class="v amber">OPENAI_API_KEY<br/>SUPABASE_URL<br/>SUPABASE_ANON_KEY<br/>PORT</span></div>
+    </div>
+
+    <!-- Railway quote-mcp -->
+    <div class="svc-box" style="border-color:#7c3aed;">
+      <h3><span class="badge badge-railway">Railway</span> insurance-quote-mcp</h3>
+      <div class="svc-row"><span class="k">URL:</span><span class="v">alluring-prosperity-production-5644<br/>.up.railway.app/mcp</span></div>
+      <div class="svc-row"><span class="k">Protocol:</span><span class="v">streamable-http (MCP)</span></div>
+      <div class="svc-row"><span class="k">Framework:</span><span class="v">FastMCP (Python)</span></div>
+      <div class="svc-row"><span class="k">Start:</span><span class="v">Procfile → uvicorn</span></div>
+      <div class="svc-row"><span class="k">Build:</span><span class="v">nixpacks (auto-detect)</span></div>
+      <div class="svc-row"><span class="k">Root:</span><span class="v">/quote-mcp</span></div>
+      <div class="svc-row"><span class="k">Env vars:</span><span class="v amber">OPENAI_API_KEY<br/>PORT</span></div>
+    </div>
+
+    <!-- GitHub -->
+    <div class="svc-box" style="border-color:#4b5563;">
+      <h3><span class="badge badge-github">GitHub</span> guyf/insurance-broker</h3>
+      <div class="svc-row"><span class="k">Repo:</span><span class="v">source of truth</span></div>
+      <div class="svc-row"><span class="k">Deploy:</span><span class="v">auto on push to main</span></div>
+      <div class="svc-row" style="margin-top:.5rem;"><span class="k">→ broker:</span><span class="v green">root /mcp-server</span></div>
+      <div class="svc-row"><span class="k">→ quote:</span><span class="v green">root /quote-mcp</span></div>
+    </div>
+
+    <!-- OpenAI -->
+    <div class="svc-box" style="border-color:#0d9488;">
+      <h3><span class="badge badge-openai">OpenAI</span> API</h3>
+      <div class="svc-row"><span class="k">Endpoint:</span><span class="v">api.openai.com/v1/embeddings</span></div>
+      <div class="svc-row"><span class="k">Model:</span><span class="v purple">text-embedding-3-small</span></div>
+      <div class="svc-row"><span class="k">Dims:</span><span class="v">1536</span></div>
+      <div class="svc-row" style="margin-top:.5rem;"><span class="k">Endpoint:</span><span class="v">api.openai.com/v1/chat/completions</span></div>
+      <div class="svc-row"><span class="k">Model:</span><span class="v purple">gpt-4o-mini</span></div>
+      <div class="svc-row"><span class="k">Used by:</span><span class="v">analyze_photo tool</span></div>
+      <div class="svc-row" style="margin-top:.5rem;"><span class="k">Auth:</span><span class="v amber">OPENAI_API_KEY</span></div>
+    </div>
+
+    <!-- Supabase -->
+    <div class="svc-box" style="border-color:#16a34a;">
+      <h3><span class="badge badge-supa">Supabase</span> Vector DB</h3>
+      <div class="svc-row"><span class="k">Table:</span><span class="v">public.documents</span></div>
+      <div class="svc-row"><span class="k">embedding:</span><span class="v">vector(1536)</span></div>
+      <div class="svc-row"><span class="k">Index:</span><span class="v">HNSW · cosine ops</span></div>
+      <div class="svc-row"><span class="k">metadata:</span><span class="v">JSONB + GIN index</span></div>
+      <div class="svc-row"><span class="k">chunk_hash:</span><span class="v">unique dedup key (sha256)</span></div>
+      <div class="svc-row"><span class="k">RLS:</span><span class="v green">enabled (service role Phase 1)</span></div>
+      <div class="svc-row" style="margin-top:.5rem;"><span class="k">Auth:</span><span class="v amber">SUPABASE_URL<br/>SUPABASE_ANON_KEY (read)<br/>SUPABASE_SERVICE_ROLE_KEY (write)</span></div>
+    </div>
+
+  </div><!-- /physical-grid -->
+
+  <!-- Connections Table -->
+  <div class="svc-box" style="margin-top:1.5rem;">
+    <h3 style="margin-bottom:.75rem;">Labeled Connections</h3>
+    <table class="conn-table">
+      <thead>
+        <tr>
+          <th style="width:30%">From → To</th>
+          <th style="width:20%">Credential / Flag</th>
+          <th>Detail</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="from-to">Claude Desktop → supergateway</td>
+          <td class="label">—</td>
+          <td class="detail">stdio (MCP protocol) — local process communication</td>
+        </tr>
+        <tr>
+          <td class="from-to">supergateway → broker-mcp</td>
+          <td class="label">--streamableHttp</td>
+          <td class="detail">HTTPS · streamable-http MCP · insurance-broker-production-85e3.up.railway.app/mcp</td>
+        </tr>
+        <tr>
+          <td class="from-to">supergateway → quote-mcp</td>
+          <td class="label">--streamableHttp</td>
+          <td class="detail">HTTPS · streamable-http MCP · alluring-prosperity-production-5644.up.railway.app/mcp</td>
+        </tr>
+        <tr>
+          <td class="from-to">broker-mcp → OpenAI</td>
+          <td class="label">OPENAI_API_KEY</td>
+          <td class="detail">POST /v1/embeddings · model: text-embedding-3-small · query-time only</td>
+        </tr>
+        <tr>
+          <td class="from-to">broker-mcp → Supabase</td>
+          <td class="label">SUPABASE_URL + SUPABASE_ANON_KEY</td>
+          <td class="detail">PostgREST RPC calls · search_documents · list_policies · get_renewal_calendar</td>
+        </tr>
+        <tr>
+          <td class="from-to">quote-mcp → OpenAI</td>
+          <td class="label">OPENAI_API_KEY</td>
+          <td class="detail">POST /v1/chat/completions · model: gpt-4o-mini · analyze_photo tool only</td>
+        </tr>
+        <tr>
+          <td class="from-to">ingestion → OpenAI</td>
+          <td class="label">OPENAI_API_KEY</td>
+          <td class="detail">POST /v1/embeddings · text-embedding-3-small · batched · run locally</td>
+        </tr>
+        <tr>
+          <td class="from-to">ingestion → Supabase</td>
+          <td class="label">SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY</td>
+          <td class="detail">Upsert into public.documents · bypasses RLS · dedup via chunk_hash</td>
+        </tr>
+        <tr>
+          <td class="from-to">Google Drive → ingestion</td>
+          <td class="label">—</td>
+          <td class="detail">Local CloudStorage mount · read-only · ~/Library/CloudStorage/GoogleDrive-…</td>
+        </tr>
+        <tr>
+          <td class="from-to">GitHub → Railway broker-mcp</td>
+          <td class="label">—</td>
+          <td class="detail">Auto-deploy on push · root directory: /mcp-server · nixpacks build</td>
+        </tr>
+        <tr>
+          <td class="from-to">GitHub → Railway quote-mcp</td>
+          <td class="label">—</td>
+          <td class="detail">Auto-deploy on push · root directory: /quote-mcp · nixpacks build</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- API Endpoints Panel -->
+  <div style="margin-top:2rem;">
+    <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:1rem;">API Endpoints &amp; Tool Signatures</div>
+    <div class="api-grid">
+
+      <div class="api-panel" style="border-color:var(--teal);">
+        <h4>Broker MCP Tools</h4>
+        <div class="sig">
+          <span class="fn">search_insurance_docs</span>(<br/>
+          &nbsp;&nbsp;<span class="param">query</span>: str,<br/>
+          &nbsp;&nbsp;<span class="opt">policy_type?</span>: str,<br/>
+          &nbsp;&nbsp;<span class="opt">limit?</span>: int<br/>
+          )<br/><br/>
+          <span class="fn">list_policies</span>()<br/><br/>
+          <span class="fn">get_renewal_calendar</span>()
+        </div>
+      </div>
+
+      <div class="api-panel" style="border-color:var(--purple);">
+        <h4>Quote MCP Tools</h4>
+        <div class="sig">
+          <span class="fn">get_home_quote</span>(<br/>
+          &nbsp;&nbsp;<span class="param">property_type</span>, <span class="param">bedrooms</span>, <span class="param">rebuild_value</span>, <span class="param">postcode</span>,<br/>
+          &nbsp;&nbsp;<span class="opt">year_built?</span>, <span class="opt">claims_last_5_years?</span>, <span class="opt">cover_type?</span><br/>
+          )<br/><br/>
+          <span class="fn">get_motor_quote</span>(<br/>
+          &nbsp;&nbsp;<span class="param">make</span>, <span class="param">model</span>, <span class="param">year</span>, <span class="param">value</span>, <span class="param">driver_age</span>, <span class="param">annual_mileage</span>,<br/>
+          &nbsp;&nbsp;<span class="opt">no_claims_years?</span>, <span class="opt">postcode?</span>, <span class="opt">cover_level?</span><br/>
+          )<br/><br/>
+          <span class="fn">get_pet_quote</span>(<br/>
+          &nbsp;&nbsp;<span class="param">species</span>, <span class="param">breed</span>, <span class="param">age_years</span>,<br/>
+          &nbsp;&nbsp;<span class="opt">vet_limit?</span>, <span class="opt">neutered?</span><br/>
+          )<br/><br/>
+          <span class="fn">analyze_photo</span>(<span class="param">image_url</span>, <span class="param">asset_type</span>)
+        </div>
+      </div>
+
+      <div class="api-panel" style="border-color:var(--green);">
+        <h4>Supabase RPCs</h4>
+        <div class="sig">
+          <span class="fn">search_documents</span>(<br/>
+          &nbsp;&nbsp;<span class="param">query_embedding</span>: vector(1536),<br/>
+          &nbsp;&nbsp;<span class="param">match_count</span>: int,<br/>
+          &nbsp;&nbsp;<span class="param">filter_metadata</span>: jsonb<br/>
+          )<br/><br/>
+          <span class="fn">list_policies</span>()<br/>
+          <span style="color:var(--muted);font-size:10px;">→ distinct (policy_type, property,<br/>&nbsp;&nbsp;&nbsp;filename, source_path)</span><br/><br/>
+          <span class="fn">get_renewal_calendar</span>()<br/>
+          <span style="color:var(--muted);font-size:10px;">→ rows where renewal_date IS NOT NULL</span>
+        </div>
+      </div>
+
+    </div><!-- /api-grid -->
+  </div>
+
+</section>
+
+</body>
+</html>
