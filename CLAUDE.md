@@ -67,11 +67,11 @@ insurance-broker/
 - `list_policies()` — inventory of all ingested documents
 - `get_renewal_calendar()` — renewal dates, flags within 60 days
 
-**Claude Desktop config** uses `supergateway` as a stdio↔SSE bridge:
+**Claude Desktop config** uses `supergateway` as a stdio↔streamable-http bridge:
 ```json
 "insurance-broker-mcp": {
   "command": "npx",
-  "args": ["-y", "supergateway", "--sse", "https://insurance-broker-production-85e3.up.railway.app/sse"]
+  "args": ["-y", "supergateway", "--streamableHttp", "https://insurance-broker-production-85e3.up.railway.app/mcp"]
 }
 ```
 
