@@ -1,0 +1,34 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  body {
+    font-family: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+    background-color: #0d1b2a;
+    color: #1a2535;
+  }
+}
+
+@layer components {
+  /* Thin scrollbar for panel columns */
+  .panel-scroll {
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #c9a84c40 transparent;
+  }
+  .panel-scroll::-webkit-scrollbar {
+    width: 4px;
+  }
+  .panel-scroll::-webkit-scrollbar-thumb {
+    background-color: #c9a84c40;
+    border-radius: 2px;
+  }
+}

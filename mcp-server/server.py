@@ -6,15 +6,25 @@ Exposes three tools to Claude:
   - search_insurance_docs
   - list_policies
   - get_renewal_calendar
+
+Also exposes a plain HTTP upload endpoint:
+  POST /upload  (multipart, field "file")
 """
 
 import logging
 import os
+import sys
+import tempfile
 from datetime import date, datetime
+from pathlib import Path
 
 from dotenv import load_dotenv
 from mcp.server.fastmcp import FastMCP
 from openai import OpenAI
+from starlette.applications import Starlette
+from starlette.requests import Request
+from starlette.responses import JSONResponse
+from starlette.routing import Mount, Route
 from supabase import create_client
 
 load_dotenv()
@@ -23,7 +33,7 @@ logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger(__name__)
 
 _port = int(os.environ.get("PORT", 8000))
-mcp = FastMCP("insurance-broker-mcp", host="0.0.0.0", port=_port)
+mcp = FastMCP("insurance-broker-mcp", host="0.0.0.0", port=_port, stateless_http=True)
 
 EMBED_MODEL = "text-embedding-3-small"
 RENEWAL_WARN_DAYS = 60
@@ -33,6 +43,7 @@ RENEWAL_WARN_DAYS = 60
 # ---------------------------------------------------------------------------
 
 _sb = None
+_sb_service = None
 _openai = None
 
 
@@ -41,6 +52,16 @@ def _supabase():
     if _sb is None:
         _sb = create_client(os.environ["SUPABASE_URL"], os.environ["SUPABASE_ANON_KEY"])
     return _sb
+
+
+def _supabase_service():
+    global _sb_service
+    if _sb_service is None:
+        _sb_service = create_client(
+            os.environ["SUPABASE_URL"],
+            os.environ["SUPABASE_SERVICE_ROLE_KEY"],
+        )
+    return _sb_service
 
 
 def _openai_client():
@@ -56,7 +77,7 @@ def _embed_query(query: str) -> list[float]:
 
 
 # ---------------------------------------------------------------------------
-# Tools
+# MCP Tools
 # ---------------------------------------------------------------------------
 
 @mcp.tool()
@@ -154,8 +175,90 @@ def get_renewal_calendar() -> str:
 
 
 # ---------------------------------------------------------------------------
+# Upload endpoint
+# ---------------------------------------------------------------------------
+
+# Add ingestion modules to path
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../ingestion"))
+
+
+async def upload_document(request: Request) -> JSONResponse:
+    """Receive a PDF, chunk/embed it, and store in Supabase."""
+    try:
+        form = await request.form()
+        file = form.get("file")
+        if file is None:
+            return JSONResponse({"error": "No file field in form"}, status_code=400)
+
+        contents = await file.read()
+        filename = file.filename or "upload.pdf"
+
+        with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
+            tmp.write(contents)
+            tmp_path = tmp.name
+
+        try:
+            # Import ingestion modules (lazy — only needed when upload is called)
+            from chunk import chunk_pdf  # noqa: PLC0415
+            from embed import embed_texts  # noqa: PLC0415
+            from store import get_existing_hashes, upsert_chunks  # noqa: PLC0415
+
+            # Infer basic metadata from filename
+            base_metadata: dict = {"doc_type": "policy", "filename": filename}
+
+            chunks = chunk_pdf(
+                Path(tmp_path),
+                source_path=filename,
+                base_metadata=base_metadata,
+            )
+
+            if not chunks:
+                return JSONResponse(
+                    {"status": "ok", "chunks": 0, "filename": filename,
+                     "message": "No extractable text found in PDF."}
+                )
+
+            texts = [c.content for c in chunks]
+            embeddings = embed_texts(texts, _openai_client())
+
+            sb = _supabase_service()
+            existing = get_existing_hashes([c.chunk_hash for c in chunks], sb)
+            new_chunks = [c for c in chunks if c.chunk_hash not in existing]
+            new_embeddings = [
+                e for c, e in zip(chunks, embeddings) if c.chunk_hash not in existing
+            ]
+
+            stored = upsert_chunks(new_chunks, new_embeddings, sb)
+            return JSONResponse({"status": "ok", "chunks": stored, "filename": filename})
+
+        finally:
+            os.unlink(tmp_path)
+
+    except Exception as exc:
+        logger.exception("Upload failed")
+        return JSONResponse({"error": str(exc)}, status_code=500)
+
+
+# ---------------------------------------------------------------------------
+# Combined ASGI app (FastMCP + /upload)
+# ---------------------------------------------------------------------------
+
+def build_app() -> Starlette:
+    broker_app = mcp.streamable_http_app()
+    return Starlette(
+        routes=[
+            Route("/upload", upload_document, methods=["POST"]),
+            Mount("/", app=broker_app),
+        ]
+    )
+
+
+app = build_app()
+
+# ---------------------------------------------------------------------------
 # Entrypoint
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    mcp.run(transport="streamable-http")
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=_port)

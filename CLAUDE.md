@@ -48,7 +48,7 @@ insurance-broker/
 │   ├── Procfile                      # Railway start command
 │   ├── railway.toml
 │   └── .env.example
-└── quote-mcp/
+└── mcp-quote/
     ├── server.py                     # FastMCP streamable-http, 4 tools
     ├── pricer.py                     # Deterministic home/motor/pet pricing
     ├── photo_analyzer.py             # GPT-4o-mini vision → asset details
