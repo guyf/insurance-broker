@@ -460,7 +460,7 @@
       <div class="layer-content" style="gap:1.5rem;">
         <div class="comp-box">
           <div class="comp-title">insurance-broker-mcp</div>
-          <div class="comp-detail">FastMCP · streamable-http<br/>Deployed on Railway</div>
+          <div class="comp-detail">FastMCP · streamable-http<br/>Deployed on Railway<br/><span style="color:#fbbf24;">Also embeds search queries via OpenAI at query time</span></div>
           <ul class="tool-list">
             <li>search_insurance_docs</li>
             <li>list_policies</li>
@@ -480,24 +480,7 @@
       </div>
     </div>
 
-    <div class="layer-arrow">↕ <span class="arrow-label" style="font-size:11px;margin-left:6px;">REST API calls (embeddings · vision)</span></div>
-
-    <!-- AI Services -->
-    <div class="layer layer-ai">
-      <div class="layer-label">AI Services</div>
-      <div class="layer-content" style="gap:1.5rem;">
-        <div class="comp-box">
-          <div class="comp-title">OpenAI — Embeddings</div>
-          <div class="comp-detail">text-embedding-3-small<br/>1536-dim vectors<br/>Used by broker-mcp + ingestion</div>
-        </div>
-        <div class="comp-box">
-          <div class="comp-title">OpenAI — Vision</div>
-          <div class="comp-detail">gpt-4o-mini<br/>analyze_photo tool<br/>Returns asset detail JSON</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="layer-arrow">↕ <span class="arrow-label" style="font-size:11px;margin-left:6px;">RPC calls over HTTPS (Supabase PostgREST)</span></div>
+    <div class="layer-arrow">↕ <span class="arrow-label" style="font-size:11px;margin-left:6px;">PostgREST RPC calls over HTTPS</span></div>
 
     <!-- Data -->
     <div class="layer layer-data">
@@ -515,7 +498,24 @@
       </div>
     </div>
 
-    <div class="layer-arrow">↕ <span class="arrow-label" style="font-size:11px;margin-left:6px;">chunk → embed → upsert (one-off CLI)</span></div>
+    <div class="layer-arrow">↕ <span class="arrow-label" style="font-size:11px;margin-left:6px;">upsert vector embeddings (1536-dim)</span></div>
+
+    <!-- AI Services -->
+    <div class="layer layer-ai">
+      <div class="layer-label">AI Services</div>
+      <div class="layer-content" style="gap:1.5rem;">
+        <div class="comp-box">
+          <div class="comp-title">OpenAI — Embeddings</div>
+          <div class="comp-detail">text-embedding-3-small<br/>1536-dim vectors<br/>Called by embed.py during ingestion<br/>Also called by broker-mcp at query time</div>
+        </div>
+        <div class="comp-box">
+          <div class="comp-title">OpenAI — Vision</div>
+          <div class="comp-detail">gpt-4o-mini<br/>analyze_photo tool<br/>Returns asset detail JSON</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="layer-arrow">↕ <span class="arrow-label" style="font-size:11px;margin-left:6px;">chunk → embed via OpenAI → upsert (one-off CLI)</span></div>
 
     <!-- Ingestion -->
     <div class="layer layer-ingest">
