@@ -10,20 +10,12 @@ interface Props {
   onSend: (text: string) => void;
 }
 
-export function Broker({
-  messages,
-  thinking,
-  prefillInput,
-  onPrefillConsumed,
-  onSend,
-}: Props) {
+export function Broker({ messages, thinking, prefillInput, onPrefillConsumed, onSend }: Props) {
   return (
     <div className="flex flex-col h-full">
       {/* Column header */}
-      <div className="px-6 py-3 border-b border-panel-border flex-shrink-0">
-        <h2 className="font-cormorant text-navy text-base font-semibold tracking-wide">
-          Your Broker
-        </h2>
+      <div className="h-12 flex-shrink-0 border-b border-gray-100 flex items-center px-6">
+        <span className="text-sm font-medium text-gray-900">Your Broker</span>
       </div>
 
       <MessageList messages={messages} thinking={thinking} />

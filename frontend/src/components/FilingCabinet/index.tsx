@@ -9,23 +9,13 @@ interface Props {
   onUpload: (file: File) => Promise<void>;
 }
 
-const TYPE_ORDER = [
-  "home",
-  "car",
-  "life",
-  "travel",
-  "breakdown",
-  "phone",
-  "pet",
-  "asset",
-];
+const TYPE_ORDER = ["home", "car", "life", "travel", "breakdown", "phone", "pet", "asset"];
 
 function groupPolicies(policies: Policy[]): Map<string, Policy[]> {
   const map = new Map<string, Policy[]>();
   for (const p of policies) {
-    const key = p.policy_type;
-    if (!map.has(key)) map.set(key, []);
-    map.get(key)!.push(p);
+    if (!map.has(p.policy_type)) map.set(p.policy_type, []);
+    map.get(p.policy_type)!.push(p);
   }
   return map;
 }
@@ -43,35 +33,41 @@ export function FilingCabinet({ policies, loading, onPolicyClick, onUpload }: Pr
   const types = sortedTypes(grouped);
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full bg-sidebar">
       {/* Header */}
-      <div className="px-4 py-3 border-b border-panel-border flex items-center justify-between flex-shrink-0">
-        <h2 className="font-cormorant text-navy text-base font-semibold tracking-wide">
-          Filing Cabinet
-        </h2>
+      <div className="px-4 pt-5 pb-3 flex-shrink-0">
+        <div className="flex items-center justify-between mb-4">
+          <span className="text-sidebar-text font-semibold text-sm tracking-tight">
+            Insurance Broker
+          </span>
+        </div>
         <UploadButton onUpload={onUpload} />
       </div>
 
+      <div className="px-3 pb-2 flex-shrink-0">
+        <p className="text-[10px] font-medium tracking-widest uppercase text-sidebar-dim">
+          Policies
+        </p>
+      </div>
+
       {/* Policy list */}
-      <div className="flex-1 panel-scroll">
+      <div className="flex-1 sidebar-scroll px-2 pb-4">
         {loading ? (
-          <div className="px-4 py-8 text-sm text-gray-400 text-center">
-            Loading policies…
+          <div className="px-3 py-6 text-xs text-sidebar-muted text-center">
+            Loading…
           </div>
         ) : policies.length === 0 ? (
-          <div className="px-4 py-8 text-sm text-gray-400 text-center leading-relaxed">
+          <div className="px-3 py-6 text-xs text-sidebar-muted text-center leading-relaxed">
             No policies found.
             <br />
             Upload a PDF to get started.
           </div>
         ) : (
           types.map((type) => (
-            <div key={type}>
-              <div className="px-4 py-2 bg-navy/5 border-b border-panel-border">
-                <span className="text-[10px] font-semibold tracking-widest uppercase text-midtone/50">
-                  {type}
-                </span>
-              </div>
+            <div key={type} className="mb-1">
+              <p className="px-3 py-1.5 text-[10px] font-medium tracking-widest uppercase text-sidebar-dim">
+                {type}
+              </p>
               {grouped.get(type)!.map((policy) => (
                 <PolicyCard
                   key={policy.source_path + policy.filename}

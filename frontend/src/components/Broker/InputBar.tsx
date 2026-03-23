@@ -11,7 +11,6 @@ export function InputBar({ onSend, disabled, prefill, onPrefillConsumed }: Props
   const [text, setText] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Apply prefill from FilingCabinet card click
   useEffect(() => {
     if (prefill) {
       setText(prefill);
@@ -20,7 +19,6 @@ export function InputBar({ onSend, disabled, prefill, onPrefillConsumed }: Props
     }
   }, [prefill, onPrefillConsumed]);
 
-  // Auto-resize textarea
   useEffect(() => {
     const el = textareaRef.current;
     if (!el) return;
@@ -42,9 +40,11 @@ export function InputBar({ onSend, disabled, prefill, onPrefillConsumed }: Props
     }
   };
 
+  const canSend = !!text.trim() && !disabled;
+
   return (
-    <div className="flex-shrink-0 border-t border-panel-border bg-panel px-4 py-3">
-      <div className="flex items-end gap-3">
+    <div className="flex-shrink-0 p-4">
+      <div className="relative flex items-end rounded-2xl border border-gray-200 bg-white shadow-sm focus-within:border-gray-400 focus-within:shadow-md transition-all">
         <textarea
           ref={textareaRef}
           rows={1}
@@ -53,17 +53,25 @@ export function InputBar({ onSend, disabled, prefill, onPrefillConsumed }: Props
           onKeyDown={handleKeyDown}
           disabled={disabled}
           placeholder="Ask about your coverage, renewals, or request a quote…"
-          className="flex-1 resize-none bg-white border border-panel-border px-3 py-2 text-sm text-navy placeholder:text-gray-400 focus:outline-none focus:border-brass/60 disabled:opacity-50 transition-colors leading-relaxed"
+          className="flex-1 resize-none bg-transparent px-4 py-3 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none disabled:opacity-50 leading-relaxed"
         />
-        <button
-          onClick={handleSubmit}
-          disabled={disabled || !text.trim()}
-          className="flex-shrink-0 px-4 py-2 bg-navy text-brass text-sm font-medium tracking-wide hover:bg-midtone disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-        >
-          Send
-        </button>
+        <div className="flex-shrink-0 pr-2 pb-2">
+          <button
+            onClick={handleSubmit}
+            disabled={!canSend}
+            className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
+              canSend
+                ? "bg-gray-900 text-white hover:bg-gray-700"
+                : "bg-gray-100 text-gray-400 cursor-not-allowed"
+            }`}
+          >
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14M12 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
       </div>
-      <p className="mt-1.5 text-[10px] text-gray-400">
+      <p className="mt-1.5 text-center text-[10px] text-gray-400">
         Shift+Enter for new line
       </p>
     </div>

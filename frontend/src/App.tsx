@@ -12,12 +12,12 @@ export default function App() {
     {
       role: "assistant",
       content:
-        "Hello. I'm your personal insurance broker. I can search your policy documents, check renewal dates, identify coverage gaps, and generate illustrative quotes for home, motor, or pet insurance.\n\nHow can I help you today?",
+        "Hello! I'm your personal insurance broker. I can search your policy documents, check renewal dates, identify coverage gaps, and generate illustrative quotes for home, motor, or pet insurance.\n\nHow can I help you today?",
     },
   ]);
   const [thinking, setThinking] = useState(false);
   const [quote, setQuote] = useState<QuoteResult | null>(null);
-  const [toast, setToast] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ text: string; ok: boolean } | null>(null);
   const [prefillInput, setPrefillInput] = useState("");
   const toastTimer = useRef<ReturnType<typeof setTimeout>>();
 
@@ -27,7 +27,7 @@ export default function App() {
       const data = await fetchPolicies();
       setPolicies(data);
     } catch {
-      // silently fail — empty state is shown
+      /* show empty state */
     } finally {
       setPoliciesLoading(false);
     }
@@ -37,8 +37,8 @@ export default function App() {
     loadPolicies();
   }, [loadPolicies]);
 
-  const showToast = (msg: string) => {
-    setToast(msg);
+  const showToast = (text: string, ok = true) => {
+    setToast({ text, ok });
     clearTimeout(toastTimer.current);
     toastTimer.current = setTimeout(() => setToast(null), 4000);
   };
@@ -48,13 +48,9 @@ export default function App() {
     const nextMessages = [...messages, userMessage];
     setMessages(nextMessages);
     setThinking(true);
-
     try {
       const response = await sendMessage(nextMessages);
-      setMessages([
-        ...nextMessages,
-        { role: "assistant", content: response.content },
-      ]);
+      setMessages([...nextMessages, { role: "assistant", content: response.content }]);
       if (response.quote) setQuote(response.quote);
     } catch (err) {
       setMessages([
@@ -72,10 +68,10 @@ export default function App() {
   const handleUpload = async (file: File) => {
     try {
       const result = await uploadPolicy(file);
-      showToast(`✓ ${result.filename} — ${result.chunks} chunks stored`);
+      showToast(`${result.filename} uploaded — ${result.chunks} chunks stored`);
       await loadPolicies();
     } catch (err) {
-      showToast(`Upload failed: ${err instanceof Error ? err.message : "Unknown error"}`);
+      showToast(err instanceof Error ? err.message : "Upload failed", false);
     }
   };
 
@@ -84,50 +80,52 @@ export default function App() {
   };
 
   return (
-    <div className="h-full flex flex-col bg-navy">
-      {/* Header */}
-      <header className="h-12 flex-shrink-0 bg-navy border-b border-brass/20 flex items-center px-6 gap-4">
-        <h1 className="font-cormorant text-brass text-xl font-semibold tracking-wide">
-          Insurance Broker
-        </h1>
-        <span className="text-midtone/60 text-xs font-light tracking-widest uppercase">
-          Personal Policy Intelligence
-        </span>
-      </header>
+    <div className="h-full flex overflow-hidden bg-sidebar">
+      {/* Left — Filing Cabinet (dark sidebar) */}
+      <aside className="w-64 flex-shrink-0 flex flex-col border-r border-sidebar-border">
+        <FilingCabinet
+          policies={policies}
+          loading={policiesLoading}
+          onPolicyClick={handlePolicyClick}
+          onUpload={handleUpload}
+        />
+      </aside>
 
-      {/* Three columns */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Left — Filing Cabinet */}
-        <aside className="w-72 flex-shrink-0 bg-panel border-r border-panel-border flex flex-col">
-          <FilingCabinet
-            policies={policies}
-            loading={policiesLoading}
-            onPolicyClick={handlePolicyClick}
-            onUpload={handleUpload}
-          />
-        </aside>
+      {/* Middle — Broker Chat */}
+      <main className="flex-1 flex flex-col bg-white min-w-0 border-r border-gray-200">
+        <Broker
+          messages={messages}
+          thinking={thinking}
+          prefillInput={prefillInput}
+          onPrefillConsumed={() => setPrefillInput("")}
+          onSend={handleSend}
+        />
+      </main>
 
-        {/* Middle — Broker Chat */}
-        <main className="flex-1 bg-panel border-r border-panel-border flex flex-col min-w-0">
-          <Broker
-            messages={messages}
-            thinking={thinking}
-            prefillInput={prefillInput}
-            onPrefillConsumed={() => setPrefillInput("")}
-            onSend={handleSend}
-          />
-        </main>
-
-        {/* Right — Quote Panel */}
-        <aside className="w-80 flex-shrink-0 bg-panel flex flex-col">
-          <QuotePanel quote={quote} />
-        </aside>
-      </div>
+      {/* Right — Quote Panel */}
+      <aside className="w-80 flex-shrink-0 flex flex-col bg-gray-50">
+        <QuotePanel quote={quote} />
+      </aside>
 
       {/* Toast */}
       {toast && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-midtone text-white text-sm px-5 py-3 shadow-panel border border-brass/30 z-50">
-          {toast}
+        <div
+          className={`fixed bottom-5 left-1/2 -translate-x-1/2 text-sm px-4 py-2.5 rounded-lg shadow-lg z-50 flex items-center gap-2 ${
+            toast.ok
+              ? "bg-gray-900 text-white"
+              : "bg-red-600 text-white"
+          }`}
+        >
+          {toast.ok ? (
+            <svg className="w-4 h-4 text-green-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+          ) : (
+            <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          )}
+          {toast.text}
         </div>
       )}
     </div>
