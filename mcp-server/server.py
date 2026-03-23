@@ -241,16 +241,19 @@ async def upload_document(request: Request) -> JSONResponse:
 
 # ---------------------------------------------------------------------------
 # Combined ASGI app (FastMCP + /upload)
+#
+# We inject /upload directly into FastMCP's own Starlette router rather than
+# wrapping it in an outer app. This preserves FastMCP's lifespan context,
+# which initialises the StreamableHTTP session manager task group.
 # ---------------------------------------------------------------------------
 
 def build_app() -> Starlette:
     broker_app = mcp.streamable_http_app()
-    return Starlette(
-        routes=[
-            Route("/upload", upload_document, methods=["POST"]),
-            Mount("/", app=broker_app),
-        ]
+    # Prepend /upload so it matches before FastMCP's catch-all routes
+    broker_app.router.routes.insert(
+        0, Route("/upload", upload_document, methods=["POST"])
     )
+    return broker_app
 
 
 app = build_app()
