@@ -52,7 +52,18 @@ interface PolicyGroup {
 function groupPolicies(policies: Policy[]): PolicyGroup[] {
   const map = new Map<string, Policy[]>();
   for (const p of policies) {
-    const key = `${p.policy_type}|${p.property ?? ""}`;
+    let key: string;
+    if (p.property) {
+      key = `${p.policy_type}|${p.property}`;
+    } else {
+      // Use the vehicle/asset subfolder as discriminator when it exists.
+      // Insurance/Car/BMW i3/file.pdf (4 parts) → "car|BMW i3"
+      // Insurance/Car/file.pdf          (3 parts) → "car|"  (flat — group all together)
+      const parts = p.source_path.split("/");
+      key = parts.length >= 4
+        ? `${p.policy_type}|${parts[2]}`
+        : `${p.policy_type}|`;
+    }
     if (!map.has(key)) map.set(key, []);
     map.get(key)!.push(p);
   }
