@@ -49,20 +49,10 @@ interface PolicyGroup {
   primary: Policy;
 }
 
-function policyGroupKey(p: Policy): string {
-  if (p.property) return `${p.policy_type}|${p.property}`;
-  // Use the parent folder of the file as a secondary discriminator so that
-  // e.g. Insurance/Car/BMW i3/*.pdf and Insurance/Car/Model X/*.pdf get
-  // separate groups even though both have property=null.
-  const parts = p.source_path.split("/");
-  const parentFolder = parts.length >= 2 ? parts[parts.length - 2] : "";
-  return `${p.policy_type}|${parentFolder}`;
-}
-
 function groupPolicies(policies: Policy[]): PolicyGroup[] {
   const map = new Map<string, Policy[]>();
   for (const p of policies) {
-    const key = policyGroupKey(p);
+    const key = `${p.policy_type}|${p.property ?? ""}`;
     if (!map.has(key)) map.set(key, []);
     map.get(key)!.push(p);
   }
