@@ -109,6 +109,7 @@ export default function App() {
           loading={policiesLoading}
           onPolicyClick={handlePolicyClick}
           onUpload={handleUpload}
+          onRequote={(prompt) => setPrefillInput(prompt)}
         />
       </aside>
 
@@ -131,11 +132,7 @@ export default function App() {
 
       {/* Right — Quote Panel */}
       <aside className="w-96 flex-shrink-0 flex flex-col bg-gray-50">
-        <QuotePanel
-          quote={quote}
-          policies={policies}
-          onRequote={(prompt) => setPrefillInput(prompt)}
-        />
+        <QuotePanel quote={quote} />
       </aside>
 
       {/* Toast */}

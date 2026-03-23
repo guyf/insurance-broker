@@ -32,20 +32,15 @@ export function UploadButton({ onUpload }: Props) {
       <button
         onClick={() => inputRef.current?.click()}
         disabled={uploading}
-        className="w-full flex items-center gap-2 px-3 py-2 rounded-md bg-sidebar-hover hover:bg-zinc-700 text-sidebar-text text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        title="Add Document"
+        className="flex items-center justify-center w-8 h-8 rounded-md border border-gray-200 bg-white hover:bg-gray-50 text-gray-500 hover:text-gray-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
       >
         {uploading ? (
-          <>
-            <span className="w-4 h-4 border-2 border-sidebar-muted border-t-sidebar-text rounded-full animate-spin flex-shrink-0" />
-            <span className="text-sidebar-muted text-sm">Uploading…</span>
-          </>
+          <span className="w-4 h-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
         ) : (
-          <>
-            <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" />
-            </svg>
-            <span>Add Document</span>
-          </>
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" />
+          </svg>
         )}
       </button>
     </>
