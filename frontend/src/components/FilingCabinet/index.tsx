@@ -147,6 +147,9 @@ function PolicyGroupCard({
             {primary.provider && (
               <span className="text-gray-500 font-medium">{primary.provider}</span>
             )}
+            {primary.underwriter && primary.underwriter !== primary.provider && (
+              <span className="text-gray-400">via {primary.underwriter}</span>
+            )}
             {primary.premium && <span>£{primary.premium}/yr</span>}
             {primary.renewal_date && (
               <span className={renewalColor(primary.renewal_date)}>

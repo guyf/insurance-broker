@@ -13,7 +13,6 @@ Usage:
 import argparse
 import logging
 import os
-import re
 import sys
 from pathlib import Path
 
@@ -21,7 +20,7 @@ from dotenv import load_dotenv
 from openai import OpenAI
 from supabase import create_client
 
-from chunk import Chunk, chunk_pdf
+from chunk import Chunk, chunk_pdf, extract_insurer_info_from_pdf
 from embed import embed_texts
 from store import get_existing_hashes, upsert_chunks
 
@@ -39,30 +38,6 @@ DOCS_ROOT = Path(os.environ["DOCS_ROOT"])
 # ---------------------------------------------------------------------------
 # Provider extraction from filename
 # ---------------------------------------------------------------------------
-
-_GENERIC_WORDS = {
-    "certificate", "policy", "schedule", "insurance", "motor", "home",
-    "travel", "breakdown", "life", "phone", "cover", "document", "ipid",
-    "nomination", "wishes", "form", "terms", "conditions", "product",
-    "information", "assistance",
-}
-
-def extract_provider(filename: str) -> str | None:
-    """Best-effort extraction of insurer name from filename.
-    Works for files named 'NFU Mutual Insurance - Guy Farley - ...'
-    or 'ARTEMIS - HP2 New business V027'. Returns None when uncertain.
-    """
-    name = re.sub(r"\.pdf$", "", filename, flags=re.IGNORECASE).strip()
-    if " - " not in name:
-        return None
-    first_part = name.split(" - ")[0].strip()
-    words = first_part.lower().split()
-    if all(w in _GENERIC_WORDS for w in words):
-        return None
-    # Strip trailing "Insurance" suffix (e.g. "NFU Mutual Insurance" → "NFU Mutual")
-    cleaned = re.sub(r"\s+Insurance$", "", first_part, flags=re.IGNORECASE).strip()
-    return cleaned or None
-
 
 # ---------------------------------------------------------------------------
 # Metadata inference from folder path (relative to DOCS_ROOT)
@@ -104,9 +79,6 @@ def infer_metadata(rel_path: Path) -> dict:
     else:
         meta = {"doc_type": "unknown"}
 
-    provider = extract_provider(rel_path.name)
-    if provider:
-        meta["provider"] = provider
     return meta
 
 
@@ -141,6 +113,7 @@ def main() -> None:
         rel = pdf_path.relative_to(DOCS_ROOT)
         base_meta = infer_metadata(rel)
         base_meta["filename"] = pdf_path.name
+        base_meta.update(extract_insurer_info_from_pdf(pdf_path))
         chunks = chunk_pdf(pdf_path, str(rel), base_meta)
         logger.info("  %s → %d chunk(s)", rel, len(chunks))
         all_chunks.extend(chunks)

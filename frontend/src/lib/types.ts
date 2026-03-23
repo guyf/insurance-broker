@@ -6,6 +6,7 @@ export interface Policy {
   renewal_date: string | null;
   premium: string | null;
   provider: string | null;
+  underwriter: string | null;
 }
 
 export type RenewalStatus = "current" | "expiring" | "overdue";

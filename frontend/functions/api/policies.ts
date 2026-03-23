@@ -15,6 +15,7 @@ interface Policy {
   renewal_date: string | null;
   premium: string | null;
   provider: string | null;
+  underwriter: string | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -102,12 +103,12 @@ async function callBrokerTool(toolName: string): Promise<string> {
 // ---------------------------------------------------------------------------
 
 function parsePolicies(text: string): Policy[] {
-  // Format: "  type [property] — filename  (source_path)  [provider: X]"
+  // Format: "  type [property] — filename  (source_path)  [provider: X]  [underwriter: Y]"
   const policies: Policy[] = [];
   for (const line of text.split("\n")) {
     if (!line.match(/^\s+\w/)) continue;
     const m = line.match(
-      /^\s+(\w+)(?:\s+\[([^\]]+)\])?\s+—\s+(.+?)\s{2,}\((.+?)\)(?:\s+\[provider:\s*(.+?)\])?\s*$/
+      /^\s+(\w+)(?:\s+\[([^\]]+)\])?\s+—\s+(.+?)\s{2,}\((.+?)\)(?:\s+\[provider:\s*(.+?)\])?(?:\s+\[underwriter:\s*(.+?)\])?\s*$/
     );
     if (!m) continue;
     policies.push({
@@ -118,6 +119,7 @@ function parsePolicies(text: string): Policy[] {
       renewal_date: null,
       premium: null,
       provider: m[5]?.trim() ?? null,
+      underwriter: m[6]?.trim() ?? null,
     });
   }
   return policies;

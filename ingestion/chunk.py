@@ -24,6 +24,18 @@ _PREMIUM_RE = re.compile(
     r"(?:total\s+)?(?:annual\s+)?premium[:\s]+[£$]?([\d,]+(?:\.\d{2})?)",
     re.IGNORECASE,
 )
+# Matches explicit insurer labels (who you have the policy with)
+_INSURER_RE = re.compile(
+    r"(?:insurer|insured\s+(?:with|by)|provided\s+by|your\s+insurer\s+is)"
+    r"[:\s]+([A-Z][A-Za-z0-9 &()'\-]{2,60}?)(?:\s+(?:plc|ltd|limited|group|llp))?(?:\s*[\n,.]|$)",
+    re.IGNORECASE,
+)
+# Matches explicit underwriter labels (who backs the risk)
+_UNDERWRITER_RE = re.compile(
+    r"(?:underwritten\s+by|underwriter)"
+    r"[:\s]+([A-Z][A-Za-z0-9 &()'\-]{2,60}?)(?:\s+(?:plc|ltd|limited|group|llp|syndicate\s*\d*))?(?:\s*[\n,.]|$)",
+    re.IGNORECASE,
+)
 
 
 @dataclass
@@ -75,6 +87,28 @@ def _extract_renewal_date(text: str) -> str | None:
 def _extract_premium(text: str) -> str | None:
     m = _PREMIUM_RE.search(text)
     return m.group(1).strip() if m else None
+
+
+def extract_insurer_info_from_pdf(pdf_path: Path) -> dict:
+    """Read the first page of a PDF and extract insurer and/or underwriter names.
+    Returns a dict with 'provider' and/or 'underwriter' keys (omitted when not found).
+    Opens the PDF once for both fields.
+    """
+    info: dict = {}
+    try:
+        with pdfplumber.open(pdf_path) as pdf:
+            if not pdf.pages:
+                return info
+            text = pdf.pages[0].extract_text() or ""
+            m = _INSURER_RE.search(text)
+            if m:
+                info["provider"] = m.group(1).strip()
+            m = _UNDERWRITER_RE.search(text)
+            if m:
+                info["underwriter"] = m.group(1).strip()
+    except Exception:
+        pass
+    return info
 
 
 def chunk_pdf(pdf_path: Path, source_path: str, base_metadata: dict) -> list[Chunk]:

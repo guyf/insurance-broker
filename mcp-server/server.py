@@ -131,9 +131,11 @@ def list_policies() -> str:
         filename = row.get("filename") or ""
         src = row.get("source_path") or ""
         provider = row.get("provider") or ""
+        underwriter = row.get("underwriter") or ""
         prop_part = f" [{prop}]" if prop else ""
         provider_part = f"  [provider: {provider}]" if provider else ""
-        lines.append(f"  {policy_type}{prop_part} — {filename}  ({src}){provider_part}")
+        underwriter_part = f"  [underwriter: {underwriter}]" if underwriter else ""
+        lines.append(f"  {policy_type}{prop_part} — {filename}  ({src}){provider_part}{underwriter_part}")
 
     return "\n".join(lines)
 
