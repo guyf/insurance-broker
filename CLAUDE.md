@@ -9,22 +9,50 @@ answering coverage questions, flagging renewal dates, and identifying gaps.
 ## Architecture
 
 ```
+INGESTION (one-off, run locally)
+────────────────────────────────
 Google Drive PDFs
        │
        ▼
-ingestion/ingest.py          ← one-off CLI, run locally
-       │  chunks + embeds via OpenAI text-embedding-3-small
-       ▼
-Supabase (vector DB)         ← hosted, always on
-       │  search_documents / list_policies / get_renewal_calendar RPCs
-       ▼
-mcp-server/server.py         ← deployed on Railway
-       │  SSE HTTP server (FastMCP)
-       ▼
-supergateway (local npx)     ← stdio↔SSE bridge for Claude Desktop
+ingestion/ingest.py          ← chunks + embeds via OpenAI text-embedding-3-small
        │
        ▼
-Claude Desktop (MCP client)
+Supabase (vector DB)         ← hosted, always on
+
+
+WEB FRONTEND (primary interface)
+─────────────────────────────────
+Browser
+       │  React SPA
+       ▼
+Cloudflare Pages             ← static frontend + serverless Functions
+       │
+       ├─ /api/policies ──────────────────────────────────────────────┐
+       │                                                               │
+       ├─ /api/upload ────────────────────────────────────────────────┤
+       │                                                               ▼
+       │                                                    Broker MCP Server (Railway)
+       │                                                    mcp-server/server.py
+       │                                                               │
+       │                                                               ▼
+       │                                                    Supabase (vector DB)
+       │
+       └─ /api/chat ──► Anthropic API (claude-sonnet-4-6)
+                              │  agentic tool-use loop
+                              ├─► Broker MCP Server (Railway) ──► Supabase
+                              └─► Quote MCP Server (Railway)  ──► OpenAI (GPT-4o-mini, photo analysis)
+                                  mcp-quote/server.py
+
+
+CLAUDE DESKTOP (alternative interface)
+───────────────────────────────────────
+Claude Desktop
+       │
+       ▼
+supergateway (local npx)     ← stdio↔streamable-http bridge
+       │
+       ├─► Broker MCP Server (Railway) ──► Supabase
+       └─► Quote MCP Server (Railway)  ──► OpenAI
 ```
 
 ## Repository Layout

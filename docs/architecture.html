@@ -26,6 +26,8 @@
       --rose:      #e11d48;
       --rose-dim:  #881337;
       --slate:     #475569;
+      --orange:    #ea580c;
+      --orange-dim:#7c2d12;
       --mono:      'Courier New', Courier, monospace;
     }
 
@@ -146,6 +148,7 @@
 
     /* Layer colour themes */
     .layer-user    .layer-content { background: #1a1f2e; border-color: #3b4a6b; }
+    .layer-frontend .layer-content { background: #1a1f30; border-color: #374569; }
     .layer-skill   .layer-content { background: #1a1a2e; border-color: #4c4c9c; }
     .layer-bridge  .layer-content { background: #1a2535; border-color: var(--slate); }
     .layer-mcp     .layer-content { background: var(--teal-dim); border-color: var(--teal); }
@@ -153,6 +156,34 @@
     .layer-data    .layer-content { background: var(--green-dim); border-color: var(--green); }
     .layer-ingest  .layer-content { background: var(--amber-dim); border-color: var(--amber); }
     .layer-source  .layer-content { background: var(--blue-dim); border-color: var(--blue); }
+
+    /* Divider inside a layer between two parallel flows */
+    .flow-divider {
+      width: 1px;
+      align-self: stretch;
+      background: rgba(255,255,255,.1);
+      margin: 0 0.5rem;
+      flex-shrink: 0;
+    }
+    .flow-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .07em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.5rem;
+    }
+    .flow-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    .flow-col-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
 
     .comp-box {
       background: rgba(255,255,255,.06);
@@ -226,11 +257,13 @@
       border-radius: 4px;
       text-transform: uppercase;
     }
-    .badge-local  { background: var(--slate);      color: #fff; }
-    .badge-railway{ background: #7c3aed;            color: #fff; }
-    .badge-openai { background: #0d9488;            color: #fff; }
-    .badge-supa   { background: #16a34a;            color: #fff; }
-    .badge-github { background: #374151;            color: #fff; }
+    .badge-local     { background: var(--slate);  color: #fff; }
+    .badge-railway   { background: #7c3aed;        color: #fff; }
+    .badge-cf        { background: #ea580c;        color: #fff; }
+    .badge-anthropic { background: #c2410c;        color: #fff; }
+    .badge-openai    { background: #0d9488;        color: #fff; }
+    .badge-supa      { background: #16a34a;        color: #fff; }
+    .badge-github    { background: #374151;        color: #fff; }
 
     .svc-row {
       display: flex;
@@ -275,11 +308,20 @@
     .conn-table .from-to { font-family: var(--mono); font-size: 11px; color: var(--text); }
     .conn-table .label   { font-family: var(--mono); font-size: 11px; color: #fbbf24; }
     .conn-table .detail  { font-size: 11px; color: var(--muted); }
+    .conn-table .section-header td {
+      background: rgba(255,255,255,.03);
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      padding: 0.3rem 0.75rem;
+    }
 
     /* API panel */
     .api-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
+      grid-template-columns: 1fr 1fr 1fr 1fr;
       gap: 1.5rem;
       margin-top: 1.5rem;
     }
@@ -307,19 +349,11 @@
     .api-panel .sig .param { color: #fbbf24; }
     .api-panel .sig .opt { color: var(--muted); }
 
-    /* SVG connector diagram */
-    .svg-connectors {
-      display: block;
-      width: 100%;
-      margin: 1.5rem 0 0.5rem;
-      overflow: visible;
-    }
-
     /* Responsive helper */
     @media (max-width: 900px) {
       .physical-grid { grid-template-columns: 1fr; }
       .span2, .span3 { grid-column: span 1; }
-      .api-grid { grid-template-columns: 1fr; }
+      .api-grid { grid-template-columns: 1fr 1fr; }
     }
   </style>
 </head>
@@ -337,7 +371,7 @@
 ══════════════════════════════════════════════════ -->
 <section id="logical">
   <h2>Logical Architecture</h2>
-  <p class="subtitle">Conceptual layers and data-flow — what each component <em>is</em> and how information moves through the system.</p>
+  <p class="subtitle">Conceptual layers and data-flow — what each component <em>is</em> and how information moves through the system. Two parallel interfaces (web app + Claude Desktop) converge at the MCP layer.</p>
 
   <div class="logical-stack">
 
@@ -345,35 +379,75 @@
     <div class="layer layer-user">
       <div class="layer-label">User</div>
       <div class="layer-content">
-        <div class="comp-box">
-          <div class="comp-title">Claude Desktop</div>
-          <div class="comp-detail">MCP host · chat UI · streams responses</div>
+        <div class="flow-col">
+          <div class="flow-label">Primary</div>
+          <div class="comp-box">
+            <div class="comp-title">Web Browser</div>
+            <div class="comp-detail">React SPA · Cloudflare Pages<br/>Filing cabinet · chat · quote panel</div>
+          </div>
+        </div>
+        <div class="flow-divider"></div>
+        <div class="flow-col">
+          <div class="flow-label">Alternative</div>
+          <div class="comp-box">
+            <div class="comp-title">Claude Desktop</div>
+            <div class="comp-detail">MCP host · chat UI · streams responses</div>
+          </div>
         </div>
       </div>
     </div>
 
-    <div class="layer-arrow">↕ <span class="arrow-label" style="font-size:11px;margin-left:6px;">loads skill instructions at startup</span></div>
+    <div class="layer-arrow">↕ <span class="arrow-label" style="font-size:11px;margin-left:6px;">HTTP requests &nbsp;|&nbsp; loads skill instructions at startup</span></div>
 
-    <!-- Skill -->
-    <div class="layer layer-skill">
-      <div class="layer-label">Skill</div>
+    <!-- Frontend / Skill -->
+    <div class="layer layer-frontend">
+      <div class="layer-label">App / Skill</div>
       <div class="layer-content">
-        <div class="comp-box">
-          <div class="comp-title">SKILL.md</div>
-          <div class="comp-detail">Broker persona &amp; rules<br/>Quote instructions &amp; caveats</div>
+        <div class="flow-col">
+          <div class="flow-label">Web path</div>
+          <div class="flow-col-row">
+            <div class="comp-box">
+              <div class="comp-title">Cloudflare Pages Functions</div>
+              <div class="comp-detail">/api/chat — agentic loop via Anthropic SDK<br/>/api/policies — list docs from broker-mcp<br/>/api/upload — ingest PDF via broker-mcp</div>
+            </div>
+            <div style="color:var(--muted);font-size:18px;">→</div>
+            <div class="comp-box">
+              <div class="comp-title">Anthropic API</div>
+              <div class="comp-detail">claude-sonnet-4-6<br/>Tool-use agentic loop<br/>Up to 10 iterations per request</div>
+            </div>
+          </div>
+        </div>
+        <div class="flow-divider"></div>
+        <div class="flow-col">
+          <div class="flow-label">Desktop path</div>
+          <div class="comp-box">
+            <div class="comp-title">SKILL.md</div>
+            <div class="comp-detail">Broker persona &amp; rules<br/>Quote instructions &amp; caveats</div>
+          </div>
         </div>
       </div>
     </div>
 
-    <div class="layer-arrow">↕ <span class="arrow-label" style="font-size:11px;margin-left:6px;">stdio (MCP protocol)</span></div>
+    <div class="layer-arrow">↕ <span class="arrow-label" style="font-size:11px;margin-left:6px;">HTTPS MCP tool calls &nbsp;|&nbsp; stdio (MCP protocol) via supergateway</span></div>
 
-    <!-- Bridge -->
+    <!-- Bridge (desktop only) -->
     <div class="layer layer-bridge">
       <div class="layer-label">Bridge</div>
       <div class="layer-content">
-        <div class="comp-box">
-          <div class="comp-title">supergateway</div>
-          <div class="comp-detail">Local npx process<br/>stdio ↔ HTTP translation<br/>Runs alongside Claude Desktop</div>
+        <div class="flow-col">
+          <div class="flow-label">Web path</div>
+          <div class="comp-box">
+            <div class="comp-title">Direct HTTPS</div>
+            <div class="comp-detail">CF Functions call MCP servers directly<br/>No bridge needed</div>
+          </div>
+        </div>
+        <div class="flow-divider"></div>
+        <div class="flow-col">
+          <div class="flow-label">Desktop path</div>
+          <div class="comp-box">
+            <div class="comp-title">supergateway</div>
+            <div class="comp-detail">Local npx process<br/>stdio ↔ HTTP translation<br/>Runs alongside Claude Desktop</div>
+          </div>
         </div>
       </div>
     </div>
@@ -386,7 +460,7 @@
       <div class="layer-content" style="gap:1.5rem;">
         <div class="comp-box">
           <div class="comp-title">insurance-broker-mcp</div>
-          <div class="comp-detail">FastMCP · SSE server<br/>Deployed on Railway</div>
+          <div class="comp-detail">FastMCP · streamable-http<br/>Deployed on Railway</div>
           <ul class="tool-list">
             <li>search_insurance_docs</li>
             <li>list_policies</li>
@@ -406,7 +480,7 @@
       </div>
     </div>
 
-    <div class="layer-arrow">↕ <span class="arrow-label" style="font-size:11px;margin-left:6px;">REST API calls (embeddings · chat completions)</span></div>
+    <div class="layer-arrow">↕ <span class="arrow-label" style="font-size:11px;margin-left:6px;">REST API calls (embeddings · vision)</span></div>
 
     <!-- AI Services -->
     <div class="layer layer-ai">
@@ -502,7 +576,7 @@
       <h3><span class="badge badge-local">Local</span> Developer Mac</h3>
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;">
         <div>
-          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:.5rem;">Claude Desktop</div>
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:.5rem;">Claude Desktop (alternative interface)</div>
           <div class="svc-row"><span class="k">Config:</span><span class="v">~/.claude/claude_desktop_config.json</span></div>
           <div class="svc-row"><span class="k">Skill:</span><span class="v">SKILL.md (broker persona)</span></div>
           <div class="svc-row"><span class="k">MCP clients:</span><span class="v">insurance-broker-mcp<br/>insurance-quote-mcp</span></div>
@@ -511,7 +585,7 @@
           <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:.5rem;">supergateway (npx)</div>
           <div class="svc-row"><span class="k">Command:</span><span class="v">npx -y supergateway</span></div>
           <div class="svc-row"><span class="k">Flags:</span><span class="v">--streamableHttp &lt;url&gt;</span></div>
-          <div class="svc-row"><span class="k">Role:</span><span class="v">stdio ↔ HTTP bridge</span></div>
+          <div class="svc-row"><span class="k">Role:</span><span class="v">stdio ↔ HTTP bridge (desktop only)</span></div>
         </div>
         <div>
           <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:.5rem;">Ingestion Pipeline</div>
@@ -522,6 +596,41 @@
       </div>
     </div>
 
+    <!-- Cloudflare Pages -->
+    <div class="svc-box span2" style="border-color:#ea580c;">
+      <h3><span class="badge badge-cf">Cloudflare</span> Pages — Web Frontend (primary)</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+        <div>
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:.5rem;">Static SPA</div>
+          <div class="svc-row"><span class="k">Framework:</span><span class="v">React + Vite + Tailwind</span></div>
+          <div class="svc-row"><span class="k">Root:</span><span class="v">/frontend</span></div>
+          <div class="svc-row"><span class="k">Build:</span><span class="v">npm run build → dist/</span></div>
+          <div class="svc-row"><span class="k">Deploy:</span><span class="v green">GitHub Actions on push to main</span></div>
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:.5rem;">Pages Functions (serverless)</div>
+          <div class="svc-row"><span class="k">POST /api/chat</span></div>
+          <div class="svc-row" style="padding-left:1rem;"><span class="v" style="color:var(--muted);">Anthropic SDK agentic loop → MCP tools</span></div>
+          <div class="svc-row"><span class="k">GET /api/policies</span></div>
+          <div class="svc-row" style="padding-left:1rem;"><span class="v" style="color:var(--muted);">Proxies list_policies from broker-mcp</span></div>
+          <div class="svc-row"><span class="k">POST /api/upload</span></div>
+          <div class="svc-row" style="padding-left:1rem;"><span class="v" style="color:var(--muted);">Streams PDF to broker-mcp /upload</span></div>
+          <div class="svc-row" style="margin-top:.5rem;"><span class="k">Env vars:</span><span class="v amber">ANTHROPIC_API_KEY</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Anthropic API -->
+    <div class="svc-box" style="border-color:#c2410c;">
+      <h3><span class="badge badge-anthropic">Anthropic</span> API</h3>
+      <div class="svc-row"><span class="k">Model:</span><span class="v purple">claude-sonnet-4-6</span></div>
+      <div class="svc-row"><span class="k">Max tokens:</span><span class="v">4096</span></div>
+      <div class="svc-row"><span class="k">Stop reasons:</span><span class="v">end_turn · tool_use</span></div>
+      <div class="svc-row"><span class="k">Loop limit:</span><span class="v">10 iterations</span></div>
+      <div class="svc-row" style="margin-top:.5rem;"><span class="k">Called by:</span><span class="v">CF Pages /api/chat function</span></div>
+      <div class="svc-row"><span class="k">Auth:</span><span class="v amber">ANTHROPIC_API_KEY</span></div>
+    </div>
+
     <!-- Railway broker-mcp -->
     <div class="svc-box" style="border-color:#7c3aed;">
       <h3><span class="badge badge-railway">Railway</span> insurance-broker-mcp</h3>
@@ -529,7 +638,6 @@
       <div class="svc-row"><span class="k">Protocol:</span><span class="v">streamable-http (MCP)</span></div>
       <div class="svc-row"><span class="k">Framework:</span><span class="v">FastMCP (Python)</span></div>
       <div class="svc-row"><span class="k">Start:</span><span class="v">Procfile → uvicorn</span></div>
-      <div class="svc-row"><span class="k">Build:</span><span class="v">nixpacks (auto-detect)</span></div>
       <div class="svc-row"><span class="k">Root:</span><span class="v">/mcp-server</span></div>
       <div class="svc-row"><span class="k">Env vars:</span><span class="v amber">OPENAI_API_KEY<br/>SUPABASE_URL<br/>SUPABASE_ANON_KEY<br/>PORT</span></div>
     </div>
@@ -541,8 +649,7 @@
       <div class="svc-row"><span class="k">Protocol:</span><span class="v">streamable-http (MCP)</span></div>
       <div class="svc-row"><span class="k">Framework:</span><span class="v">FastMCP (Python)</span></div>
       <div class="svc-row"><span class="k">Start:</span><span class="v">Procfile → uvicorn</span></div>
-      <div class="svc-row"><span class="k">Build:</span><span class="v">nixpacks (auto-detect)</span></div>
-      <div class="svc-row"><span class="k">Root:</span><span class="v">/quote-mcp</span></div>
+      <div class="svc-row"><span class="k">Root:</span><span class="v">/mcp-quote</span></div>
       <div class="svc-row"><span class="k">Env vars:</span><span class="v amber">OPENAI_API_KEY<br/>PORT</span></div>
     </div>
 
@@ -550,9 +657,10 @@
     <div class="svc-box" style="border-color:#4b5563;">
       <h3><span class="badge badge-github">GitHub</span> guyf/insurance-broker</h3>
       <div class="svc-row"><span class="k">Repo:</span><span class="v">source of truth</span></div>
-      <div class="svc-row"><span class="k">Deploy:</span><span class="v">auto on push to main</span></div>
-      <div class="svc-row" style="margin-top:.5rem;"><span class="k">→ broker:</span><span class="v green">root /mcp-server</span></div>
-      <div class="svc-row"><span class="k">→ quote:</span><span class="v green">root /quote-mcp</span></div>
+      <div class="svc-row"><span class="k">CI/CD:</span><span class="v">GitHub Actions on push to main</span></div>
+      <div class="svc-row" style="margin-top:.5rem;"><span class="k">→ CF Pages:</span><span class="v green">root /frontend (static + functions)</span></div>
+      <div class="svc-row"><span class="k">→ broker:</span><span class="v green">root /mcp-server (Railway)</span></div>
+      <div class="svc-row"><span class="k">→ quote:</span><span class="v green">root /mcp-quote (Railway)</span></div>
     </div>
 
     <!-- OpenAI -->
@@ -593,6 +701,38 @@
         </tr>
       </thead>
       <tbody>
+        <tr class="section-header"><td colspan="3">Web Frontend Path (primary)</td></tr>
+        <tr>
+          <td class="from-to">Browser → Cloudflare Pages</td>
+          <td class="label">—</td>
+          <td class="detail">HTTPS · React SPA served as static assets</td>
+        </tr>
+        <tr>
+          <td class="from-to">CF Pages /api/chat → Anthropic API</td>
+          <td class="label">ANTHROPIC_API_KEY</td>
+          <td class="detail">POST /v1/messages · claude-sonnet-4-6 · agentic tool-use loop (up to 10 iterations)</td>
+        </tr>
+        <tr>
+          <td class="from-to">CF Pages /api/chat → broker-mcp</td>
+          <td class="label">—</td>
+          <td class="detail">HTTPS MCP tool calls: search_insurance_docs · list_policies · get_renewal_calendar</td>
+        </tr>
+        <tr>
+          <td class="from-to">CF Pages /api/chat → quote-mcp</td>
+          <td class="label">—</td>
+          <td class="detail">HTTPS MCP tool calls: get_home_quote · get_motor_quote · get_pet_quote · analyze_photo</td>
+        </tr>
+        <tr>
+          <td class="from-to">CF Pages /api/policies → broker-mcp</td>
+          <td class="label">—</td>
+          <td class="detail">HTTPS MCP · list_policies · populates the filing cabinet sidebar</td>
+        </tr>
+        <tr>
+          <td class="from-to">CF Pages /api/upload → broker-mcp</td>
+          <td class="label">—</td>
+          <td class="detail">HTTPS · multipart form · streams PDF to broker-mcp /upload endpoint for live ingestion</td>
+        </tr>
+        <tr class="section-header"><td colspan="3">Claude Desktop Path (alternative)</td></tr>
         <tr>
           <td class="from-to">Claude Desktop → supergateway</td>
           <td class="label">—</td>
@@ -608,6 +748,7 @@
           <td class="label">--streamableHttp</td>
           <td class="detail">HTTPS · streamable-http MCP · alluring-prosperity-production-5644.up.railway.app/mcp</td>
         </tr>
+        <tr class="section-header"><td colspan="3">Shared Backend</td></tr>
         <tr>
           <td class="from-to">broker-mcp → OpenAI</td>
           <td class="label">OPENAI_API_KEY</td>
@@ -623,6 +764,7 @@
           <td class="label">OPENAI_API_KEY</td>
           <td class="detail">POST /v1/chat/completions · model: gpt-4o-mini · analyze_photo tool only</td>
         </tr>
+        <tr class="section-header"><td colspan="3">Ingestion (one-off, local)</td></tr>
         <tr>
           <td class="from-to">ingestion → OpenAI</td>
           <td class="label">OPENAI_API_KEY</td>
@@ -638,15 +780,21 @@
           <td class="label">—</td>
           <td class="detail">Local CloudStorage mount · read-only · ~/Library/CloudStorage/GoogleDrive-…</td>
         </tr>
+        <tr class="section-header"><td colspan="3">CI / CD</td></tr>
+        <tr>
+          <td class="from-to">GitHub → Cloudflare Pages</td>
+          <td class="label">CF_API_TOKEN (secret)</td>
+          <td class="detail">GitHub Actions on push to main · builds /frontend · deploys static + functions</td>
+        </tr>
         <tr>
           <td class="from-to">GitHub → Railway broker-mcp</td>
           <td class="label">—</td>
-          <td class="detail">Auto-deploy on push · root directory: /mcp-server · nixpacks build</td>
+          <td class="detail">Railway auto-deploy on push · root directory: /mcp-server · nixpacks build</td>
         </tr>
         <tr>
           <td class="from-to">GitHub → Railway quote-mcp</td>
           <td class="label">—</td>
-          <td class="detail">Auto-deploy on push · root directory: /quote-mcp · nixpacks build</td>
+          <td class="detail">Railway auto-deploy on push · root directory: /mcp-quote · nixpacks build</td>
         </tr>
       </tbody>
     </table>
@@ -656,6 +804,20 @@
   <div style="margin-top:2rem;">
     <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:1rem;">API Endpoints &amp; Tool Signatures</div>
     <div class="api-grid">
+
+      <div class="api-panel" style="border-color:#ea580c;">
+        <h4>CF Pages Functions</h4>
+        <div class="sig">
+          <span class="fn">POST /api/chat</span><br/>
+          <span class="opt">&nbsp;&nbsp;body: { messages }</span><br/>
+          <span class="opt">&nbsp;&nbsp;→ { content, quote? }</span><br/><br/>
+          <span class="fn">GET /api/policies</span><br/>
+          <span class="opt">&nbsp;&nbsp;→ Policy[]</span><br/><br/>
+          <span class="fn">POST /api/upload</span><br/>
+          <span class="opt">&nbsp;&nbsp;body: FormData (file)</span><br/>
+          <span class="opt">&nbsp;&nbsp;→ { status, chunks, filename }</span>
+        </div>
+      </div>
 
       <div class="api-panel" style="border-color:var(--teal);">
         <h4>Broker MCP Tools</h4>
@@ -674,12 +836,16 @@
         <h4>Quote MCP Tools</h4>
         <div class="sig">
           <span class="fn">get_home_quote</span>(<br/>
-          &nbsp;&nbsp;<span class="param">property_type</span>, <span class="param">bedrooms</span>, <span class="param">rebuild_value</span>, <span class="param">postcode</span>,<br/>
-          &nbsp;&nbsp;<span class="opt">year_built?</span>, <span class="opt">claims_last_5_years?</span>, <span class="opt">cover_type?</span><br/>
+          &nbsp;&nbsp;<span class="param">property_type</span>, <span class="param">bedrooms</span>,<br/>
+          &nbsp;&nbsp;<span class="param">rebuild_value</span>, <span class="param">postcode</span>,<br/>
+          &nbsp;&nbsp;<span class="opt">year_built?</span>, <span class="opt">claims_last_5_years?</span>,<br/>
+          &nbsp;&nbsp;<span class="opt">cover_type?</span><br/>
           )<br/><br/>
           <span class="fn">get_motor_quote</span>(<br/>
-          &nbsp;&nbsp;<span class="param">make</span>, <span class="param">model</span>, <span class="param">year</span>, <span class="param">value</span>, <span class="param">driver_age</span>, <span class="param">annual_mileage</span>,<br/>
-          &nbsp;&nbsp;<span class="opt">no_claims_years?</span>, <span class="opt">postcode?</span>, <span class="opt">cover_level?</span><br/>
+          &nbsp;&nbsp;<span class="param">make</span>, <span class="param">model</span>, <span class="param">year</span>,<br/>
+          &nbsp;&nbsp;<span class="param">value</span>, <span class="param">driver_age</span>, <span class="param">annual_mileage</span>,<br/>
+          &nbsp;&nbsp;<span class="opt">no_claims_years?</span>, <span class="opt">postcode?</span>,<br/>
+          &nbsp;&nbsp;<span class="opt">cover_level?</span><br/>
           )<br/><br/>
           <span class="fn">get_pet_quote</span>(<br/>
           &nbsp;&nbsp;<span class="param">species</span>, <span class="param">breed</span>, <span class="param">age_years</span>,<br/>
