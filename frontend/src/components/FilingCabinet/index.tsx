@@ -40,46 +40,104 @@ function renewalColor(renewalDate: string): string {
   return "text-gray-400";
 }
 
-function PolicyCard({
-  policy,
-  onClick,
+interface PolicyGroup {
+  key: string;
+  policy_type: string;
+  property: string | null;
+  docs: Policy[];
+  primary: Policy;
+}
+
+function groupPolicies(policies: Policy[]): PolicyGroup[] {
+  const map = new Map<string, Policy[]>();
+  for (const p of policies) {
+    const key = `${p.policy_type}|${p.property ?? ""}`;
+    if (!map.has(key)) map.set(key, []);
+    map.get(key)!.push(p);
+  }
+  return [...map.entries()].map(([key, docs]) => {
+    const sorted = [...docs].sort((a, b) => a.filename.localeCompare(b.filename));
+    const primary =
+      sorted.find((d) => /insurance|cover/i.test(d.filename)) ?? sorted[0];
+    return {
+      key,
+      policy_type: docs[0].policy_type,
+      property: docs[0].property ?? null,
+      docs: sorted,
+      primary,
+    };
+  });
+}
+
+function PolicyGroupCard({
+  group,
+  onDocClick,
   onRequote,
 }: {
-  policy: Policy;
-  onClick: () => void;
+  group: PolicyGroup;
+  onDocClick: (policy: Policy) => void;
   onRequote: (prompt: string) => void;
 }) {
-  const qt = getQuoteType(policy);
-  const title = policy.filename.replace(/\.pdf$/i, "");
+  const { primary, docs } = group;
+  const qt = getQuoteType(primary);
+  const title = primary.filename.replace(/\.pdf$/i, "");
+  const multiDoc = docs.length > 1;
 
   return (
     <div
-      onClick={onClick}
+      onClick={() => onDocClick(primary)}
       className="rounded-lg border border-gray-200 bg-white px-3 py-2.5 cursor-pointer hover:border-gray-300 transition-colors"
     >
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
           <p className="text-sm font-medium text-gray-800 leading-snug">{title}</p>
           <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-[11px] text-gray-400">
-            {policy.property && (
-              <span className="capitalize">{policy.property.replace(/_/g, " ")}</span>
+            {primary.property && (
+              <span className="capitalize">{primary.property.replace(/_/g, " ")}</span>
             )}
-            {policy.premium && <span>£{policy.premium}/yr</span>}
-            {policy.renewal_date && (
-              <span className={renewalColor(policy.renewal_date)}>
-                Renews {policy.renewal_date}
+            {primary.premium && <span>£{primary.premium}/yr</span>}
+            {primary.renewal_date && (
+              <span className={renewalColor(primary.renewal_date)}>
+                Renews {primary.renewal_date}
               </span>
             )}
           </div>
-          <a
-            href={pdfUrl(policy.source_path)}
-            target="_blank"
-            rel="noreferrer"
-            onClick={(e) => e.stopPropagation()}
-            className="mt-1 inline-block text-[10px] text-blue-400 hover:text-blue-600 hover:underline"
-          >
-            View PDF ↗
-          </a>
+          {multiDoc ? (
+            <ul className="mt-1.5 flex flex-col gap-0.5">
+              {docs.map((doc) => (
+                <li key={doc.source_path} className="flex items-center gap-1">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDocClick(doc);
+                    }}
+                    className="text-[10px] text-gray-500 hover:text-gray-800 hover:underline truncate text-left"
+                  >
+                    ↳ {doc.filename.replace(/\.pdf$/i, "")}
+                  </button>
+                  <a
+                    href={pdfUrl(doc.source_path)}
+                    target="_blank"
+                    rel="noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="flex-shrink-0 text-[10px] text-blue-400 hover:text-blue-600"
+                  >
+                    ↗
+                  </a>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <a
+              href={pdfUrl(primary.source_path)}
+              target="_blank"
+              rel="noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="mt-1 inline-block text-[10px] text-blue-400 hover:text-blue-600 hover:underline"
+            >
+              View PDF ↗
+            </a>
+          )}
         </div>
         {qt && (
           <button
@@ -110,12 +168,13 @@ function PolicySection({
   onPolicyClick: (policy: Policy) => void;
   onRequote: (prompt: string) => void;
 }) {
-  const map = new Map<string, Policy[]>();
-  for (const p of items) {
-    if (!map.has(p.policy_type)) map.set(p.policy_type, []);
-    map.get(p.policy_type)!.push(p);
+  const groups = groupPolicies(items);
+  const typeMap = new Map<string, PolicyGroup[]>();
+  for (const g of groups) {
+    if (!typeMap.has(g.policy_type)) typeMap.set(g.policy_type, []);
+    typeMap.get(g.policy_type)!.push(g);
   }
-  const types = [...map.keys()].sort(
+  const types = [...typeMap.keys()].sort(
     (a, b) =>
       (order.indexOf(a) === -1 ? 99 : order.indexOf(a)) -
       (order.indexOf(b) === -1 ? 99 : order.indexOf(b))
@@ -132,11 +191,11 @@ function PolicySection({
             <p className="text-[10px] font-medium tracking-widest uppercase text-gray-300 mb-1">
               {type}
             </p>
-            {map.get(type)!.map((policy) => (
-              <div key={policy.source_path + policy.filename} className="mb-1.5">
-                <PolicyCard
-                  policy={policy}
-                  onClick={() => onPolicyClick(policy)}
+            {typeMap.get(type)!.map((group) => (
+              <div key={group.key} className="mb-1.5">
+                <PolicyGroupCard
+                  group={group}
+                  onDocClick={onPolicyClick}
                   onRequote={onRequote}
                 />
               </div>
