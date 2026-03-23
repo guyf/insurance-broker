@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { Policy } from "../../lib/types";
 import { UploadButton } from "./UploadButton";
 import { getRenewalStatus } from "./RenewalBadge";
@@ -71,17 +72,36 @@ function groupPolicies(policies: Policy[]): PolicyGroup[] {
 
 function PolicyGroupCard({
   group,
+  customName,
   onDocClick,
   onRequote,
+  onRename,
 }: {
   group: PolicyGroup;
+  customName: string | undefined;
   onDocClick: (policy: Policy) => void;
   onRequote: (prompt: string) => void;
+  onRename: (name: string) => void;
 }) {
   const { primary, docs } = group;
   const qt = getQuoteType(primary);
-  const title = primary.filename.replace(/\.pdf$/i, "");
+  const autoTitle = primary.filename.replace(/\.pdf$/i, "");
+  const title = customName ?? autoTitle;
   const multiDoc = docs.length > 1;
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState("");
+
+  function startEdit(e: React.MouseEvent) {
+    e.stopPropagation();
+    setDraft(title);
+    setEditing(true);
+  }
+
+  function commitEdit() {
+    const trimmed = draft.trim();
+    onRename(trimmed || autoTitle);
+    setEditing(false);
+  }
 
   return (
     <div
@@ -90,7 +110,29 @@ function PolicyGroupCard({
     >
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-medium text-gray-800 leading-snug">{title}</p>
+          {editing ? (
+            <input
+              autoFocus
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              onBlur={commitEdit}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") commitEdit();
+                if (e.key === "Escape") setEditing(false);
+              }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full text-sm font-medium text-gray-800 leading-snug bg-transparent border-b border-blue-400 outline-none"
+            />
+          ) : (
+            <p
+              onDoubleClick={startEdit}
+              className="text-sm font-medium text-gray-800 leading-snug group/title"
+              title="Double-click to rename"
+            >
+              {title}
+              <span className="ml-1 opacity-0 group-hover/title:opacity-40 text-[10px] cursor-text select-none">✎</span>
+            </p>
+          )}
           <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-[11px] text-gray-400">
             {primary.property && (
               <span className="capitalize">{primary.property.replace(/_/g, " ")}</span>
@@ -159,14 +201,18 @@ function PolicySection({
   label,
   items,
   order,
+  groupNames,
   onPolicyClick,
   onRequote,
+  onRename,
 }: {
   label: string;
   items: Policy[];
   order: string[];
+  groupNames: Record<string, string>;
   onPolicyClick: (policy: Policy) => void;
   onRequote: (prompt: string) => void;
+  onRename: (key: string, name: string) => void;
 }) {
   const groups = groupPolicies(items);
   const typeMap = new Map<string, PolicyGroup[]>();
@@ -195,8 +241,10 @@ function PolicySection({
               <div key={group.key} className="mb-1.5">
                 <PolicyGroupCard
                   group={group}
+                  customName={groupNames[group.key]}
                   onDocClick={onPolicyClick}
                   onRequote={onRequote}
+                  onRename={(name) => onRename(group.key, name)}
                 />
               </div>
             ))}
@@ -210,6 +258,17 @@ function PolicySection({
 export function FilingCabinet({ policies, loading, onPolicyClick, onUpload, onRequote }: Props) {
   const policyItems = policies.filter((p) => !isAsset(p));
   const assetItems = policies.filter((p) => isAsset(p));
+
+  const [groupNames, setGroupNames] = useState<Record<string, string>>(() => {
+    try { return JSON.parse(localStorage.getItem("insurance-group-names") ?? "{}"); }
+    catch { return {}; }
+  });
+
+  function handleRename(key: string, name: string) {
+    const next = { ...groupNames, [key]: name };
+    setGroupNames(next);
+    localStorage.setItem("insurance-group-names", JSON.stringify(next));
+  }
 
   return (
     <div className="flex flex-col h-full bg-gray-50">
@@ -234,8 +293,10 @@ export function FilingCabinet({ policies, loading, onPolicyClick, onUpload, onRe
                 label="Policies"
                 items={policyItems}
                 order={POLICY_TYPE_ORDER}
+                groupNames={groupNames}
                 onPolicyClick={onPolicyClick}
                 onRequote={onRequote}
+                onRename={handleRename}
               />
             )}
             {assetItems.length > 0 && (
@@ -243,8 +304,10 @@ export function FilingCabinet({ policies, loading, onPolicyClick, onUpload, onRe
                 label="Assets"
                 items={assetItems}
                 order={ASSET_TYPE_ORDER}
+                groupNames={groupNames}
                 onPolicyClick={onPolicyClick}
                 onRequote={onRequote}
+                onRename={handleRename}
               />
             )}
           </>
