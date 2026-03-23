@@ -130,8 +130,10 @@ def list_policies() -> str:
         prop = row.get("property") or ""
         filename = row.get("filename") or ""
         src = row.get("source_path") or ""
+        provider = row.get("provider") or ""
         prop_part = f" [{prop}]" if prop else ""
-        lines.append(f"  {policy_type}{prop_part} — {filename}  ({src})")
+        provider_part = f"  [provider: {provider}]" if provider else ""
+        lines.append(f"  {policy_type}{prop_part} — {filename}  ({src}){provider_part}")
 
     return "\n".join(lines)
 

@@ -7,11 +7,13 @@ Usage:
   python ingest.py --dry-run                # preview only, no API calls
   python ingest.py --path "Insurance/Car"   # single subfolder
   python ingest.py --force                  # re-embed everything
+  python ingest.py --clean                  # truncate DB then re-ingest
 """
 
 import argparse
 import logging
 import os
+import re
 import sys
 from pathlib import Path
 
@@ -35,6 +37,34 @@ logger = logging.getLogger(__name__)
 DOCS_ROOT = Path(os.environ["DOCS_ROOT"])
 
 # ---------------------------------------------------------------------------
+# Provider extraction from filename
+# ---------------------------------------------------------------------------
+
+_GENERIC_WORDS = {
+    "certificate", "policy", "schedule", "insurance", "motor", "home",
+    "travel", "breakdown", "life", "phone", "cover", "document", "ipid",
+    "nomination", "wishes", "form", "terms", "conditions", "product",
+    "information", "assistance",
+}
+
+def extract_provider(filename: str) -> str | None:
+    """Best-effort extraction of insurer name from filename.
+    Works for files named 'NFU Mutual Insurance - Guy Farley - ...'
+    or 'ARTEMIS - HP2 New business V027'. Returns None when uncertain.
+    """
+    name = re.sub(r"\.pdf$", "", filename, flags=re.IGNORECASE).strip()
+    if " - " not in name:
+        return None
+    first_part = name.split(" - ")[0].strip()
+    words = first_part.lower().split()
+    if all(w in _GENERIC_WORDS for w in words):
+        return None
+    # Strip trailing "Insurance" suffix (e.g. "NFU Mutual Insurance" → "NFU Mutual")
+    cleaned = re.sub(r"\s+Insurance$", "", first_part, flags=re.IGNORECASE).strip()
+    return cleaned or None
+
+
+# ---------------------------------------------------------------------------
 # Metadata inference from folder path (relative to DOCS_ROOT)
 # ---------------------------------------------------------------------------
 
@@ -51,7 +81,6 @@ def infer_metadata(rel_path: Path) -> dict:
             meta["policy_type"] = "car"
         elif _matches("home", "buildings", "house"):
             meta["policy_type"] = "home"
-            # Property sub-folder
             if _matches("the barns", "barns"):
                 meta["property"] = "the_barns"
             elif _matches("ashley cottages", "ashley"):
@@ -66,15 +95,19 @@ def infer_metadata(rel_path: Path) -> dict:
             meta["policy_type"] = "phone"
         elif _matches("travel"):
             meta["policy_type"] = "travel"
-        return meta
     elif _matches("cars"):
-        return {"doc_type": "asset", "asset_category": "car"}
+        meta = {"doc_type": "asset", "asset_category": "car"}
     elif _matches("bikes"):
-        return {"doc_type": "asset", "asset_category": "bike"}
+        meta = {"doc_type": "asset", "asset_category": "bike"}
     elif _matches("appliances", "machines"):
-        return {"doc_type": "asset", "asset_category": "appliance"}
+        meta = {"doc_type": "asset", "asset_category": "appliance"}
+    else:
+        meta = {"doc_type": "unknown"}
 
-    return {"doc_type": "unknown"}
+    provider = extract_provider(rel_path.name)
+    if provider:
+        meta["provider"] = provider
+    return meta
 
 
 # ---------------------------------------------------------------------------
@@ -94,6 +127,7 @@ def main() -> None:
     parser.add_argument("--dry-run", action="store_true", help="Preview only, no API calls")
     parser.add_argument("--path", metavar="SUBPATH", help="Process only this subfolder of DOCS_ROOT")
     parser.add_argument("--force", action="store_true", help="Re-embed everything, ignore dedup")
+    parser.add_argument("--clean", action="store_true", help="Truncate all documents from DB before ingesting")
     args = parser.parse_args()
 
     pdfs = collect_pdfs(DOCS_ROOT, args.path)
@@ -125,9 +159,14 @@ def main() -> None:
     sb = create_client(supabase_url, supabase_key)
     openai_client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 
-    if args.force:
+    if args.clean:
+        logger.info("--clean: truncating all existing records from Supabase…")
+        sb.table("documents").delete().neq("id", 0).execute()
+        logger.info("Table cleared.")
+
+    if args.force or args.clean:
         new_chunks = all_chunks
-        logger.info("--force: re-embedding all %d chunks", len(new_chunks))
+        logger.info("Re-embedding all %d chunks", len(new_chunks))
     else:
         all_hashes = [c.chunk_hash for c in all_chunks]
         existing = get_existing_hashes(all_hashes, sb)

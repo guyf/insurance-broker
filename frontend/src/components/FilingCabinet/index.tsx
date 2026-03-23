@@ -144,8 +144,8 @@ function PolicyGroupCard({
             </p>
           )}
           <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-[11px] text-gray-400">
-            {primary.property && (
-              <span className="capitalize">{primary.property.replace(/_/g, " ")}</span>
+            {primary.provider && (
+              <span className="text-gray-500 font-medium">{primary.provider}</span>
             )}
             {primary.premium && <span>£{primary.premium}/yr</span>}
             {primary.renewal_date && (
