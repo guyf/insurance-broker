@@ -143,20 +143,32 @@ function PolicyGroupCard({
               <span className="ml-1 opacity-0 group-hover/title:opacity-40 text-[10px] cursor-text select-none">✎</span>
             </p>
           )}
-          <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-[11px] text-gray-400">
+          <dl className="mt-1.5 mb-2 grid grid-cols-[auto_1fr] gap-x-2 gap-y-0.5 text-[11px]">
             {primary.provider && (
-              <span className="text-gray-500 font-medium">{primary.provider}</span>
+              <>
+                <dt className="text-gray-400">Provider</dt>
+                <dd className="text-gray-600 font-medium">{primary.provider}</dd>
+              </>
             )}
             {primary.underwriter && primary.underwriter !== primary.provider && (
-              <span className="text-gray-400">via {primary.underwriter}</span>
+              <>
+                <dt className="text-gray-400">Underwriter</dt>
+                <dd className="text-gray-600">{primary.underwriter}</dd>
+              </>
             )}
-            {primary.premium && <span>£{primary.premium}/yr</span>}
+            {primary.premium && (
+              <>
+                <dt className="text-gray-400">Premium</dt>
+                <dd className="text-gray-600">£{primary.premium}/yr</dd>
+              </>
+            )}
             {primary.renewal_date && (
-              <span className={renewalColor(primary.renewal_date)}>
-                Renews {primary.renewal_date}
-              </span>
+              <>
+                <dt className="text-gray-400">Renews</dt>
+                <dd className={renewalColor(primary.renewal_date)}>{primary.renewal_date}</dd>
+              </>
             )}
-          </div>
+          </dl>
           <ul className="mt-1.5 flex flex-col gap-0.5">
             {docs.map((doc) => (
               <li key={doc.source_path} className="flex items-center gap-1">

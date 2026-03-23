@@ -19,7 +19,7 @@ export default function App() {
   const [quote, setQuote] = useState<QuoteResult | null>(null);
   const [toast, setToast] = useState<{ text: string; ok: boolean } | null>(null);
   const [prefillInput, setPrefillInput] = useState("");
-  const [leftWidth, setLeftWidth] = useState(320);
+  const [leftWidth, setLeftWidth] = useState(480);
   const toastTimer = useRef<ReturnType<typeof setTimeout>>();
 
   const onDragStart = (e: React.MouseEvent) => {
