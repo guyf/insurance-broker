@@ -49,10 +49,20 @@ interface PolicyGroup {
   primary: Policy;
 }
 
+function policyGroupKey(p: Policy): string {
+  if (p.property) return `${p.policy_type}|${p.property}`;
+  // Use the parent folder of the file as a secondary discriminator so that
+  // e.g. Insurance/Car/BMW i3/*.pdf and Insurance/Car/Model X/*.pdf get
+  // separate groups even though both have property=null.
+  const parts = p.source_path.split("/");
+  const parentFolder = parts.length >= 2 ? parts[parts.length - 2] : "";
+  return `${p.policy_type}|${parentFolder}`;
+}
+
 function groupPolicies(policies: Policy[]): PolicyGroup[] {
   const map = new Map<string, Policy[]>();
   for (const p of policies) {
-    const key = `${p.policy_type}|${p.property ?? ""}`;
+    const key = policyGroupKey(p);
     if (!map.has(key)) map.set(key, []);
     map.get(key)!.push(p);
   }
@@ -87,7 +97,6 @@ function PolicyGroupCard({
   const qt = getQuoteType(primary);
   const autoTitle = primary.filename.replace(/\.pdf$/i, "");
   const title = customName ?? autoTitle;
-  const multiDoc = docs.length > 1;
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState("");
 
@@ -144,42 +153,30 @@ function PolicyGroupCard({
               </span>
             )}
           </div>
-          {multiDoc ? (
-            <ul className="mt-1.5 flex flex-col gap-0.5">
-              {docs.map((doc) => (
-                <li key={doc.source_path} className="flex items-center gap-1">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onDocClick(doc);
-                    }}
-                    className="text-[10px] text-gray-500 hover:text-gray-800 hover:underline truncate text-left"
-                  >
-                    ↳ {doc.filename.replace(/\.pdf$/i, "")}
-                  </button>
-                  <a
-                    href={pdfUrl(doc.source_path)}
-                    target="_blank"
-                    rel="noreferrer"
-                    onClick={(e) => e.stopPropagation()}
-                    className="flex-shrink-0 text-[10px] text-blue-400 hover:text-blue-600"
-                  >
-                    ↗
-                  </a>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <a
-              href={pdfUrl(primary.source_path)}
-              target="_blank"
-              rel="noreferrer"
-              onClick={(e) => e.stopPropagation()}
-              className="mt-1 inline-block text-[10px] text-blue-400 hover:text-blue-600 hover:underline"
-            >
-              View PDF ↗
-            </a>
-          )}
+          <ul className="mt-1.5 flex flex-col gap-0.5">
+            {docs.map((doc) => (
+              <li key={doc.source_path} className="flex items-center gap-1">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDocClick(doc);
+                  }}
+                  className="text-[10px] text-gray-500 hover:text-gray-800 hover:underline truncate text-left"
+                >
+                  ↳ {doc.filename.replace(/\.pdf$/i, "")}
+                </button>
+                <a
+                  href={pdfUrl(doc.source_path)}
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="flex-shrink-0 text-[10px] text-blue-400 hover:text-blue-600"
+                >
+                  ↗
+                </a>
+              </li>
+            ))}
+          </ul>
         </div>
         {qt && (
           <button
