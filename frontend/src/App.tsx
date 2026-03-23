@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FilingCabinet } from "./components/FilingCabinet";
 import { Broker } from "./components/Broker";
 import { QuotePanel } from "./components/QuotePanel";
@@ -19,9 +19,29 @@ export default function App() {
   const [quote, setQuote] = useState<QuoteResult | null>(null);
   const [toast, setToast] = useState<{ text: string; ok: boolean } | null>(null);
   const [prefillInput, setPrefillInput] = useState("");
+  const [leftWidth, setLeftWidth] = useState(320);
   const toastTimer = useRef<ReturnType<typeof setTimeout>>();
 
-  const loadPolicies = useCallback(async () => {
+  const onDragStart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const startX = e.clientX;
+    const startWidth = leftWidth;
+    document.body.style.cursor = "col-resize";
+    document.body.style.userSelect = "none";
+    const onMove = (ev: MouseEvent) => {
+      setLeftWidth(Math.max(220, Math.min(520, startWidth + ev.clientX - startX)));
+    };
+    const onUp = () => {
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+      document.removeEventListener("mousemove", onMove);
+      document.removeEventListener("mouseup", onUp);
+    };
+    document.addEventListener("mousemove", onMove);
+    document.addEventListener("mouseup", onUp);
+  };
+
+  const loadPolicies = async () => {
     setPoliciesLoading(true);
     try {
       const data = await fetchPolicies();
@@ -31,11 +51,12 @@ export default function App() {
     } finally {
       setPoliciesLoading(false);
     }
-  }, []);
+  };
 
   useEffect(() => {
     loadPolicies();
-  }, [loadPolicies]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const showToast = (text: string, ok = true) => {
     setToast({ text, ok });
@@ -69,7 +90,7 @@ export default function App() {
     try {
       const result = await uploadPolicy(file);
       showToast(`${result.filename} uploaded — ${result.chunks} chunks stored`);
-      await loadPolicies();
+      loadPolicies();
     } catch (err) {
       showToast(err instanceof Error ? err.message : "Upload failed", false);
     }
@@ -81,8 +102,8 @@ export default function App() {
 
   return (
     <div className="h-full flex overflow-hidden bg-sidebar">
-      {/* Left — Filing Cabinet (dark sidebar) */}
-      <aside className="w-64 flex-shrink-0 flex flex-col border-r border-sidebar-border">
+      {/* Left — Filing Cabinet (dark sidebar, draggable width) */}
+      <aside style={{ width: leftWidth }} className="flex-shrink-0 flex flex-col">
         <FilingCabinet
           policies={policies}
           loading={policiesLoading}
@@ -90,6 +111,12 @@ export default function App() {
           onUpload={handleUpload}
         />
       </aside>
+
+      {/* Drag handle */}
+      <div
+        onMouseDown={onDragStart}
+        className="w-1 flex-shrink-0 cursor-col-resize bg-sidebar-border hover:bg-blue-400 transition-colors"
+      />
 
       {/* Middle — Broker Chat */}
       <main className="flex-1 flex flex-col bg-white min-w-0 border-r border-gray-200">
@@ -103,8 +130,12 @@ export default function App() {
       </main>
 
       {/* Right — Quote Panel */}
-      <aside className="w-80 flex-shrink-0 flex flex-col bg-gray-50">
-        <QuotePanel quote={quote} />
+      <aside className="w-96 flex-shrink-0 flex flex-col bg-gray-50">
+        <QuotePanel
+          quote={quote}
+          policies={policies}
+          onRequote={(prompt) => setPrefillInput(prompt)}
+        />
       </aside>
 
       {/* Toast */}

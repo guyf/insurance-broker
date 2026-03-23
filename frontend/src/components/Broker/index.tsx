@@ -14,8 +14,8 @@ export function Broker({ messages, thinking, prefillInput, onPrefillConsumed, on
   return (
     <div className="flex flex-col h-full">
       {/* Column header */}
-      <div className="h-12 flex-shrink-0 border-b border-gray-100 flex items-center px-6">
-        <span className="text-sm font-medium text-gray-900">Your Broker</span>
+      <div className="h-14 flex-shrink-0 border-b border-gray-100 flex items-center px-6">
+        <span className="text-lg font-semibold text-gray-900">Insurance Broker</span>
       </div>
 
       <MessageList messages={messages} thinking={thinking} />
