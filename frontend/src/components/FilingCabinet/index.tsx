@@ -24,6 +24,7 @@ function pdfUrl(sourcePath: string): string {
 }
 
 function isAsset(policy: Policy): boolean {
+  if (policy.doc_type === "policy") return false;
   return !policy.source_path.startsWith("Insurance/");
 }
 

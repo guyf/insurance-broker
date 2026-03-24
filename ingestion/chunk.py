@@ -177,6 +177,10 @@ def extract_metadata_llm(pdf_path: Path, openai_client, doc_type: str | None = N
         )
         user = (
             "First, classify this document as exactly one of: policy, invoice, other.\n"
+            "Use 'policy' for: insurance policies, extended warranties, guarantees, "
+            "service contracts, cover notes, or any document providing financial protection.\n"
+            "Use 'invoice' for: purchase receipts, invoices, bills of sale.\n"
+            "Use 'other' for: manuals, specifications, correspondence, or anything else.\n\n"
             "Then extract the fields appropriate for that type:\n\n"
             f"If policy:\n{_POLICY_FIELDS}\n\n"
             f"If invoice:\n{_INVOICE_FIELDS}\n\n"

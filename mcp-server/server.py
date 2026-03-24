@@ -135,15 +135,20 @@ def list_policies() -> str:
         underwriter = row.get("underwriter") or ""
         asset_name = row.get("asset_name") or ""
         asset_value = row.get("asset_value") or ""
+        premium = row.get("premium") or ""
+        renewal_date = row.get("renewal_date") or ""
         prop_part = f" [{prop}]" if prop else ""
         doc_type_part = f"  [doc_type: {doc_type}]"
         provider_part = f"  [provider: {provider}]" if provider else ""
         underwriter_part = f"  [underwriter: {underwriter}]" if underwriter else ""
         asset_name_part = f"  [asset_name: {asset_name}]" if asset_name else ""
         asset_value_part = f"  [asset_value: {asset_value}]" if asset_value else ""
+        premium_part = f"  [premium: {premium}]" if premium else ""
+        renewal_part = f"  [renewal_date: {renewal_date}]" if renewal_date else ""
         lines.append(
             f"  {policy_type}{prop_part} — {filename}  ({src})"
-            f"{doc_type_part}{provider_part}{underwriter_part}{asset_name_part}{asset_value_part}"
+            f"{doc_type_part}{provider_part}{underwriter_part}"
+            f"{asset_name_part}{asset_value_part}{premium_part}{renewal_part}"
         )
 
     return "\n".join(lines)

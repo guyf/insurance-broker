@@ -76,6 +76,8 @@ def infer_metadata(rel_path: Path) -> dict:
         meta = {"doc_type": "asset", "asset_category": "bike"}
     elif _matches("appliances", "machines"):
         meta = {"doc_type": "asset", "asset_category": "appliance"}
+    elif _matches("warranty", "guarantee", "extended warranty"):
+        meta = {"doc_type": "policy", "policy_type": "warranty"}
     else:
         meta = {"doc_type": "unknown"}
 
