@@ -73,7 +73,9 @@ function groupPolicies(policies: Policy[]): PolicyGroup[] {
   return [...map.entries()].map(([key, docs]) => {
     const sorted = [...docs].sort((a, b) => a.filename.localeCompare(b.filename));
     const primary =
-      sorted.find((d) => /insurance|cover/i.test(d.filename)) ?? sorted[0];
+      sorted.find((d) => /schedule/i.test(d.filename)) ??
+      sorted.find((d) => /insurance|cover/i.test(d.filename)) ??
+      sorted[0];
     return {
       key,
       policy_type: docs[0].policy_type,
