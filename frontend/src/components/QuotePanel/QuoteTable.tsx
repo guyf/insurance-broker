@@ -63,6 +63,18 @@ function InsurerCard({ insurer, rank }: { insurer: InsurerQuote; rank: number })
           </li>
         ))}
       </ul>
+
+      {/* Buy Policy */}
+      <div className="px-4 pb-3.5">
+        <a
+          href={`https://www.moneysupermarket.com/`}
+          target="_blank"
+          rel="noreferrer"
+          className="block w-full text-center text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 rounded-lg py-2 transition-colors"
+        >
+          Buy Policy →
+        </a>
+      </div>
     </div>
   );
 }

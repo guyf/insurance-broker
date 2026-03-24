@@ -127,6 +127,8 @@ python ingest.py --dry-run          # preview, no API calls
 python ingest.py                    # full ingest
 python ingest.py --path "Insurance/Car"  # single subfolder
 python ingest.py --force            # re-embed everything
+python ingest.py --enrich           # backfill LLM-extracted metadata (provider, premium, etc.) for existing records
+python ingest.py --prune            # delete DB records whose source_path no longer exists on disk
 ```
 
 **Ingestion uses service role key** (`SUPABASE_SERVICE_ROLE_KEY`) — never commit this.
@@ -140,9 +142,13 @@ Table: `public.documents`
 - `embedding` — `vector(1536)`, HNSW index with cosine ops
 - `metadata` — JSONB with GIN index; fields: `doc_type`, `policy_type`, `insured_entity`,
   `filename`, `source_path`, `page_num`, `chunk_index`, `renewal_date`, `premium`,
-  `provider`, `underwriter`
+  `provider`, `underwriter`, `asset_name`, `asset_value`
 - `chunk_hash` — unique dedup key
 - `user_id` — null in Phase 1, ready for Phase 2 multiuser
+
+`doc_type` values: `policy` (insurance policies, warranties), `invoice` (purchase receipts), `other` (manuals, correspondence — not shown in UI cards).
+
+Migrations: 001 create, 002 add provider, 003 rename property→insured_entity + add update_policy_metadata RPC, 004 add doc_type/asset_name/asset_value, 005 add premium/renewal_date, 006 fix list_policies DISTINCT ON source_path, 007 add delete_documents_by_source_path RPC.
 
 RLS is enabled from day one. Phase 1 allows service role only.
 

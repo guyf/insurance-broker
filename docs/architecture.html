@@ -525,12 +525,12 @@
       <div class="layer-content" style="gap:1rem;">
         <div class="comp-box">
           <div class="comp-title">ingest.py</div>
-          <div class="comp-detail">CLI entry point<br/>--dry-run · --force · --path</div>
+          <div class="comp-detail">CLI entry point<br/>--dry-run · --force · --path · --clean<br/>--enrich (backfill LLM metadata)<br/>--prune (remove orphaned records)</div>
         </div>
         <div style="color:var(--amber);font-size:18px;">→</div>
         <div class="comp-box">
           <div class="comp-title">chunk.py</div>
-          <div class="comp-detail">pdfplumber extraction<br/>tiktoken chunking</div>
+          <div class="comp-detail">pdfplumber extraction<br/>tiktoken chunking<br/>GPT-4o-mini LLM metadata extraction<br/>(doc_type · provider · premium · asset fields)</div>
         </div>
         <div style="color:var(--amber);font-size:18px;">→</div>
         <div class="comp-box">
@@ -685,7 +685,7 @@
       <div class="svc-row"><span class="k">Table:</span><span class="v">public.documents</span></div>
       <div class="svc-row"><span class="k">embedding:</span><span class="v">vector(1536)</span></div>
       <div class="svc-row"><span class="k">Index:</span><span class="v">HNSW · cosine ops</span></div>
-      <div class="svc-row"><span class="k">metadata:</span><span class="v">JSONB + GIN index</span></div>
+      <div class="svc-row"><span class="k">metadata:</span><span class="v">JSONB + GIN index<br/><span style="font-size:11px;color:var(--muted);">doc_type · policy_type · insured_entity<br/>provider · underwriter · premium · renewal_date<br/>asset_name · asset_value · filename · source_path</span></span></div>
       <div class="svc-row"><span class="k">chunk_hash:</span><span class="v">unique dedup key (sha256)</span></div>
       <div class="svc-row"><span class="k">RLS:</span><span class="v green">enabled (service role Phase 1)</span></div>
       <div class="svc-row" style="margin-top:.5rem;"><span class="k">Auth:</span><span class="v amber">SUPABASE_URL<br/>SUPABASE_ANON_KEY (read)<br/>SUPABASE_SERVICE_ROLE_KEY (write)</span></div>
