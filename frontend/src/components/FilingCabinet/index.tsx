@@ -82,14 +82,29 @@ function groupPolicies(policies: Policy[]): PolicyGroup[] {
   });
 }
 
-const CARD_FIELDS = [
+const POLICY_FIELDS = [
   { key: "insured_entity", label: "Insured" },
   { key: "provider",       label: "Provider" },
   { key: "premium",        label: "Premium" },
   { key: "renewal_date",   label: "Renews" },
 ] as const;
 
-type CardFieldKey = (typeof CARD_FIELDS)[number]["key"];
+const INVOICE_FIELDS = [
+  { key: "asset_name",  label: "Asset" },
+  { key: "asset_value", label: "Value" },
+] as const;
+
+const OTHER_FIELDS = [
+  { key: "insured_entity", label: "Insured" },
+] as const;
+
+type CardFieldKey = "insured_entity" | "provider" | "premium" | "renewal_date" | "asset_name" | "asset_value";
+
+function cardFields(doc_type: string | null): readonly { key: CardFieldKey; label: string }[] {
+  if (doc_type === "invoice") return INVOICE_FIELDS;
+  if (doc_type === "other") return OTHER_FIELDS;
+  return POLICY_FIELDS; // "policy" or null (default)
+}
 
 function PolicyGroupCard({
   group,
@@ -113,11 +128,15 @@ function PolicyGroupCard({
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleDraft, setTitleDraft] = useState("");
 
+  const fields = cardFields(primary.doc_type);
+
   const [localValues, setLocalValues] = useState<Record<CardFieldKey, string | null>>({
     insured_entity: group.insured_entity,
     provider: primary.provider,
     premium: primary.premium,
     renewal_date: primary.renewal_date,
+    asset_name: primary.asset_name,
+    asset_value: primary.asset_value,
   });
   const [editingField, setEditingField] = useState<CardFieldKey | null>(null);
   const [fieldDraft, setFieldDraft] = useState("");
@@ -151,6 +170,7 @@ function PolicyGroupCard({
   function fieldDisplay(field: CardFieldKey, value: string | null): string {
     if (!value) return "Unknown";
     if (field === "premium") return `£${value}/yr`;
+    if (field === "asset_value") return `£${value}`;
     return value;
   }
 
@@ -191,7 +211,7 @@ function PolicyGroupCard({
             </p>
           )}
           <dl className="mt-1.5 mb-2 grid grid-cols-[auto_1fr] gap-x-2 gap-y-0.5 text-[11px]">
-            {CARD_FIELDS.map(({ key, label }) => {
+            {fields.map(({ key, label }) => {
               const value = localValues[key];
               const isEditing = editingField === key;
               return (

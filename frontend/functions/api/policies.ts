@@ -8,6 +8,7 @@ const BROKER_MCP_URL =
   "https://insurance-broker-production-85e3.up.railway.app/mcp";
 
 interface Policy {
+  doc_type: string | null;
   policy_type: string;
   insured_entity: string | null;
   filename: string;
@@ -16,6 +17,8 @@ interface Policy {
   premium: string | null;
   provider: string | null;
   underwriter: string | null;
+  asset_name: string | null;
+  asset_value: string | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -102,24 +105,32 @@ async function callBrokerTool(toolName: string): Promise<string> {
 // Parsers for the text output from mcp-server tools
 // ---------------------------------------------------------------------------
 
+function tag(line: string, key: string): string | null {
+  const m = line.match(new RegExp(`\\[${key}:\\s*([^\\]]+?)\\]`));
+  return m ? m[1].trim() : null;
+}
+
 function parsePolicies(text: string): Policy[] {
-  // Format: "  type [property] — filename  (source_path)  [provider: X]  [underwriter: Y]"
+  // Format: "  type [insured_entity] — filename  (source_path)  [doc_type: X]  [provider: X] ..."
   const policies: Policy[] = [];
   for (const line of text.split("\n")) {
     if (!line.match(/^\s+\w/)) continue;
     const m = line.match(
-      /^\s+(\w+)(?:\s+\[([^\]]+)\])?\s+—\s+(.+?)\s{2,}\((.+?)\)(?:\s+\[provider:\s*(.+?)\])?(?:\s+\[underwriter:\s*(.+?)\])?\s*$/
+      /^\s+(\w+)(?:\s+\[([^\]]+)\])?\s+—\s+(.+?)\s{2,}\((.+?)\)/
     );
     if (!m) continue;
     policies.push({
+      doc_type: tag(line, "doc_type"),
       policy_type: m[1],
       insured_entity: m[2] ?? null,
       filename: m[3].trim(),
       source_path: m[4].trim(),
       renewal_date: null,
       premium: null,
-      provider: m[5]?.trim() ?? null,
-      underwriter: m[6]?.trim() ?? null,
+      provider: tag(line, "provider"),
+      underwriter: tag(line, "underwriter"),
+      asset_name: tag(line, "asset_name"),
+      asset_value: tag(line, "asset_value"),
     });
   }
   return policies;

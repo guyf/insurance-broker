@@ -109,10 +109,32 @@ def extract_insurer_info_from_pdf(pdf_path: Path) -> dict:
     return info
 
 
-def extract_metadata_llm(pdf_path: Path, openai_client) -> dict:
+_KNOWN_DOC_TYPES = {"policy", "invoice", "other"}
+
+_POLICY_FIELDS = (
+    "- provider: the insurance company name (e.g. 'NFU Mutual')\n"
+    "- underwriter: underwriting company if explicitly different from provider\n"
+    "- renewal_date: policy renewal date as DD/MM/YYYY\n"
+    "- premium: annual premium as digits only, no £ or commas (e.g. '1234')\n"
+    "- insured_entity: what is insured — property address, vehicle make/model/reg, or person name"
+)
+_INVOICE_FIELDS = (
+    "- asset_name: full name/description of the purchased item (e.g. 'BMW i3 2020 Electric')\n"
+    "- asset_value: purchase price as digits only, no £ or commas (e.g. '25000')"
+)
+_OTHER_FIELDS = (
+    "- insured_entity: what this document relates to — item name, address, or person (best effort)"
+)
+
+
+def extract_metadata_llm(pdf_path: Path, openai_client, doc_type: str | None = None) -> dict:
     """Use GPT-4o-mini to extract structured metadata from the first pages of a PDF.
 
-    Returns a dict with any of: provider, underwriter, renewal_date, premium, insured_entity.
+    doc_type hint controls which fields are extracted:
+      "policy"  → provider, underwriter, renewal_date, premium, insured_entity
+      "invoice" → asset_name, asset_value
+      other/None → LLM classifies first, then extracts appropriate fields
+
     Falls back to regex on failure.
     """
     text_parts: list[str] = []
@@ -130,38 +152,67 @@ def extract_metadata_llm(pdf_path: Path, openai_client) -> dict:
 
     text = "\n\n".join(text_parts)[:4000]
 
+    # Build prompt based on known doc_type
+    if doc_type == "policy":
+        system = (
+            "Extract structured fields from an insurance policy document. "
+            "Return only valid JSON. Omit keys where the value cannot be found."
+        )
+        user = f"Extract these fields:\n{_POLICY_FIELDS}\n\nDocument:\n{text}"
+        allowed = {"provider", "underwriter", "renewal_date", "premium", "insured_entity"}
+
+    elif doc_type == "invoice":
+        system = (
+            "Extract structured fields from a purchase invoice or receipt. "
+            "Return only valid JSON. Omit keys where the value cannot be found."
+        )
+        user = f"Extract these fields:\n{_INVOICE_FIELDS}\n\nDocument:\n{text}"
+        allowed = {"asset_name", "asset_value"}
+
+    else:
+        # Unknown — ask LLM to classify and extract in one shot
+        system = (
+            "Classify this document and extract relevant fields. "
+            "Return only valid JSON. Omit keys where the value cannot be found."
+        )
+        user = (
+            "First, classify this document as exactly one of: policy, invoice, other.\n"
+            "Then extract the fields appropriate for that type:\n\n"
+            f"If policy:\n{_POLICY_FIELDS}\n\n"
+            f"If invoice:\n{_INVOICE_FIELDS}\n\n"
+            f"If other:\n{_OTHER_FIELDS}\n\n"
+            "Always include a 'doc_type' key with your classification.\n\n"
+            f"Document:\n{text}"
+        )
+        allowed = {
+            "doc_type", "provider", "underwriter", "renewal_date", "premium",
+            "insured_entity", "asset_name", "asset_value",
+        }
+
     try:
         resp = openai_client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
-                {
-                    "role": "system",
-                    "content": (
-                        "Extract structured fields from an insurance policy document. "
-                        "Return only valid JSON. Omit keys where the value cannot be found."
-                    ),
-                },
-                {
-                    "role": "user",
-                    "content": (
-                        "Extract these fields:\n"
-                        "- provider: the insurance company name (e.g. 'NFU Mutual')\n"
-                        "- underwriter: underwriting company if explicitly different from provider\n"
-                        "- renewal_date: policy renewal date as DD/MM/YYYY\n"
-                        "- premium: annual premium as digits only, no £ or commas (e.g. '1234')\n"
-                        "- insured_entity: what is insured — property address, "
-                        "vehicle make/model/reg, or person name\n\n"
-                        f"Document:\n{text}"
-                    ),
-                },
+                {"role": "system", "content": system},
+                {"role": "user", "content": user},
             ],
             response_format={"type": "json_object"},
             temperature=0,
             max_tokens=200,
         )
         result = json.loads(resp.choices[0].message.content)
-        allowed = {"provider", "underwriter", "renewal_date", "premium", "insured_entity"}
-        return {k: str(v) for k, v in result.items() if k in allowed and v}
+
+        # Sanitise: only known keys, string values, valid doc_type
+        cleaned: dict = {}
+        for k, v in result.items():
+            if k not in allowed or not v:
+                continue
+            if k == "doc_type":
+                cleaned[k] = str(v).lower() if str(v).lower() in _KNOWN_DOC_TYPES else "other"
+            else:
+                cleaned[k] = str(v)
+        return cleaned
+
     except Exception as exc:
         logger.warning("LLM metadata extraction failed for %s: %s", pdf_path.name, exc)
         return extract_insurer_info_from_pdf(pdf_path)

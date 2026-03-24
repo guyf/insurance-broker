@@ -126,16 +126,25 @@ def list_policies() -> str:
 
     lines = ["Policy / Asset inventory:\n"]
     for row in resp.data:
+        doc_type = row.get("doc_type") or "policy"
         policy_type = row.get("policy_type") or "n/a"
         prop = row.get("insured_entity") or ""
         filename = row.get("filename") or ""
         src = row.get("source_path") or ""
         provider = row.get("provider") or ""
         underwriter = row.get("underwriter") or ""
+        asset_name = row.get("asset_name") or ""
+        asset_value = row.get("asset_value") or ""
         prop_part = f" [{prop}]" if prop else ""
+        doc_type_part = f"  [doc_type: {doc_type}]"
         provider_part = f"  [provider: {provider}]" if provider else ""
         underwriter_part = f"  [underwriter: {underwriter}]" if underwriter else ""
-        lines.append(f"  {policy_type}{prop_part} — {filename}  ({src}){provider_part}{underwriter_part}")
+        asset_name_part = f"  [asset_name: {asset_name}]" if asset_name else ""
+        asset_value_part = f"  [asset_value: {asset_value}]" if asset_value else ""
+        lines.append(
+            f"  {policy_type}{prop_part} — {filename}  ({src})"
+            f"{doc_type_part}{provider_part}{underwriter_part}{asset_name_part}{asset_value_part}"
+        )
 
     return "\n".join(lines)
 

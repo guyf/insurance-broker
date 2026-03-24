@@ -1,4 +1,5 @@
 export interface Policy {
+  doc_type: string | null;
   policy_type: string;
   insured_entity: string | null;
   filename: string;
@@ -7,6 +8,8 @@ export interface Policy {
   premium: string | null;
   provider: string | null;
   underwriter: string | null;
+  asset_name: string | null;
+  asset_value: string | null;
 }
 
 export type RenewalStatus = "current" | "expiring" | "overdue";

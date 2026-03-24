@@ -122,7 +122,8 @@ def main() -> None:
             if not pdf_path.exists():
                 logger.warning("  PDF not found, skipping: %s", source_path)
                 continue
-            extracted = extract_metadata_llm(pdf_path, openai_client)
+            doc_type = infer_metadata(Path(source_path)).get("doc_type")
+            extracted = extract_metadata_llm(pdf_path, openai_client, doc_type=doc_type)
             if not extracted:
                 logger.info("  %s → nothing extracted", source_path)
                 continue
@@ -146,7 +147,7 @@ def main() -> None:
         rel = pdf_path.relative_to(DOCS_ROOT)
         base_meta = infer_metadata(rel)
         base_meta["filename"] = pdf_path.name
-        base_meta.update(extract_metadata_llm(pdf_path, openai_client))
+        base_meta.update(extract_metadata_llm(pdf_path, openai_client, doc_type=base_meta.get("doc_type")))
         chunks = chunk_pdf(pdf_path, str(rel), base_meta)
         logger.info("  %s → %d chunk(s)", rel, len(chunks))
         all_chunks.extend(chunks)
