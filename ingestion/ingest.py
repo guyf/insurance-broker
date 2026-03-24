@@ -103,6 +103,7 @@ def main() -> None:
     parser.add_argument("--force", action="store_true", help="Re-embed everything, ignore dedup")
     parser.add_argument("--clean", action="store_true", help="Truncate all documents from DB before ingesting")
     parser.add_argument("--enrich", action="store_true", help="Backfill LLM-extracted metadata for existing DB records (no re-embedding)")
+    parser.add_argument("--prune", action="store_true", help="Remove DB records whose source_path no longer exists on disk")
     args = parser.parse_args()
 
     supabase_url = os.environ["SUPABASE_URL"]
@@ -136,6 +137,21 @@ def main() -> None:
                     "p_updates": extracted,
                 }).execute()
         logger.info("Enrich complete%s.", " (dry-run)" if args.dry_run else "")
+        return
+
+    # ------------------------------------------------------------------
+    # --prune: remove DB records whose source_path no longer exists on disk
+    # ------------------------------------------------------------------
+    if args.prune:
+        sb = create_client(supabase_url, supabase_key)
+        rows = sb.rpc("list_policies").execute().data or []
+        orphans = [r["source_path"] for r in rows if r.get("source_path") and not (DOCS_ROOT / r["source_path"]).exists()]
+        logger.info("Found %d orphaned source path(s) to prune", len(orphans))
+        for path in orphans:
+            logger.info("  Pruning: %s", path)
+            if not args.dry_run:
+                sb.table("documents").delete().eq("metadata->>source_path", path).execute()
+        logger.info("Prune complete%s.", " (dry-run)" if args.dry_run else "")
         return
 
     pdfs = collect_pdfs(DOCS_ROOT, args.path)
