@@ -128,6 +128,7 @@ function PolicyGroupCard({
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleDraft, setTitleDraft] = useState("");
 
+  const asset = isAsset(primary);
   const fields = cardFields(primary.doc_type);
 
   const [localValues, setLocalValues] = useState<Record<CardFieldKey, string | null>>({
@@ -183,7 +184,11 @@ function PolicyGroupCard({
   return (
     <div
       onClick={() => onDocClick(primary)}
-      className="rounded-lg border border-gray-200 bg-white px-3 py-2.5 cursor-pointer hover:border-gray-300 transition-colors"
+      className={`rounded-lg border px-3 py-2.5 cursor-pointer transition-colors ${
+        asset
+          ? "border-dashed border-gray-300 bg-gray-50 hover:border-gray-400"
+          : "border-gray-200 bg-white hover:border-gray-300"
+      }`}
     >
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
