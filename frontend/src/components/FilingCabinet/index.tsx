@@ -15,7 +15,9 @@ interface Props {
 const DOCS_ROOT =
   "/Users/guy/Library/CloudStorage/GoogleDrive-guyfarley@gmail.com/My Drive/AI Broker/personal data";
 
-const POLICY_TYPE_ORDER = ["home", "car", "life", "travel", "breakdown", "phone", "pet"];
+const POLICY_TYPE_ORDER = ["home", "car", "life", "travel", "breakdown", "phone", "pet", "warranty", "other"];
+
+const POLICY_TYPE_DISPLAY: Record<string, string> = { asset: "other" };
 const ASSET_TYPE_ORDER = ["car", "bike", "appliance"];
 
 function pdfUrl(sourcePath: string): string {
@@ -316,11 +318,12 @@ function PolicySection({
     if (!typeMap.has(g.policy_type)) typeMap.set(g.policy_type, []);
     typeMap.get(g.policy_type)!.push(g);
   }
-  const types = [...typeMap.keys()].sort(
-    (a, b) =>
-      (order.indexOf(a) === -1 ? 99 : order.indexOf(a)) -
-      (order.indexOf(b) === -1 ? 99 : order.indexOf(b))
-  );
+  const types = [...typeMap.keys()].sort((a, b) => {
+    const da = POLICY_TYPE_DISPLAY[a] ?? a;
+    const db = POLICY_TYPE_DISPLAY[b] ?? b;
+    return (order.indexOf(da) === -1 ? 99 : order.indexOf(da)) -
+           (order.indexOf(db) === -1 ? 99 : order.indexOf(db));
+  });
 
   return (
     <div className="mb-4">
@@ -331,7 +334,7 @@ function PolicySection({
         {types.map((type) => (
           <div key={type}>
             <p className="text-[10px] font-medium tracking-widest uppercase text-gray-300 mb-1">
-              {type}
+              {POLICY_TYPE_DISPLAY[type] ?? type}
             </p>
             {typeMap.get(type)!.map((group) => (
               <div key={group.key} className="mb-1.5">
@@ -353,8 +356,9 @@ function PolicySection({
 }
 
 export function FilingCabinet({ policies, loading, onPolicyClick, onUpload, onRequote }: Props) {
-  const policyItems = policies.filter((p) => !isAsset(p));
-  const assetItems = policies.filter((p) => isAsset(p));
+  const relevant = policies.filter((p) => p.doc_type !== "other");
+  const policyItems = relevant.filter((p) => !isAsset(p));
+  const assetItems = relevant.filter((p) => isAsset(p));
 
   const [groupNames, setGroupNames] = useState<Record<string, string>>(() => {
     try { return JSON.parse(localStorage.getItem("insurance-group-names") ?? "{}"); }
