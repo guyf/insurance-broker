@@ -1,6 +1,7 @@
 """PDF extraction and chunking."""
 
 import hashlib
+import json
 import logging
 import re
 from dataclasses import dataclass, field
@@ -90,10 +91,7 @@ def _extract_premium(text: str) -> str | None:
 
 
 def extract_insurer_info_from_pdf(pdf_path: Path) -> dict:
-    """Read the first page of a PDF and extract insurer and/or underwriter names.
-    Returns a dict with 'provider' and/or 'underwriter' keys (omitted when not found).
-    Opens the PDF once for both fields.
-    """
+    """Regex fallback: read first page and extract provider/underwriter."""
     info: dict = {}
     try:
         with pdfplumber.open(pdf_path) as pdf:
@@ -109,6 +107,64 @@ def extract_insurer_info_from_pdf(pdf_path: Path) -> dict:
     except Exception:
         pass
     return info
+
+
+def extract_metadata_llm(pdf_path: Path, openai_client) -> dict:
+    """Use GPT-4o-mini to extract structured metadata from the first pages of a PDF.
+
+    Returns a dict with any of: provider, underwriter, renewal_date, premium, insured_entity.
+    Falls back to regex on failure.
+    """
+    text_parts: list[str] = []
+    try:
+        with pdfplumber.open(pdf_path) as pdf:
+            for page in pdf.pages[:3]:
+                t = page.extract_text() or ""
+                if t.strip():
+                    text_parts.append(t)
+    except Exception:
+        return extract_insurer_info_from_pdf(pdf_path)
+
+    if not text_parts:
+        return extract_insurer_info_from_pdf(pdf_path)
+
+    text = "\n\n".join(text_parts)[:4000]
+
+    try:
+        resp = openai_client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {
+                    "role": "system",
+                    "content": (
+                        "Extract structured fields from an insurance policy document. "
+                        "Return only valid JSON. Omit keys where the value cannot be found."
+                    ),
+                },
+                {
+                    "role": "user",
+                    "content": (
+                        "Extract these fields:\n"
+                        "- provider: the insurance company name (e.g. 'NFU Mutual')\n"
+                        "- underwriter: underwriting company if explicitly different from provider\n"
+                        "- renewal_date: policy renewal date as DD/MM/YYYY\n"
+                        "- premium: annual premium as digits only, no £ or commas (e.g. '1234')\n"
+                        "- insured_entity: what is insured — property address, "
+                        "vehicle make/model/reg, or person name\n\n"
+                        f"Document:\n{text}"
+                    ),
+                },
+            ],
+            response_format={"type": "json_object"},
+            temperature=0,
+            max_tokens=200,
+        )
+        result = json.loads(resp.choices[0].message.content)
+        allowed = {"provider", "underwriter", "renewal_date", "premium", "insured_entity"}
+        return {k: str(v) for k, v in result.items() if k in allowed and v}
+    except Exception as exc:
+        logger.warning("LLM metadata extraction failed for %s: %s", pdf_path.name, exc)
+        return extract_insurer_info_from_pdf(pdf_path)
 
 
 def chunk_pdf(pdf_path: Path, source_path: str, base_metadata: dict) -> list[Chunk]:
@@ -145,7 +201,7 @@ def chunk_pdf(pdf_path: Path, source_path: str, base_metadata: dict) -> list[Chu
                     page_texts = _sliding_window(tokens, enc)
 
                 for chunk_index, chunk_text in enumerate(page_texts):
-                    merged_meta = {**base_metadata, **page_meta}
+                    merged_meta = {**page_meta, **base_metadata}  # base_metadata (LLM) wins
                     chunks.append(Chunk(
                         content=chunk_text,
                         source_path=source_path,

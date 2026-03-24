@@ -20,7 +20,7 @@ from dotenv import load_dotenv
 from openai import OpenAI
 from supabase import create_client
 
-from chunk import Chunk, chunk_pdf, extract_insurer_info_from_pdf
+from chunk import Chunk, chunk_pdf, extract_insurer_info_from_pdf, extract_metadata_llm
 from embed import embed_texts
 from store import get_existing_hashes, upsert_chunks
 
@@ -100,20 +100,53 @@ def main() -> None:
     parser.add_argument("--path", metavar="SUBPATH", help="Process only this subfolder of DOCS_ROOT")
     parser.add_argument("--force", action="store_true", help="Re-embed everything, ignore dedup")
     parser.add_argument("--clean", action="store_true", help="Truncate all documents from DB before ingesting")
+    parser.add_argument("--enrich", action="store_true", help="Backfill LLM-extracted metadata for existing DB records (no re-embedding)")
     args = parser.parse_args()
+
+    supabase_url = os.environ["SUPABASE_URL"]
+    supabase_key = os.environ["SUPABASE_SERVICE_ROLE_KEY"]
+    openai_client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+
+    # ------------------------------------------------------------------
+    # --enrich: backfill LLM metadata for existing DB records
+    # ------------------------------------------------------------------
+    if args.enrich:
+        sb = create_client(supabase_url, supabase_key)
+        rows = sb.rpc("list_policies").execute().data or []
+        logger.info("Enriching %d distinct document(s) with LLM metadata…", len(rows))
+        for row in rows:
+            source_path = row.get("source_path")
+            if not source_path:
+                continue
+            pdf_path = DOCS_ROOT / source_path
+            if not pdf_path.exists():
+                logger.warning("  PDF not found, skipping: %s", source_path)
+                continue
+            extracted = extract_metadata_llm(pdf_path, openai_client)
+            if not extracted:
+                logger.info("  %s → nothing extracted", source_path)
+                continue
+            logger.info("  %s → %s", source_path, extracted)
+            if not args.dry_run:
+                sb.rpc("update_policy_metadata", {
+                    "p_source_paths": [source_path],
+                    "p_updates": extracted,
+                }).execute()
+        logger.info("Enrich complete%s.", " (dry-run)" if args.dry_run else "")
+        return
 
     pdfs = collect_pdfs(DOCS_ROOT, args.path)
     logger.info("Found %d PDF(s) under %s", len(pdfs), DOCS_ROOT / (args.path or ""))
 
     # ------------------------------------------------------------------
-    # Chunk all PDFs
+    # Chunk all PDFs (LLM metadata extraction per document)
     # ------------------------------------------------------------------
     all_chunks: list[Chunk] = []
     for pdf_path in pdfs:
         rel = pdf_path.relative_to(DOCS_ROOT)
         base_meta = infer_metadata(rel)
         base_meta["filename"] = pdf_path.name
-        base_meta.update(extract_insurer_info_from_pdf(pdf_path))
+        base_meta.update(extract_metadata_llm(pdf_path, openai_client))
         chunks = chunk_pdf(pdf_path, str(rel), base_meta)
         logger.info("  %s → %d chunk(s)", rel, len(chunks))
         all_chunks.extend(chunks)
@@ -121,16 +154,13 @@ def main() -> None:
     logger.info("Total chunks: %d", len(all_chunks))
 
     if args.dry_run:
-        logger.info("Dry-run complete. No API calls made.")
+        logger.info("Dry-run complete.")
         return
 
     # ------------------------------------------------------------------
     # Deduplication (unless --force)
     # ------------------------------------------------------------------
-    supabase_url = os.environ["SUPABASE_URL"]
-    supabase_key = os.environ["SUPABASE_SERVICE_ROLE_KEY"]
     sb = create_client(supabase_url, supabase_key)
-    openai_client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 
     if args.clean:
         logger.info("--clean: truncating all existing records from Supabase…")
