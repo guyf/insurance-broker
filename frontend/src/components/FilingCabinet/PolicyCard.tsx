@@ -19,9 +19,9 @@ export function PolicyCard({ policy, onClick }: Props) {
         {name}
       </p>
       <div className="flex items-center gap-2 mt-0.5">
-        {policy.property && (
+        {policy.insured_entity && (
           <span className="text-[10px] text-sidebar-muted truncate">
-            {policy.property.replace(/_/g, " ")}
+            {policy.insured_entity.replace(/_/g, " ")}
           </span>
         )}
         {policy.premium && (
