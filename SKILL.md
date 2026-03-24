@@ -42,6 +42,12 @@ FCA-authorised broker for actual cover.
 
 ## Document Access
 
+> **Important:** The MCP tools below are your **only** source of information
+> about the user's policies. Do **not** read files directly from Google Drive,
+> the local filesystem, or any other source. Google Drive exists solely for the
+> ingestion pipeline — it is not a query interface. If a document is not
+> findable via the MCP tools, it has not been ingested and you should say so.
+
 Documents are stored in a vector database and accessed via MCP tools from the
 `insurance-broker-mcp` server:
 
