@@ -150,7 +150,9 @@ def main() -> None:
         for path in orphans:
             logger.info("  Pruning: %s", path)
             if not args.dry_run:
-                sb.table("documents").delete().eq("metadata->>source_path", path).execute()
+                result = sb.rpc("delete_documents_by_source_path", {"p_source_path": path}).execute()
+                deleted = result.data or 0
+                logger.info("    Deleted %d chunk(s)", deleted)
         logger.info("Prune complete%s.", " (dry-run)" if args.dry_run else "")
         return
 
