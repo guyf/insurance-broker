@@ -380,8 +380,8 @@
     <div class="layer layer-user">
       <div class="layer-label">User</div>
       <div class="layer-content">
-        <div class="flow-col">
-          <div class="flow-label">Primary</div>
+        <div class="flow-col" style="flex:2;">
+          <div class="flow-label">Web (primary)</div>
           <div class="comp-box">
             <div class="comp-title">Web Browser</div>
             <div class="comp-detail">React SPA · Cloudflare Pages<br/>Filing cabinet · chat · quote panel</div>
@@ -389,7 +389,7 @@
         </div>
         <div class="flow-divider"></div>
         <div class="flow-col">
-          <div class="flow-label">Alternative</div>
+          <div class="flow-label">Desktop (alternative)</div>
           <div class="comp-box">
             <div class="comp-title">Claude Desktop</div>
             <div class="comp-detail">MCP host · chat UI · streams responses</div>
@@ -400,62 +400,79 @@
 
     <div class="layer-arrow">↕ <span class="arrow-label" style="font-size:11px;margin-left:6px;">HTTP requests &nbsp;|&nbsp; loads skill instructions at startup</span></div>
 
-    <!-- Frontend / Skill -->
+    <!-- App / Skill — 3 distinct paths -->
     <div class="layer layer-frontend">
       <div class="layer-label">App / Skill</div>
-      <div class="layer-content">
+      <div class="layer-content" style="gap:0.75rem;">
         <div class="flow-col">
-          <div class="flow-label">Web path</div>
+          <div class="flow-label">Web · chat</div>
           <div class="comp-box">
-            <div class="comp-title">Cloudflare Pages Functions</div>
-            <div class="comp-detail">/api/chat — orchestrates agentic loop via Anthropic SDK<br/>/api/policies — list docs from broker-mcp<br/>/api/upload — ingest PDF via broker-mcp<br/>/api/update-policy — proxy metadata edits</div>
+            <div class="comp-title">/api/chat</div>
+            <div class="comp-detail">Orchestrates agentic loop<br/>via Anthropic SDK<br/><span style="color:var(--teal);font-size:10px;">↓ Anthropic API</span></div>
           </div>
         </div>
         <div class="flow-divider"></div>
         <div class="flow-col">
-          <div class="flow-label">Desktop path</div>
+          <div class="flow-label">Web · data APIs</div>
+          <div class="comp-box" style="border-style:dashed;opacity:0.75;">
+            <div class="comp-title">/api/policies &nbsp;/api/upload<br/>/api/update-policy</div>
+            <div class="comp-detail">Call MCP directly over HTTPS<br/><span style="color:var(--amber);font-size:10px;">↓↓ skip LLM &amp; Bridge entirely</span></div>
+          </div>
+        </div>
+        <div class="flow-divider"></div>
+        <div class="flow-col">
+          <div class="flow-label">Desktop</div>
           <div class="comp-box">
             <div class="comp-title">SKILL.md</div>
-            <div class="comp-detail">Broker persona &amp; rules<br/>Loaded as system prompt by Claude Desktop<br/>Quote instructions &amp; caveats</div>
+            <div class="comp-detail">Broker persona &amp; rules<br/>Loaded as system prompt<br/><span style="color:var(--teal);font-size:10px;">↓ built-in Anthropic LLM</span></div>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="layer-arrow">↕ <span class="arrow-label" style="font-size:11px;margin-left:6px;">Anthropic Messages API (SDK) &nbsp;|&nbsp; Built-in to Claude Desktop</span></div>
+    <div class="layer-arrow">↕ <span class="arrow-label" style="font-size:11px;margin-left:6px;">Anthropic Messages API (SDK) &nbsp;·&nbsp; /api/chat only &nbsp;|&nbsp; Built-in to Claude Desktop</span></div>
 
-    <!-- Anthropic LLM — shared by both paths -->
+    <!-- LLM — /api/chat and Desktop only; data APIs bypass -->
     <div class="layer layer-anthropic">
       <div class="layer-label">LLM</div>
-      <div class="layer-content" style="justify-content:center;">
-        <div class="comp-box" style="max-width:420px;text-align:center;">
-          <div class="comp-title">Anthropic API — claude-sonnet-4-6</div>
-          <div class="comp-detail">Tool-use agentic loop · up to 10 iterations per request<br/>
-            <span style="color:var(--muted);font-size:10px;">Web: called explicitly via Anthropic SDK in /api/chat &nbsp;·&nbsp; Desktop: built into Claude Desktop</span>
+      <div class="layer-content">
+        <div class="flow-col">
+          <div class="flow-label">Web /api/chat</div>
+          <div class="comp-box">
+            <div class="comp-title">Anthropic API — claude-sonnet-4-6</div>
+            <div class="comp-detail">Called via SDK · agentic tool-use loop<br/>Up to 10 iterations · drives MCP tool calls over HTTPS</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;padding:0 0.5rem;color:var(--amber);font-size:11px;white-space:nowrap;">← data APIs bypass →</div>
+        <div class="flow-col">
+          <div class="flow-label">Desktop</div>
+          <div class="comp-box">
+            <div class="comp-title">Anthropic API — claude-sonnet-4-6</div>
+            <div class="comp-detail">Built into Claude Desktop<br/>Tool-use loop managed by Claude Desktop</div>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="layer-arrow">↕ <span class="arrow-label" style="font-size:11px;margin-left:6px;">HTTPS MCP tool calls &nbsp;|&nbsp; stdio (MCP protocol) via supergateway</span></div>
+    <div class="layer-arrow">↕ <span class="arrow-label" style="font-size:11px;margin-left:6px;">HTTPS MCP tool calls (all web) &nbsp;|&nbsp; stdio via supergateway (desktop only)</span></div>
 
-    <!-- Bridge (desktop only) -->
+    <!-- Bridge — desktop only; web calls MCP directly -->
     <div class="layer layer-bridge">
       <div class="layer-label">Bridge</div>
       <div class="layer-content">
-        <div class="flow-col">
-          <div class="flow-label">Web path</div>
-          <div class="comp-box">
+        <div class="flow-col" style="flex:2;">
+          <div class="flow-label">Web path — no bridge</div>
+          <div class="comp-box" style="border-style:dashed;opacity:0.55;">
             <div class="comp-title">Direct HTTPS</div>
-            <div class="comp-detail">CF Functions call MCP servers directly<br/>No bridge needed</div>
+            <div class="comp-detail">All CF Functions call Railway MCP servers directly<br/>No local bridge process needed</div>
           </div>
         </div>
         <div class="flow-divider"></div>
         <div class="flow-col">
-          <div class="flow-label">Desktop path</div>
+          <div class="flow-label">Desktop path only</div>
           <div class="comp-box">
             <div class="comp-title">supergateway</div>
-            <div class="comp-detail">Local npx process<br/>stdio ↔ HTTP translation<br/>Runs alongside Claude Desktop</div>
+            <div class="comp-detail">Local npx process<br/>stdio ↔ streamable-http translation<br/>Runs alongside Claude Desktop</div>
           </div>
         </div>
       </div>
