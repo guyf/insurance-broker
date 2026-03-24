@@ -90,10 +90,14 @@ insurance-broker/
 
 **URL:** `https://insurance-broker-production-85e3.up.railway.app/sse`
 
-**Three tools:**
+**Three MCP tools:**
 - `search_insurance_docs(query, policy_type?, limit?)` — semantic search
 - `list_policies()` — inventory of all ingested documents
 - `get_renewal_calendar()` — renewal dates, flags within 60 days
+
+**Two HTTP endpoints (non-MCP):**
+- `POST /upload` — PDF ingestion (chunked, embedded, upserted)
+- `PATCH /update-policy` — merge-update metadata fields for a set of source_paths
 
 **Claude Desktop config** uses `supergateway` as a stdio↔streamable-http bridge:
 ```json
@@ -134,8 +138,9 @@ hash already exists in the DB. Re-running on unchanged files costs $0.
 
 Table: `public.documents`
 - `embedding` — `vector(1536)`, HNSW index with cosine ops
-- `metadata` — JSONB with GIN index; fields: `doc_type`, `policy_type`, `property`,
-  `filename`, `source_path`, `page_num`, `chunk_index`, `renewal_date`, `premium`
+- `metadata` — JSONB with GIN index; fields: `doc_type`, `policy_type`, `insured_entity`,
+  `filename`, `source_path`, `page_num`, `chunk_index`, `renewal_date`, `premium`,
+  `provider`, `underwriter`
 - `chunk_hash` — unique dedup key
 - `user_id` — null in Phase 1, ready for Phase 2 multiuser
 
@@ -143,7 +148,7 @@ RLS is enabled from day one. Phase 1 allows service role only.
 
 ## Metadata Conventions
 
-| Path pattern | doc_type | policy_type / asset_category | property |
+| Path pattern | doc_type | policy_type / asset_category | insured_entity |
 |---|---|---|---|
 | `Insurance/Car/…` | policy | car | — |
 | `Insurance/Home/The Barns/…` | policy | home | the_barns |
@@ -156,6 +161,8 @@ RLS is enabled from day one. Phase 1 allows service role only.
 | `Cars/…` | asset | car | — |
 | `Bikes/…` | asset | bike | — |
 | `Appliances & Machines/…` | asset | appliance | — |
+
+`insured_entity` can also be set freely via the web UI card editor (e.g. "BMW i3") and is persisted back to Supabase via `PATCH /api/update-policy`.
 
 ## Quote MCP Server (Railway)
 

@@ -465,6 +465,7 @@
             <li>search_insurance_docs</li>
             <li>list_policies</li>
             <li>get_renewal_calendar</li>
+            <li>update_policy_metadata</li>
           </ul>
         </div>
         <div class="comp-box">
@@ -493,6 +494,7 @@
             <li style="color:#86efac;">search_documents(embedding, count, filter)</li>
             <li style="color:#86efac;">list_policies()</li>
             <li style="color:#86efac;">get_renewal_calendar()</li>
+            <li style="color:#86efac;">update_policy_metadata(source_paths, updates)</li>
           </ul>
         </div>
       </div>
@@ -613,6 +615,8 @@
           <div class="svc-row" style="padding-left:1rem;"><span class="v" style="color:var(--muted);">Anthropic SDK agentic loop → MCP tools</span></div>
           <div class="svc-row"><span class="k">GET /api/policies</span></div>
           <div class="svc-row" style="padding-left:1rem;"><span class="v" style="color:var(--muted);">Proxies list_policies from broker-mcp</span></div>
+          <div class="svc-row"><span class="k">PATCH /api/update-policy</span></div>
+          <div class="svc-row" style="padding-left:1rem;"><span class="v" style="color:var(--muted);">Proxies metadata edits to broker-mcp /update-policy</span></div>
           <div class="svc-row"><span class="k">POST /api/upload</span></div>
           <div class="svc-row" style="padding-left:1rem;"><span class="v" style="color:var(--muted);">Streams PDF to broker-mcp /upload</span></div>
           <div class="svc-row" style="margin-top:.5rem;"><span class="k">Env vars:</span><span class="v amber">ANTHROPIC_API_KEY</span></div>
@@ -732,6 +736,11 @@
           <td class="label">—</td>
           <td class="detail">HTTPS · multipart form · streams PDF to broker-mcp /upload endpoint for live ingestion</td>
         </tr>
+        <tr>
+          <td class="from-to">CF Pages /api/update-policy → broker-mcp</td>
+          <td class="label">—</td>
+          <td class="detail">HTTPS PATCH · proxies inline card edits · broker-mcp calls update_policy_metadata() RPC</td>
+        </tr>
         <tr class="section-header"><td colspan="3">Claude Desktop Path (alternative)</td></tr>
         <tr>
           <td class="from-to">Claude Desktop → supergateway</td>
@@ -756,8 +765,8 @@
         </tr>
         <tr>
           <td class="from-to">broker-mcp → Supabase</td>
-          <td class="label">SUPABASE_URL + SUPABASE_ANON_KEY</td>
-          <td class="detail">PostgREST RPC calls · search_documents · list_policies · get_renewal_calendar</td>
+          <td class="label">SUPABASE_URL + SUPABASE_ANON_KEY / SERVICE_ROLE_KEY</td>
+          <td class="detail">PostgREST RPC calls · search_documents · list_policies · get_renewal_calendar · update_policy_metadata</td>
         </tr>
         <tr>
           <td class="from-to">quote-mcp → OpenAI</td>
@@ -864,9 +873,14 @@
           &nbsp;&nbsp;<span class="param">filter_metadata</span>: jsonb<br/>
           )<br/><br/>
           <span class="fn">list_policies</span>()<br/>
-          <span style="color:var(--muted);font-size:10px;">→ distinct (policy_type, property,<br/>&nbsp;&nbsp;&nbsp;filename, source_path)</span><br/><br/>
+          <span style="color:var(--muted);font-size:10px;">→ distinct (policy_type, insured_entity,<br/>&nbsp;&nbsp;&nbsp;filename, source_path, provider, underwriter)</span><br/><br/>
           <span class="fn">get_renewal_calendar</span>()<br/>
-          <span style="color:var(--muted);font-size:10px;">→ rows where renewal_date IS NOT NULL</span>
+          <span style="color:var(--muted);font-size:10px;">→ rows where renewal_date IS NOT NULL</span><br/><br/>
+          <span class="fn">update_policy_metadata</span>(<br/>
+          &nbsp;&nbsp;<span class="param">p_source_paths</span>: text[],<br/>
+          &nbsp;&nbsp;<span class="param">p_updates</span>: jsonb<br/>
+          )<br/>
+          <span style="color:var(--muted);font-size:10px;">→ merges updates into metadata for all matching chunks</span>
         </div>
       </div>
 
