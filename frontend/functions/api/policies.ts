@@ -114,9 +114,9 @@ function parsePolicies(text: string): Policy[] {
   // Format: "  type [insured_entity] — filename  (source_path)  [doc_type: X]  [provider: X] ..."
   const policies: Policy[] = [];
   for (const line of text.split("\n")) {
-    if (!line.match(/^\s+\w/)) continue;
+    if (!line.match(/^\s+\S/)) continue;
     const m = line.match(
-      /^\s+(\w+)(?:\s+\[([^\]]+)\])?\s+—\s+(.+?)\s{2,}\((.+?)\)/
+      /^\s+([\w/.-]+)(?:\s+\[([^\]]+)\])?\s+—\s+(.+?)\s{2,}\((.+?)\)/
     );
     if (!m) continue;
     policies.push({

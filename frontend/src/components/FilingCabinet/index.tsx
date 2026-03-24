@@ -53,17 +53,16 @@ interface PolicyGroup {
 function groupPolicies(policies: Policy[]): PolicyGroup[] {
   const map = new Map<string, Policy[]>();
   for (const p of policies) {
+    // Group purely by folder structure — insured_entity is display-only.
+    // Insurance/Car/BMW i3/file.pdf  (4 parts) → "car|BMW i3"   (one group per vehicle)
+    // Insurance/Travel/file.pdf      (3 parts) → "travel|"       (all travel docs together)
+    // Cars/BMW i3/file.pdf           (3 parts) → "asset|BMW i3"  (group by asset subfolder)
+    const parts = p.source_path.split("/");
     let key: string;
-    if (p.insured_entity) {
-      key = `${p.policy_type}|${p.insured_entity}`;
+    if (isAsset(p)) {
+      key = parts.length >= 2 ? `${p.policy_type}|${parts[1]}` : `${p.policy_type}|${parts[0]}`;
     } else {
-      // Use the vehicle/asset subfolder as discriminator when it exists.
-      // Insurance/Car/BMW i3/file.pdf (4 parts) → "car|BMW i3"
-      // Insurance/Car/file.pdf          (3 parts) → "car|"  (flat — group all together)
-      const parts = p.source_path.split("/");
-      key = parts.length >= 4
-        ? `${p.policy_type}|${parts[2]}`
-        : `${p.policy_type}|`;
+      key = parts.length >= 4 ? `${p.policy_type}|${parts[2]}` : `${p.policy_type}|`;
     }
     if (!map.has(key)) map.set(key, []);
     map.get(key)!.push(p);

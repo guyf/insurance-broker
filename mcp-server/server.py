@@ -127,7 +127,7 @@ def list_policies() -> str:
     lines = ["Policy / Asset inventory:\n"]
     for row in resp.data:
         doc_type = row.get("doc_type") or "policy"
-        policy_type = row.get("policy_type") or "n/a"
+        policy_type = row.get("policy_type") or "asset"
         prop = row.get("insured_entity") or ""
         filename = row.get("filename") or ""
         src = row.get("source_path") or ""
@@ -160,7 +160,7 @@ def get_renewal_calendar() -> str:
     today = date.today()
     lines = ["Renewal calendar:\n"]
     for row in resp.data:
-        policy_type = row.get("policy_type") or "n/a"
+        policy_type = row.get("policy_type") or "asset"
         prop = row.get("insured_entity") or ""
         filename = row.get("filename") or ""
         renewal_raw = row.get("renewal_date") or ""
