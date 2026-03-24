@@ -57,11 +57,11 @@ def infer_metadata(rel_path: Path) -> dict:
         elif _matches("home", "buildings", "house"):
             meta["policy_type"] = "home"
             if _matches("the barns", "barns"):
-                meta["property"] = "the_barns"
+                meta["insured_entity"] = "the_barns"
             elif _matches("ashley cottages", "ashley"):
-                meta["property"] = "ashley_cottages"
+                meta["insured_entity"] = "ashley_cottages"
             elif _matches("wicks lane", "wicks"):
-                meta["property"] = "wicks_lane_access"
+                meta["insured_entity"] = "wicks_lane_access"
         elif _matches("breakdown"):
             meta["policy_type"] = "breakdown"
         elif _matches("life"):

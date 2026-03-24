@@ -1,6 +1,6 @@
 export interface Policy {
   policy_type: string;
-  property: string | null;
+  insured_entity: string | null;
   filename: string;
   source_path: string;
   renewal_date: string | null;

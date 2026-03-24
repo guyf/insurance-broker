@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { Policy } from "../../lib/types";
+import { updatePolicyMetadata } from "../../lib/api";
 import { UploadButton } from "./UploadButton";
 import { getRenewalStatus } from "./RenewalBadge";
 
@@ -44,7 +45,7 @@ function renewalColor(renewalDate: string): string {
 interface PolicyGroup {
   key: string;
   policy_type: string;
-  property: string | null;
+  insured_entity: string | null;
   docs: Policy[];
   primary: Policy;
 }
@@ -53,8 +54,8 @@ function groupPolicies(policies: Policy[]): PolicyGroup[] {
   const map = new Map<string, Policy[]>();
   for (const p of policies) {
     let key: string;
-    if (p.property) {
-      key = `${p.policy_type}|${p.property}`;
+    if (p.insured_entity) {
+      key = `${p.policy_type}|${p.insured_entity}`;
     } else {
       // Use the vehicle/asset subfolder as discriminator when it exists.
       // Insurance/Car/BMW i3/file.pdf (4 parts) → "car|BMW i3"
@@ -74,12 +75,21 @@ function groupPolicies(policies: Policy[]): PolicyGroup[] {
     return {
       key,
       policy_type: docs[0].policy_type,
-      property: docs[0].property ?? null,
+      insured_entity: docs[0].insured_entity ?? null,
       docs: sorted,
       primary,
     };
   });
 }
+
+const CARD_FIELDS = [
+  { key: "insured_entity", label: "Insured" },
+  { key: "provider",       label: "Provider" },
+  { key: "premium",        label: "Premium" },
+  { key: "renewal_date",   label: "Renews" },
+] as const;
+
+type CardFieldKey = (typeof CARD_FIELDS)[number]["key"];
 
 function PolicyGroupCard({
   group,
@@ -87,30 +97,67 @@ function PolicyGroupCard({
   onDocClick,
   onRequote,
   onRename,
+  onUpdateField,
 }: {
   group: PolicyGroup;
   customName: string | undefined;
   onDocClick: (policy: Policy) => void;
   onRequote: (prompt: string) => void;
   onRename: (name: string) => void;
+  onUpdateField: (sourcePaths: string[], field: string, value: string) => Promise<void>;
 }) {
   const { primary, docs } = group;
   const qt = getQuoteType(primary);
   const autoTitle = primary.filename.replace(/\.pdf$/i, "");
   const title = customName ?? autoTitle;
-  const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState("");
+  const [editingTitle, setEditingTitle] = useState(false);
+  const [titleDraft, setTitleDraft] = useState("");
 
-  function startEdit(e: React.MouseEvent) {
+  const [localValues, setLocalValues] = useState<Record<CardFieldKey, string | null>>({
+    insured_entity: group.insured_entity,
+    provider: primary.provider,
+    premium: primary.premium,
+    renewal_date: primary.renewal_date,
+  });
+  const [editingField, setEditingField] = useState<CardFieldKey | null>(null);
+  const [fieldDraft, setFieldDraft] = useState("");
+
+  function startTitleEdit(e: React.MouseEvent) {
     e.stopPropagation();
-    setDraft(title);
-    setEditing(true);
+    setTitleDraft(title);
+    setEditingTitle(true);
   }
 
-  function commitEdit() {
-    const trimmed = draft.trim();
+  function commitTitleEdit() {
+    const trimmed = titleDraft.trim();
     onRename(trimmed || autoTitle);
-    setEditing(false);
+    setEditingTitle(false);
+  }
+
+  function startFieldEdit(e: React.MouseEvent, field: CardFieldKey) {
+    e.stopPropagation();
+    setFieldDraft(localValues[field] ?? "");
+    setEditingField(field);
+  }
+
+  async function commitFieldEdit(field: CardFieldKey) {
+    const newValue = fieldDraft.trim();
+    setEditingField(null);
+    setLocalValues((prev) => ({ ...prev, [field]: newValue || null }));
+    const sourcePaths = docs.map((d) => d.source_path);
+    await onUpdateField(sourcePaths, field, newValue);
+  }
+
+  function fieldDisplay(field: CardFieldKey, value: string | null): string {
+    if (!value) return "Unknown";
+    if (field === "premium") return `£${value}/yr`;
+    return value;
+  }
+
+  function fieldTextClass(field: CardFieldKey, value: string | null): string {
+    if (!value) return "text-gray-300 italic";
+    if (field === "renewal_date") return renewalColor(value);
+    return "text-gray-600";
   }
 
   return (
@@ -120,22 +167,22 @@ function PolicyGroupCard({
     >
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
-          {editing ? (
+          {editingTitle ? (
             <input
               autoFocus
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              onBlur={commitEdit}
+              value={titleDraft}
+              onChange={(e) => setTitleDraft(e.target.value)}
+              onBlur={commitTitleEdit}
               onKeyDown={(e) => {
-                if (e.key === "Enter") commitEdit();
-                if (e.key === "Escape") setEditing(false);
+                if (e.key === "Enter") commitTitleEdit();
+                if (e.key === "Escape") setEditingTitle(false);
               }}
               onClick={(e) => e.stopPropagation()}
               className="w-full text-sm font-medium text-gray-800 leading-snug bg-transparent border-b border-blue-400 outline-none"
             />
           ) : (
             <p
-              onDoubleClick={startEdit}
+              onDoubleClick={startTitleEdit}
               className="text-sm font-medium text-gray-800 leading-snug group/title"
               title="Double-click to rename"
             >
@@ -144,30 +191,39 @@ function PolicyGroupCard({
             </p>
           )}
           <dl className="mt-1.5 mb-2 grid grid-cols-[auto_1fr] gap-x-2 gap-y-0.5 text-[11px]">
-            {primary.provider && (
-              <>
-                <dt className="text-gray-400">Provider</dt>
-                <dd className="text-gray-600 font-medium">{primary.provider}</dd>
-              </>
-            )}
-            {primary.underwriter && primary.underwriter !== primary.provider && (
-              <>
-                <dt className="text-gray-400">Underwriter</dt>
-                <dd className="text-gray-600">{primary.underwriter}</dd>
-              </>
-            )}
-            {primary.premium && (
-              <>
-                <dt className="text-gray-400">Premium</dt>
-                <dd className="text-gray-600">£{primary.premium}/yr</dd>
-              </>
-            )}
-            {primary.renewal_date && (
-              <>
-                <dt className="text-gray-400">Renews</dt>
-                <dd className={renewalColor(primary.renewal_date)}>{primary.renewal_date}</dd>
-              </>
-            )}
+            {CARD_FIELDS.map(({ key, label }) => {
+              const value = localValues[key];
+              const isEditing = editingField === key;
+              return (
+                <div key={key} className="contents">
+                  <dt className="text-gray-400 self-center">{label}</dt>
+                  <dd>
+                    {isEditing ? (
+                      <input
+                        autoFocus
+                        value={fieldDraft}
+                        onChange={(e) => setFieldDraft(e.target.value)}
+                        onBlur={() => commitFieldEdit(key)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") commitFieldEdit(key);
+                          if (e.key === "Escape") setEditingField(null);
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                        className="w-full bg-transparent border-b border-blue-400 outline-none text-gray-600"
+                      />
+                    ) : (
+                      <span
+                        onDoubleClick={(e) => startFieldEdit(e, key)}
+                        className={`${fieldTextClass(key, value)} group/field cursor-text`}
+                      >
+                        {fieldDisplay(key, value)}
+                        <span className="ml-0.5 opacity-0 group-hover/field:opacity-40 text-[9px] select-none">✎</span>
+                      </span>
+                    )}
+                  </dd>
+                </div>
+              );
+            })}
           </dl>
           <ul className="mt-1.5 flex flex-col gap-0.5">
             {docs.map((doc) => (
@@ -218,6 +274,7 @@ function PolicySection({
   onPolicyClick,
   onRequote,
   onRename,
+  onUpdateField,
 }: {
   label: string;
   items: Policy[];
@@ -226,6 +283,7 @@ function PolicySection({
   onPolicyClick: (policy: Policy) => void;
   onRequote: (prompt: string) => void;
   onRename: (key: string, name: string) => void;
+  onUpdateField: (sourcePaths: string[], field: string, value: string) => Promise<void>;
 }) {
   const groups = groupPolicies(items);
   const typeMap = new Map<string, PolicyGroup[]>();
@@ -258,6 +316,7 @@ function PolicySection({
                   onDocClick={onPolicyClick}
                   onRequote={onRequote}
                   onRename={(name) => onRename(group.key, name)}
+                  onUpdateField={onUpdateField}
                 />
               </div>
             ))}
@@ -281,6 +340,10 @@ export function FilingCabinet({ policies, loading, onPolicyClick, onUpload, onRe
     const next = { ...groupNames, [key]: name };
     setGroupNames(next);
     localStorage.setItem("insurance-group-names", JSON.stringify(next));
+  }
+
+  async function handleUpdateField(sourcePaths: string[], field: string, value: string) {
+    await updatePolicyMetadata(sourcePaths, { [field]: value });
   }
 
   return (
@@ -310,6 +373,7 @@ export function FilingCabinet({ policies, loading, onPolicyClick, onUpload, onRe
                 onPolicyClick={onPolicyClick}
                 onRequote={onRequote}
                 onRename={handleRename}
+                onUpdateField={handleUpdateField}
               />
             )}
             {assetItems.length > 0 && (
@@ -321,6 +385,7 @@ export function FilingCabinet({ policies, loading, onPolicyClick, onUpload, onRe
                 onPolicyClick={onPolicyClick}
                 onRequote={onRequote}
                 onRename={handleRename}
+                onUpdateField={handleUpdateField}
               />
             )}
           </>

@@ -19,6 +19,18 @@ export async function fetchPolicies(): Promise<Policy[]> {
   return res.json() as Promise<Policy[]>;
 }
 
+export async function updatePolicyMetadata(
+  sourcePaths: string[],
+  updates: Record<string, string>
+): Promise<void> {
+  const res = await fetch("/api/update-policy", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ source_paths: sourcePaths, updates }),
+  });
+  if (!res.ok) throw new Error("Failed to update policy metadata");
+}
+
 export async function uploadPolicy(
   file: File
 ): Promise<{ status: string; chunks: number; filename: string }> {

@@ -9,7 +9,7 @@ const BROKER_MCP_URL =
 
 interface Policy {
   policy_type: string;
-  property: string | null;
+  insured_entity: string | null;
   filename: string;
   source_path: string;
   renewal_date: string | null;
@@ -113,7 +113,7 @@ function parsePolicies(text: string): Policy[] {
     if (!m) continue;
     policies.push({
       policy_type: m[1],
-      property: m[2] ?? null,
+      insured_entity: m[2] ?? null,
       filename: m[3].trim(),
       source_path: m[4].trim(),
       renewal_date: null,

@@ -127,7 +127,7 @@ def list_policies() -> str:
     lines = ["Policy / Asset inventory:\n"]
     for row in resp.data:
         policy_type = row.get("policy_type") or "n/a"
-        prop = row.get("property") or ""
+        prop = row.get("insured_entity") or ""
         filename = row.get("filename") or ""
         src = row.get("source_path") or ""
         provider = row.get("provider") or ""
@@ -152,7 +152,7 @@ def get_renewal_calendar() -> str:
     lines = ["Renewal calendar:\n"]
     for row in resp.data:
         policy_type = row.get("policy_type") or "n/a"
-        prop = row.get("property") or ""
+        prop = row.get("insured_entity") or ""
         filename = row.get("filename") or ""
         renewal_raw = row.get("renewal_date") or ""
         premium = row.get("premium") or ""
@@ -184,6 +184,30 @@ def get_renewal_calendar() -> str:
 
 # Add ingestion modules to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../ingestion"))
+
+
+async def update_policy(request: Request) -> JSONResponse:
+    """Update metadata fields for all document chunks matching the given source paths."""
+    try:
+        body = await request.json()
+        source_paths = body.get("source_paths", [])
+        updates = body.get("updates", {})
+
+        if not source_paths or not updates:
+            return JSONResponse(
+                {"error": "source_paths and updates are required"}, status_code=400
+            )
+
+        _supabase_service().rpc(
+            "update_policy_metadata",
+            {"p_source_paths": source_paths, "p_updates": updates},
+        ).execute()
+
+        return JSONResponse({"status": "ok"})
+
+    except Exception as exc:
+        logger.exception("Update failed")
+        return JSONResponse({"error": str(exc)}, status_code=500)
 
 
 async def upload_document(request: Request) -> JSONResponse:
@@ -254,6 +278,9 @@ async def upload_document(request: Request) -> JSONResponse:
 def build_app() -> Starlette:
     broker_app = mcp.streamable_http_app()
     # Prepend /upload so it matches before FastMCP's catch-all routes
+    broker_app.router.routes.insert(
+        0, Route("/update-policy", update_policy, methods=["PATCH"])
+    )
     broker_app.router.routes.insert(
         0, Route("/upload", upload_document, methods=["POST"])
     )
