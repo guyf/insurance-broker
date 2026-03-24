@@ -133,13 +133,21 @@ function PolicyGroupCard({
   const asset = isAsset(primary);
   const fields = cardFields(primary.doc_type);
 
+  function bestField(field: keyof typeof primary): string | null {
+    for (const doc of docs) {
+      const v = doc[field] as string | null | undefined;
+      if (v) return v;
+    }
+    return null;
+  }
+
   const [localValues, setLocalValues] = useState<Record<CardFieldKey, string | null>>({
-    insured_entity: group.insured_entity,
-    provider: primary.provider,
-    premium: primary.premium,
-    renewal_date: primary.renewal_date,
-    asset_name: primary.asset_name,
-    asset_value: primary.asset_value,
+    insured_entity: group.insured_entity ?? bestField("insured_entity"),
+    provider: bestField("provider"),
+    premium: bestField("premium"),
+    renewal_date: bestField("renewal_date"),
+    asset_name: bestField("asset_name"),
+    asset_value: bestField("asset_value"),
   });
   const [editingField, setEditingField] = useState<CardFieldKey | null>(null);
   const [fieldDraft, setFieldDraft] = useState("");
