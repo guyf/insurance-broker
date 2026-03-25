@@ -291,7 +291,12 @@ function PolicyGroupCard({
           <button
             onClick={(e) => {
               e.stopPropagation();
-              onRequote(`Get me a new ${qt} insurance quote for ${title}`);
+              const parts: string[] = [`Get me a new ${qt} insurance quote for ${title}`];
+              if (localValues.insured_entity) parts.push(`(${localValues.insured_entity})`);
+              if (localValues.premium) parts.push(`— current premium £${localValues.premium}/yr`);
+              if (localValues.provider) parts.push(`with ${localValues.provider}`);
+              if (localValues.renewal_date) parts.push(`renewing ${localValues.renewal_date}`);
+              onRequote(parts.join(" "));
             }}
             className="flex-shrink-0 mt-0.5 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded-md transition-colors"
           >
