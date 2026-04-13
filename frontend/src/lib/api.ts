@@ -31,6 +31,15 @@ export async function updatePolicyMetadata(
   if (!res.ok) throw new Error("Failed to update policy metadata");
 }
 
+export async function deletePolicy(sourcePaths: string[]): Promise<void> {
+  const res = await fetch("/api/delete-policy", {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ source_paths: sourcePaths }),
+  });
+  if (!res.ok) throw new Error("Failed to delete policy");
+}
+
 export async function uploadPolicy(
   file: File
 ): Promise<{ status: string; chunks: number; filename: string }> {

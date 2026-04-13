@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import type { Policy } from "../../lib/types";
 import { updatePolicyMetadata } from "../../lib/api";
 import { UploadButton } from "./UploadButton";
@@ -9,6 +9,7 @@ interface Props {
   loading: boolean;
   onPolicyClick: (policy: Policy) => void;
   onUpload: (file: File) => Promise<void>;
+  onDelete: (sourcePaths: string[], title: string) => Promise<void>;
   onRequote: (prompt: string) => void;
 }
 
@@ -117,6 +118,8 @@ function PolicyGroupCard({
   onRequote,
   onRename,
   onUpdateField,
+  onDelete,
+  onUpload,
 }: {
   group: PolicyGroup;
   customName: string | undefined;
@@ -124,6 +127,8 @@ function PolicyGroupCard({
   onRequote: (prompt: string) => void;
   onRename: (name: string) => void;
   onUpdateField: (sourcePaths: string[], field: string, value: string) => Promise<void>;
+  onDelete: (sourcePaths: string[], title: string) => Promise<void>;
+  onUpload: (file: File) => Promise<void>;
 }) {
   const { primary, docs } = group;
   const qt = getQuoteType(primary);
@@ -131,6 +136,8 @@ function PolicyGroupCard({
   const title = customName ?? autoTitle;
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleDraft, setTitleDraft] = useState("");
+  const [menuOpen, setMenuOpen] = useState(false);
+  const uploadRef = useRef<HTMLInputElement>(null);
 
   const asset = isAsset(primary);
   const fields = cardFields(primary.doc_type);
@@ -193,15 +200,45 @@ function PolicyGroupCard({
     return "text-gray-600";
   }
 
+  async function handleUploadChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    await onUpload(file);
+    if (uploadRef.current) uploadRef.current.value = "";
+  }
+
+  function handleDeleteClick(e: React.MouseEvent) {
+    e.stopPropagation();
+    setMenuOpen(false);
+    const sourcePaths = docs.map((d) => d.source_path);
+    onDelete(sourcePaths, title);
+  }
+
+  function handleUploadClick(e: React.MouseEvent) {
+    e.stopPropagation();
+    setMenuOpen(false);
+    uploadRef.current?.click();
+  }
+
   return (
     <div
       onClick={() => onDocClick(primary)}
-      className={`rounded-lg border px-3 py-2.5 cursor-pointer transition-colors ${
+      className={`relative rounded-lg border px-3 py-2.5 cursor-pointer transition-colors ${
         asset
           ? "border-dashed border-gray-300 bg-gray-50 hover:border-gray-400"
           : "border-gray-200 bg-white hover:border-gray-300"
       }`}
     >
+      {/* Hidden file input for per-card upload */}
+      <input
+        ref={uploadRef}
+        type="file"
+        accept=".pdf,application/pdf"
+        className="hidden"
+        onChange={handleUploadChange}
+        onClick={(e) => e.stopPropagation()}
+      />
+
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
           {editingTitle ? (
@@ -215,19 +252,19 @@ function PolicyGroupCard({
                 if (e.key === "Escape") setEditingTitle(false);
               }}
               onClick={(e) => e.stopPropagation()}
-              className="w-full text-sm font-medium text-gray-800 leading-snug bg-transparent border-b border-blue-400 outline-none"
+              className="w-full text-base font-medium text-gray-800 leading-snug bg-transparent border-b border-blue-400 outline-none"
             />
           ) : (
             <p
               onDoubleClick={startTitleEdit}
-              className="text-sm font-medium text-gray-800 leading-snug group/title"
+              className="text-base font-medium text-gray-800 leading-snug group/title"
               title="Double-click to rename"
             >
               {title}
               <span className="ml-1 opacity-0 group-hover/title:opacity-40 text-[10px] cursor-text select-none">✎</span>
             </p>
           )}
-          <dl className="mt-1.5 mb-2 grid grid-cols-[auto_1fr] gap-x-2 gap-y-0.5 text-[11px]">
+          <dl className="mt-1.5 mb-2 grid grid-cols-[auto_1fr] gap-x-2 gap-y-0.5 text-[13px]">
             {fields.map(({ key, label }) => {
               const value = localValues[key];
               const isEditing = editingField === key;
@@ -270,7 +307,7 @@ function PolicyGroupCard({
                     e.stopPropagation();
                     onDocClick(doc);
                   }}
-                  className="text-[10px] text-gray-500 hover:text-gray-800 hover:underline truncate text-left"
+                  className="text-[12px] text-gray-500 hover:text-gray-800 hover:underline truncate text-left"
                 >
                   ↳ {doc.filename.replace(/\.pdf$/i, "")}
                 </button>
@@ -279,7 +316,7 @@ function PolicyGroupCard({
                   target="_blank"
                   rel="noreferrer"
                   onClick={(e) => e.stopPropagation()}
-                  className="flex-shrink-0 text-[10px] text-blue-400 hover:text-blue-600"
+                  className="flex-shrink-0 text-[12px] text-blue-400 hover:text-blue-600"
                 >
                   ↗
                 </a>
@@ -287,22 +324,71 @@ function PolicyGroupCard({
             ))}
           </ul>
         </div>
-        {qt && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              const parts: string[] = [`Get me a new ${qt} insurance quote for ${title}`];
-              if (localValues.insured_entity) parts.push(`(${localValues.insured_entity})`);
-              if (localValues.premium) parts.push(`— current premium £${localValues.premium}/yr`);
-              if (localValues.provider) parts.push(`with ${localValues.provider}`);
-              if (localValues.renewal_date) parts.push(`renewing ${localValues.renewal_date}`);
-              onRequote(parts.join(" "));
-            }}
-            className="flex-shrink-0 mt-0.5 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded-md transition-colors"
-          >
-            Requote
-          </button>
-        )}
+
+        {/* Top-right controls */}
+        <div className="flex-shrink-0 flex flex-col items-end gap-1">
+          {/* 3-dot menu */}
+          <div className="relative">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setMenuOpen((o) => !o);
+              }}
+              className="w-6 h-6 flex items-center justify-center rounded hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors text-base leading-none"
+              title="More options"
+            >
+              ···
+            </button>
+            {menuOpen && (
+              <>
+                {/* Click-away backdrop */}
+                <div
+                  className="fixed inset-0 z-10"
+                  onClick={(e) => { e.stopPropagation(); setMenuOpen(false); }}
+                />
+                <div className="absolute right-0 top-7 z-20 bg-white rounded-lg shadow-lg border border-gray-200 py-1 w-44 text-sm">
+                  <button
+                    onClick={handleUploadClick}
+                    className="w-full text-left px-3 py-2 hover:bg-gray-50 text-gray-700 flex items-center gap-2"
+                  >
+                    <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 4v12m-4-4l4-4 4 4" />
+                    </svg>
+                    Upload document
+                  </button>
+                  <div className="my-1 border-t border-gray-100" />
+                  <button
+                    onClick={handleDeleteClick}
+                    className="w-full text-left px-3 py-2 hover:bg-red-50 text-red-600 flex items-center gap-2"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    Delete
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Requote button */}
+          {qt && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                const parts: string[] = [`Get me a new ${qt} insurance quote for ${title}`];
+                if (localValues.insured_entity) parts.push(`(${localValues.insured_entity})`);
+                if (localValues.premium) parts.push(`— current premium £${localValues.premium}/yr`);
+                if (localValues.provider) parts.push(`with ${localValues.provider}`);
+                if (localValues.renewal_date) parts.push(`renewing ${localValues.renewal_date}`);
+                onRequote(parts.join(" "));
+              }}
+              className="flex-shrink-0 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded-md transition-colors"
+            >
+              Requote
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -317,6 +403,8 @@ function PolicySection({
   onRequote,
   onRename,
   onUpdateField,
+  onDelete,
+  onUpload,
 }: {
   label: string;
   items: Policy[];
@@ -326,6 +414,8 @@ function PolicySection({
   onRequote: (prompt: string) => void;
   onRename: (key: string, name: string) => void;
   onUpdateField: (sourcePaths: string[], field: string, value: string) => Promise<void>;
+  onDelete: (sourcePaths: string[], title: string) => Promise<void>;
+  onUpload: (file: File) => Promise<void>;
 }) {
   const groups = groupPolicies(items);
   const typeMap = new Map<string, PolicyGroup[]>();
@@ -360,6 +450,8 @@ function PolicySection({
                   onRequote={onRequote}
                   onRename={(name) => onRename(group.key, name)}
                   onUpdateField={onUpdateField}
+                  onDelete={onDelete}
+                  onUpload={onUpload}
                 />
               </div>
             ))}
@@ -370,7 +462,7 @@ function PolicySection({
   );
 }
 
-export function FilingCabinet({ policies, loading, onPolicyClick, onUpload, onRequote }: Props) {
+export function FilingCabinet({ policies, loading, onPolicyClick, onUpload, onDelete, onRequote }: Props) {
   const relevant = policies.filter((p) => p.doc_type !== "other");
   const policyItems = relevant.filter((p) => !isAsset(p));
   const assetItems = relevant.filter((p) => isAsset(p));
@@ -418,6 +510,8 @@ export function FilingCabinet({ policies, loading, onPolicyClick, onUpload, onRe
                 onRequote={onRequote}
                 onRename={handleRename}
                 onUpdateField={handleUpdateField}
+                onDelete={onDelete}
+                onUpload={onUpload}
               />
             )}
             {assetItems.length > 0 && (
@@ -430,6 +524,8 @@ export function FilingCabinet({ policies, loading, onPolicyClick, onUpload, onRe
                 onRequote={onRequote}
                 onRename={handleRename}
                 onUpdateField={handleUpdateField}
+                onDelete={onDelete}
+                onUpload={onUpload}
               />
             )}
           </>

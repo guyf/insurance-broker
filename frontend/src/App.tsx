@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { FilingCabinet } from "./components/FilingCabinet";
 import { Broker } from "./components/Broker";
 import { QuotePanel } from "./components/QuotePanel";
-import { fetchPolicies, sendMessage, uploadPolicy } from "./lib/api";
+import { deletePolicy, fetchPolicies, sendMessage, uploadPolicy } from "./lib/api";
 import type { ChatMessage, Policy, QuoteResult } from "./lib/types";
 
 export default function App() {
@@ -96,6 +96,16 @@ export default function App() {
     }
   };
 
+  const handleDelete = async (sourcePaths: string[], title: string) => {
+    try {
+      await deletePolicy(sourcePaths);
+      showToast(`"${title}" deleted`);
+      loadPolicies();
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : "Delete failed", false);
+    }
+  };
+
   const handlePolicyClick = (policy: Policy) => {
     setPrefillInput(`Tell me about my ${policy.filename}`);
   };
@@ -109,6 +119,7 @@ export default function App() {
           loading={policiesLoading}
           onPolicyClick={handlePolicyClick}
           onUpload={handleUpload}
+          onDelete={handleDelete}
           onRequote={(prompt) => setPrefillInput(prompt)}
         />
       </aside>

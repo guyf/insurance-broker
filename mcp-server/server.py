@@ -200,6 +200,30 @@ def get_renewal_calendar() -> str:
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../ingestion"))
 
 
+async def delete_policy(request: Request) -> JSONResponse:
+    """Delete all document chunks for the given source paths."""
+    try:
+        body = await request.json()
+        source_paths = body.get("source_paths", [])
+
+        if not source_paths:
+            return JSONResponse({"error": "source_paths is required"}, status_code=400)
+
+        total = 0
+        sb = _supabase_service()
+        for sp in source_paths:
+            resp = sb.rpc(
+                "delete_documents_by_source_path", {"p_source_path": sp}
+            ).execute()
+            total += resp.data or 0
+
+        return JSONResponse({"status": "ok", "deleted": total})
+
+    except Exception as exc:
+        logger.exception("Delete failed")
+        return JSONResponse({"error": str(exc)}, status_code=500)
+
+
 async def update_policy(request: Request) -> JSONResponse:
     """Update metadata fields for all document chunks matching the given source paths."""
     try:
@@ -292,6 +316,9 @@ async def upload_document(request: Request) -> JSONResponse:
 def build_app() -> Starlette:
     broker_app = mcp.streamable_http_app()
     # Prepend /upload so it matches before FastMCP's catch-all routes
+    broker_app.router.routes.insert(
+        0, Route("/delete-policy", delete_policy, methods=["DELETE"])
+    )
     broker_app.router.routes.insert(
         0, Route("/update-policy", update_policy, methods=["PATCH"])
     )
