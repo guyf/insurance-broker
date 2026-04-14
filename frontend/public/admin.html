@@ -98,52 +98,6 @@
       font-weight: normal;
     }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.825rem;
-    }
-
-    thead th {
-      background: var(--surface2);
-      color: var(--muted);
-      font-size: 0.7rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      padding: 8px 12px;
-      text-align: left;
-      border-bottom: 1px solid var(--border);
-    }
-
-    tbody tr {
-      border-bottom: 1px solid var(--border);
-      transition: background 0.1s;
-    }
-
-    tbody tr:hover { background: var(--surface); }
-    tbody tr:last-child { border-bottom: none; }
-
-    td {
-      padding: 10px 12px;
-      color: var(--text);
-      vertical-align: middle;
-    }
-
-    td.doc-name { color: var(--text); max-width: 320px; }
-
-    td.url-cell {
-      max-width: 360px;
-    }
-
-    td.url-cell a {
-      color: var(--muted);
-      text-decoration: none;
-      font-size: 0.775rem;
-      word-break: break-all;
-    }
-
-    td.url-cell a:hover { color: var(--teal); text-decoration: underline; }
 
     /* ── Status badge ── */
     .badge {
@@ -212,14 +166,70 @@
 
     .hint strong { color: var(--teal); }
 
-    /* ── Wrapper ── */
-    .card {
+    /* ── Single table per tab ── */
+    .registry-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.825rem;
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 12px;
       overflow: hidden;
-      margin-bottom: 12px;
+      margin-bottom: 20px;
+      table-layout: fixed;
     }
+
+    .registry-table colgroup col:nth-child(1) { width: 28%; }
+    .registry-table colgroup col:nth-child(2) { width: 56%; }
+    .registry-table colgroup col:nth-child(3) { width: 16%; }
+
+    .registry-table thead th {
+      background: var(--surface2);
+      color: var(--muted);
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 10px 14px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .registry-table tbody tr { border-bottom: 1px solid var(--border); }
+    .registry-table tbody tr:last-child { border-bottom: none; }
+    .registry-table tbody tr:hover td { background: var(--surface2); }
+
+    .registry-table td {
+      padding: 10px 14px;
+      vertical-align: middle;
+      overflow: hidden;
+    }
+
+    /* Provider group header row */
+    .registry-table tr.group-header td {
+      background: var(--bg);
+      color: var(--muted);
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 7px 14px;
+      border-top: 1px solid var(--border);
+    }
+    .registry-table tr.group-header:first-child td { border-top: none; }
+
+    .doc-name-cell { color: var(--text); }
+
+    .url-link {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.775rem;
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .url-link:hover { color: var(--teal); text-decoration: underline; }
   </style>
 </head>
 <body>
@@ -378,28 +388,20 @@ function renderType(type) {
       <div class="summary-item pending"><strong>${totalDocs - ingestedCount}</strong> not yet ingested</div>
       <div class="summary-item"><strong>${totalDocs}</strong> total documents</div>
     </div>
+    <table class="registry-table">
+      <colgroup><col/><col/><col/></colgroup>
+      <thead>
+        <tr>
+          <th>Document</th>
+          <th>URL</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
   `;
 
   for (const [provider, docs] of Object.entries(providers)) {
-    const allIngested = loaded && docs.every(d => ingestedPaths.has(sourcePath(type, provider, d.url)));
-    html += `
-      <div class="card">
-        <div style="padding:12px 14px 8px; border-bottom:1px solid var(--border)">
-          <span class="provider-name">
-            ${provider}
-            <span class="provider-count">${docs.length} document${docs.length !== 1 ? "s" : ""}</span>
-          </span>
-        </div>
-        <table>
-          <thead>
-            <tr>
-              <th>Document</th>
-              <th>URL</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-    `;
+    html += `<tr class="group-header"><td colspan="3">${provider}</td></tr>`;
     for (const doc of docs) {
       const sp = sourcePath(type, provider, doc.url);
       const isIngested = loaded && ingestedPaths.has(sp);
@@ -408,19 +410,19 @@ function renderType(type) {
         : isIngested
           ? `<span class="badge ingested"><span class="dot"></span>Ingested</span>`
           : `<span class="badge not-ingested"><span class="dot"></span>Not ingested</span>`;
-
       html += `
         <tr>
-          <td class="doc-name">${doc.name}</td>
-          <td class="url-cell"><a href="${doc.url}" target="_blank" rel="noreferrer">${doc.url}</a></td>
+          <td class="doc-name-cell">${doc.name}</td>
+          <td><a class="url-link" href="${doc.url}" target="_blank" rel="noreferrer" title="${doc.url}">${doc.url}</a></td>
           <td>${badge}</td>
         </tr>
       `;
     }
-    html += `</tbody></table></div>`;
   }
 
   html += `
+      </tbody>
+    </table>
     <div class="hint">
       <strong>To ingest:</strong> ask Claude — e.g.
       "<em>Ingest all ${type} market policies</em>" or
