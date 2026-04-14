@@ -147,5 +147,11 @@ MARKET_POLICIES: dict[str, dict[str, list[dict]]] = {
                 "url": "https://www.aviva.co.uk/static/library/pdfs/pet/pet-insurance-policy.pdf",
             }
         ],
+        "ManyPets": [
+            {
+                "name": "ManyPets Pet Insurance Handbook",
+                "url": "https://manypets.com/uk/resources/policy-wording/Pet-Insurance-Handbook-2024-08-01-IBS.pdf",
+            }
+        ],
     },
 }
