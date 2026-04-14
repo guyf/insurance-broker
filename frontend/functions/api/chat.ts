@@ -11,6 +11,7 @@ const BROKER_TOOLS = new Set([
   "search_insurance_docs",
   "list_policies",
   "get_renewal_calendar",
+  "ingest_market_policies",
 ]);
 const QUOTE_TOOLS = new Set([
   "get_home_quote",
@@ -321,6 +322,25 @@ const TOOLS: Anthropic.Tool[] = [
     },
   },
   {
+    name: "ingest_market_policies",
+    description:
+      "Download and ingest publicly available policy booklets from major UK insurers into the knowledge base. Call this when the user wants to add a specific insurer's policy for comparison, or when list_policies() shows a market insurer is missing.",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        policy_type: {
+          type: "string",
+          description: "car, home, or pet",
+        },
+        provider: {
+          type: "string",
+          description: "Optional: specific insurer name e.g. 'Admiral'. If omitted, ingests all providers for the type.",
+        },
+      },
+      required: ["policy_type"],
+    },
+  },
+  {
     name: "analyze_photo",
     description:
       "Analyse a photo using GPT-4o-mini vision to extract asset details for pre-filling a quote.",
@@ -372,22 +392,25 @@ FCA-authorised broker for actual cover.
 ## Document Access
 
 > **Important:** The MCP tools below are your **only** source of information
-> about the user's policies. Do **not** read files directly from Google Drive,
-> the local filesystem, or any other source. Google Drive exists solely for the
-> ingestion pipeline — it is not a query interface. If a document is not
+> about policies. Do **not** read files directly from Google Drive,
+> the local filesystem, or any other source. If a document is not
 > findable via the MCP tools, it has not been ingested and you should say so.
 
-Documents are stored in a vector database and accessed via MCP tools from the
-\`insurance-broker-mcp\` server:
+The knowledge base contains **two types of documents**:
 
-- **\`search_insurance_docs(query, policy_type?, limit?)\`** — semantic search across all
-  policy and asset documents. Use for any question about coverage, terms, exclusions, limits.
-- **\`list_policies()\`** — lists all documents in the knowledge base. Use first to check
-  what's available.
-- **\`get_renewal_calendar()\`** — all policies with recorded renewal dates, sorted
-  chronologically. Use for renewal overview requests.
+1. **Personal policies** — the user's own insurance documents (source paths start with \`Insurance/\` or asset folders)
+2. **Market policy booklets** — publicly available policy wordings from major UK insurers, ingested for comparison purposes (source paths start with \`market/\`). These include motor, home, and pet policies from insurers such as Admiral, Direct Line, Aviva, Churchill, LV=, AXA, Hastings Direct, Petplan, ManyPets, More Than, and Animal Friends.
 
-\`policy_type\` values: \`car\`, \`home\`, \`breakdown\`, \`life\`, \`phone\`, \`travel\`, \`asset\`
+Use \`list_policies()\` to see everything available. When the user asks to compare their cover against the market, or asks about what other insurers offer, search the market documents — they are already in the database.
+
+MCP tools from the \`insurance-broker-mcp\` server:
+
+- **\`search_insurance_docs(query, policy_type?, limit?)\`** — semantic search across ALL documents (personal + market). Use for any question about coverage, terms, exclusions, or limits.
+- **\`list_policies()\`** — lists all documents in the knowledge base. Use first to check what's available.
+- **\`get_renewal_calendar()\`** — all policies with recorded renewal dates, sorted chronologically. Use for renewal overview requests.
+- **\`ingest_market_policies(policy_type, provider?)\`** — downloads and ingests policy booklets from major UK insurers into the knowledge base. Call this if the user asks to add a specific insurer or if \`list_policies()\` shows a gap in market coverage. \`policy_type\`: car, home, or pet. \`provider\`: optional name (e.g. "Admiral").
+
+\`policy_type\` filter values: \`car\`, \`home\`, \`breakdown\`, \`life\`, \`phone\`, \`travel\`, \`asset\`
 
 ---
 
