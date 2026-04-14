@@ -1,4 +1,5 @@
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import type { ChatMessage } from "../../lib/types";
 
 export function Message({ message }: { message: ChatMessage }) {
@@ -25,6 +26,7 @@ export function Message({ message }: { message: ChatMessage }) {
 
       <div className="flex-1 min-w-0 text-sm text-gray-800 leading-relaxed">
         <ReactMarkdown
+          remarkPlugins={[remarkGfm]}
           components={{
             p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
             ul: ({ children }) => <ul className="mb-2 pl-4 list-disc space-y-0.5">{children}</ul>,
@@ -44,6 +46,21 @@ export function Message({ message }: { message: ChatMessage }) {
             h1: ({ children }) => <h1 className="text-base font-semibold text-gray-900 mb-2">{children}</h1>,
             h2: ({ children }) => <h2 className="text-sm font-semibold text-gray-900 mb-1.5">{children}</h2>,
             h3: ({ children }) => <h3 className="text-sm font-semibold text-gray-900 mb-1">{children}</h3>,
+            table: ({ children }) => (
+              <div className="overflow-x-auto mb-3">
+                <table className="text-xs border-collapse w-full">{children}</table>
+              </div>
+            ),
+            thead: ({ children }) => <thead className="bg-gray-100">{children}</thead>,
+            th: ({ children }) => (
+              <th className="border border-gray-200 px-2.5 py-1.5 text-left font-semibold text-gray-700 whitespace-nowrap">
+                {children}
+              </th>
+            ),
+            td: ({ children }) => (
+              <td className="border border-gray-200 px-2.5 py-1.5 text-gray-700">{children}</td>
+            ),
+            tr: ({ children }) => <tr className="even:bg-gray-50">{children}</tr>,
           }}
         >
           {message.content}
