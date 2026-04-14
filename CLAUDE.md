@@ -71,11 +71,15 @@ insurance-broker/
 │   ├── requirements.txt
 │   └── .env.example
 ├── mcp-server/
-│   ├── server.py                     # FastMCP SSE server, 3 tools
+│   ├── server.py                     # FastMCP streamable-http server, 4 MCP tools + 3 HTTP endpoints
+│   ├── market_policies.py            # Curated registry of UK insurer policy booklet URLs
 │   ├── requirements.txt
 │   ├── Procfile                      # Railway start command
 │   ├── railway.toml
 │   └── .env.example
+├── docs/
+│   ├── architecture.html             # Architecture diagrams (source; copied to frontend/public/)
+│   └── pitch.html                    # Pitch presentation (source; copied to frontend/public/)
 └── mcp-quote/
     ├── server.py                     # FastMCP streamable-http, 4 tools
     ├── pricer.py                     # Deterministic home/motor/pet pricing
@@ -90,14 +94,16 @@ insurance-broker/
 
 **URL:** `https://insurance-broker-production-85e3.up.railway.app/sse`
 
-**Three MCP tools:**
-- `search_insurance_docs(query, policy_type?, limit?)` — semantic search
+**Four MCP tools:**
+- `search_insurance_docs(query, policy_type?, limit?)` — semantic search across all docs (personal + market)
 - `list_policies()` — inventory of all ingested documents
 - `get_renewal_calendar()` — renewal dates, flags within 60 days
+- `ingest_market_policies(policy_type, provider?)` — download & ingest public policy booklets from major UK insurers; `policy_type`: car/home/pet; `provider` optional (e.g. "Admiral")
 
-**Two HTTP endpoints (non-MCP):**
+**Three HTTP endpoints (non-MCP):**
 - `POST /upload` — PDF ingestion (chunked, embedded, upserted)
 - `PATCH /update-policy` — merge-update metadata fields for a set of source_paths
+- `DELETE /delete-policy` — delete all chunks for a set of source_paths
 
 **Claude Desktop config** uses `supergateway` as a stdio↔streamable-http bridge:
 ```json
@@ -167,8 +173,11 @@ RLS is enabled from day one. Phase 1 allows service role only.
 | `Cars/…` | asset | car | — |
 | `Bikes/…` | asset | bike | — |
 | `Appliances & Machines/…` | asset | appliance | — |
+| `market/{type}/{provider}/…` | policy | car / home / pet | — |
 
 `insured_entity` can also be set freely via the web UI card editor (e.g. "BMW i3") and is persisted back to Supabase via `PATCH /api/update-policy`.
+
+Market policy paths (`market/…`) are filtered out of the Filing Cabinet UI — they live in the DB for comparison queries only. Ingestion status is visible at `/admin`.
 
 ## Quote MCP Server (Railway)
 

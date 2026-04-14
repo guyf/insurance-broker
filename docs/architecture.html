@@ -491,7 +491,7 @@
             <li>search_insurance_docs</li>
             <li>list_policies</li>
             <li>get_renewal_calendar</li>
-            <li>update_policy_metadata</li>
+            <li>ingest_market_policies</li>
           </ul>
         </div>
         <div class="comp-box">
@@ -521,6 +521,7 @@
             <li style="color:#86efac;">list_policies()</li>
             <li style="color:#86efac;">get_renewal_calendar()</li>
             <li style="color:#86efac;">update_policy_metadata(source_paths, updates)</li>
+            <li style="color:#86efac;">delete_documents_by_source_path(source_path)</li>
           </ul>
         </div>
       </div>
@@ -576,10 +577,14 @@
     <!-- Source -->
     <div class="layer layer-source">
       <div class="layer-label">Source</div>
-      <div class="layer-content">
+      <div class="layer-content" style="gap:1.5rem;">
         <div class="comp-box">
           <div class="comp-title">Google Drive PDFs</div>
           <div class="comp-detail">Mounted via Google Drive app<br/>~/Library/CloudStorage/…/AI Broker/<br/>Insurance/ · Cars/ · Bikes/ · Appliances &amp; Machines/</div>
+        </div>
+        <div class="comp-box">
+          <div class="comp-title">Market Policy Registry</div>
+          <div class="comp-detail">Curated list of public policy booklet URLs<br/>mcp-server/market_policies.py<br/><span style="color:#fbbf24;">Motor · Home · Pet — 17 major UK insurers</span><br/>Ingested on-demand via ingest_market_policies tool<br/>source_path: market/{type}/{provider}/{file}</div>
         </div>
       </div>
     </div>
@@ -645,6 +650,8 @@
           <div class="svc-row" style="padding-left:1rem;"><span class="v" style="color:var(--muted);">Proxies metadata edits to broker-mcp /update-policy</span></div>
           <div class="svc-row"><span class="k">POST /api/upload</span></div>
           <div class="svc-row" style="padding-left:1rem;"><span class="v" style="color:var(--muted);">Streams PDF to broker-mcp /upload</span></div>
+          <div class="svc-row"><span class="k">DELETE /api/delete-policy</span></div>
+          <div class="svc-row" style="padding-left:1rem;"><span class="v" style="color:var(--muted);">Proxies chunk deletion to broker-mcp /delete-policy</span></div>
           <div class="svc-row" style="margin-top:.5rem;"><span class="k">Env vars:</span><span class="v amber">ANTHROPIC_API_KEY</span></div>
         </div>
       </div>
@@ -669,7 +676,7 @@
       <div class="svc-row"><span class="k">Framework:</span><span class="v">FastMCP (Python)</span></div>
       <div class="svc-row"><span class="k">Start:</span><span class="v">Procfile → uvicorn</span></div>
       <div class="svc-row"><span class="k">Root:</span><span class="v">/mcp-server</span></div>
-      <div class="svc-row"><span class="k">Env vars:</span><span class="v amber">OPENAI_API_KEY<br/>SUPABASE_URL<br/>SUPABASE_ANON_KEY<br/>PORT</span></div>
+      <div class="svc-row"><span class="k">Env vars:</span><span class="v amber">OPENAI_API_KEY<br/>SUPABASE_URL<br/>SUPABASE_ANON_KEY<br/>SUPABASE_SERVICE_ROLE_KEY<br/>PORT</span></div>
     </div>
 
     <!-- Railway quote-mcp -->
@@ -745,7 +752,7 @@
         <tr>
           <td class="from-to">CF Pages /api/chat → broker-mcp</td>
           <td class="label">—</td>
-          <td class="detail">HTTPS MCP tool calls: search_insurance_docs · list_policies · get_renewal_calendar</td>
+          <td class="detail">HTTPS MCP tool calls: search_insurance_docs · list_policies · get_renewal_calendar · ingest_market_policies</td>
         </tr>
         <tr>
           <td class="from-to">CF Pages /api/chat → quote-mcp</td>
@@ -766,6 +773,11 @@
           <td class="from-to">CF Pages /api/update-policy → broker-mcp</td>
           <td class="label">—</td>
           <td class="detail">HTTPS PATCH · proxies inline card edits · broker-mcp calls update_policy_metadata() RPC</td>
+        </tr>
+        <tr>
+          <td class="from-to">CF Pages /api/delete-policy → broker-mcp</td>
+          <td class="label">—</td>
+          <td class="detail">HTTPS DELETE · proxies card delete · broker-mcp calls delete_documents_by_source_path() RPC</td>
         </tr>
         <tr class="section-header"><td colspan="3">Claude Desktop Path (alternative)</td></tr>
         <tr>
@@ -792,7 +804,7 @@
         <tr>
           <td class="from-to">broker-mcp → Supabase</td>
           <td class="label">SUPABASE_URL + SUPABASE_ANON_KEY / SERVICE_ROLE_KEY</td>
-          <td class="detail">PostgREST RPC calls · search_documents · list_policies · get_renewal_calendar · update_policy_metadata</td>
+          <td class="detail">PostgREST RPC calls · search_documents · list_policies · get_renewal_calendar · update_policy_metadata · delete_documents_by_source_path</td>
         </tr>
         <tr>
           <td class="from-to">quote-mcp → OpenAI</td>
