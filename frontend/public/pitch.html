@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Insurance Broker — Pitch</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:         #0f172a;
+      --surface:    #1e293b;
+      --surface2:   #263348;
+      --border:     #334155;
+      --text:       #e2e8f0;
+      --muted:      #94a3b8;
+      --teal:       #0d9488;
+      --teal-dim:   #134e4a;
+      --blue:       #3b82f6;
+      --blue-dim:   #1e3a8a;
+      --purple:     #8b5cf6;
+      --purple-dim: #3b0764;
+      --amber:      #f59e0b;
+      --amber-dim:  #78350f;
+      --green:      #22c55e;
+      --green-dim:  #14532d;
+      --rose:       #f43f5e;
+      --rose-dim:   #881337;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    /* ── Nav dots ─────────────────────────────────────────── */
+    nav.dots { display: none; }
+
+    /* ── Sections ─────────────────────────────────────────── */
+    section {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 80px 60px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    section::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      opacity: 0.035;
+      background-image: radial-gradient(circle, #fff 1px, transparent 1px);
+      background-size: 28px 28px;
+      pointer-events: none;
+    }
+
+    .slide-inner {
+      max-width: 900px;
+      width: 100%;
+      z-index: 1;
+    }
+
+    /* ── Slide number ─────────────────────────────────────── */
+    .slide-num {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 20px;
+    }
+
+    /* ── Headlines ────────────────────────────────────────── */
+    h1 {
+      font-size: clamp(2rem, 5vw, 3.4rem);
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      margin-bottom: 24px;
+    }
+    h2 {
+      font-size: clamp(1.5rem, 3.5vw, 2.4rem);
+      font-weight: 700;
+      line-height: 1.2;
+      letter-spacing: -0.015em;
+      margin-bottom: 20px;
+    }
+    .accent-teal   { color: var(--teal); }
+    .accent-blue   { color: var(--blue); }
+    .accent-purple { color: var(--purple); }
+    .accent-amber  { color: var(--amber); }
+    .accent-green  { color: var(--green); }
+    .accent-rose   { color: var(--rose); }
+
+    p.lead {
+      font-size: clamp(1rem, 2vw, 1.2rem);
+      color: var(--muted);
+      max-width: 680px;
+      margin-bottom: 40px;
+    }
+
+    /* ── Stat cards ───────────────────────────────────────── */
+    .stat-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px 20px;
+      text-align: center;
+    }
+    .stat-card .big {
+      font-size: 2.4rem;
+      font-weight: 800;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-card .label {
+      font-size: 0.8rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    /* ── Feature grid ─────────────────────────────────────── */
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      margin-top: 8px;
+    }
+    .feature-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 22px 20px;
+    }
+    .feature-card .icon {
+      font-size: 1.6rem;
+      margin-bottom: 12px;
+      display: block;
+    }
+    .feature-card h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .feature-card p {
+      font-size: 0.875rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    /* ── Comparison table ─────────────────────────────────── */
+    .compare {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 2px;
+      background: var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+    .compare-cell {
+      background: var(--surface);
+      padding: 16px 18px;
+      font-size: 0.9rem;
+    }
+    .compare-cell.header {
+      background: var(--surface2);
+      font-weight: 700;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      padding: 14px 18px;
+    }
+    .compare-cell.hl { color: var(--green); font-weight: 600; }
+    .compare-cell.bad { color: var(--rose); }
+    .check { color: var(--green); margin-right: 6px; }
+    .cross { color: var(--rose); margin-right: 6px; }
+
+    /* ── Architecture boxes ───────────────────────────────── */
+    .arch-flow {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 8px;
+    }
+    .arch-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+    }
+    .arch-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 18px;
+    }
+    .arch-box .title {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 6px;
+    }
+    .arch-box p {
+      font-size: 0.8rem;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+    .arch-arrow {
+      text-align: center;
+      color: var(--muted);
+      font-size: 1.2rem;
+      line-height: 1;
+    }
+
+    /* ── Distribution model ───────────────────────────────── */
+    .dist-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 14px;
+      margin-top: 8px;
+    }
+    .dist-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px 18px;
+      position: relative;
+      overflow: hidden;
+    }
+    .dist-card::after {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+    }
+    .dist-card.c1::after { background: var(--teal); }
+    .dist-card.c2::after { background: var(--blue); }
+    .dist-card.c3::after { background: var(--purple); }
+    .dist-card.c4::after { background: var(--amber); }
+    .dist-card h3 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .dist-card p {
+      font-size: 0.82rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    .tag {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 2px 8px;
+      border-radius: 99px;
+      margin-bottom: 10px;
+    }
+
+    /* ── Quote ────────────────────────────────────────────── */
+    blockquote {
+      border-left: 3px solid var(--teal);
+      padding-left: 20px;
+      margin: 32px 0;
+      font-size: 1.1rem;
+      font-style: italic;
+      color: var(--muted);
+    }
+
+    /* ── Divider ──────────────────────────────────────────── */
+    hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
+
+    /* ── CTA ──────────────────────────────────────────────── */
+    .cta-pill {
+      display: inline-block;
+      background: var(--teal);
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.9rem;
+      padding: 10px 24px;
+      border-radius: 99px;
+      margin-top: 8px;
+      letter-spacing: 0.02em;
+    }
+
+    /* ── Scroll hint ──────────────────────────────────────── */
+    .scroll-hint { display: none; }
+
+    /* ── Section backgrounds ──────────────────────────────── */
+    #s1 { background: radial-gradient(ellipse at 70% 30%, #1a0a2e 0%, var(--bg) 60%); }
+    #s2 { background: radial-gradient(ellipse at 30% 60%, #0a2218 0%, var(--bg) 60%); }
+    #s3 { background: radial-gradient(ellipse at 70% 70%, #0a1a30 0%, var(--bg) 60%); }
+    #s4 { background: radial-gradient(ellipse at 30% 30%, #1a1a08 0%, var(--bg) 60%); }
+    #s5 { background: radial-gradient(ellipse at 70% 50%, #0a1830 0%, var(--bg) 60%); }
+    #s6 { background: radial-gradient(ellipse at 30% 60%, #150a2e 0%, var(--bg) 60%); }
+
+    /* ── Fade-in on scroll ────────────────────────────────── */
+    .fade-in {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .fade-in.visible {
+      opacity: 1;
+      transform: none;
+    }
+    .fade-in:nth-child(2) { transition-delay: 0.1s; }
+    .fade-in:nth-child(3) { transition-delay: 0.2s; }
+    .fade-in:nth-child(4) { transition-delay: 0.3s; }
+    .fade-in:nth-child(5) { transition-delay: 0.4s; }
+  </style>
+</head>
+<body>
+
+<!-- Nav dots -->
+<nav class="dots" id="nav-dots">
+  <a href="#s1" title="Disruption"></a>
+  <a href="#s2" title="The AI Broker"></a>
+  <a href="#s3" title="Customer Benefits"></a>
+  <a href="#s4" title="What It Does"></a>
+  <a href="#s5" title="Architecture"></a>
+  <a href="#s6" title="B2B Distribution"></a>
+</nav>
+
+<!-- ── Slide 1: Disruption ──────────────────────────────── -->
+<section id="s1">
+  <div class="slide-inner">
+    <div class="slide-num fade-in">01 / Market Disruption</div>
+    <h1 class="fade-in">AI Is <span class="accent-rose">Disrupting</span><br>Insurance Distribution</h1>
+    <p class="lead fade-in">Legacy brokers and aggregators built for the pre-AI era are already feeling the pressure. The window to define the next model is open — but not for long.</p>
+
+    <div class="stat-row fade-in">
+      <div class="stat-card">
+        <div class="big accent-rose">−34%</div>
+        <div class="label">Avg. share price decline in traditional brokers, 2023–25</div>
+      </div>
+      <div class="stat-card">
+        <div class="big accent-amber">£90B</div>
+        <div class="label">UK insurance GWP up for disruption</div>
+      </div>
+      <div class="stat-card">
+        <div class="big accent-green">3×</div>
+        <div class="label">Faster policy research with AI vs. manual comparison</div>
+      </div>
+    </div>
+
+    <blockquote class="fade-in">"The intermediary model hasn't fundamentally changed in 30 years. AI gives us the first real opportunity to rebuild it from scratch — in the customer's favour."</blockquote>
+  </div>
+  <div class="scroll-hint">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+    Scroll
+  </div>
+</section>
+
+<!-- ── Slide 2: AI Broker ────────────────────────────────── -->
+<section id="s2">
+  <div class="slide-inner">
+    <div class="slide-num fade-in">02 / The Opportunity</div>
+    <h2 class="fade-in">Bringing Back the <span class="accent-green">F2F Broker</span> — at Internet Scale</h2>
+    <p class="lead fade-in">A great human broker knows your life, remembers your history, and searches the whole market on your behalf. Price comparison sites gave us breadth but lost the intelligence. AI gives us both.</p>
+
+    <div class="compare fade-in">
+      <div class="compare-cell header"></div>
+      <div class="compare-cell header">Traditional F2F Broker</div>
+      <div class="compare-cell header">Price Comparison</div>
+
+      <div class="compare-cell" style="background:var(--surface2);font-size:0.8rem;font-weight:600;color:var(--muted);">Whole-of-market access</div>
+      <div class="compare-cell hl"><span class="check">✓</span>Yes</div>
+      <div class="compare-cell hl"><span class="check">✓</span>Yes</div>
+
+      <div class="compare-cell" style="background:var(--surface2);font-size:0.8rem;font-weight:600;color:var(--muted);">Remembers your policies</div>
+      <div class="compare-cell hl"><span class="check">✓</span>Yes</div>
+      <div class="compare-cell bad"><span class="cross">✗</span>No</div>
+
+      <div class="compare-cell" style="background:var(--surface2);font-size:0.8rem;font-weight:600;color:var(--muted);">Explains coverage gaps</div>
+      <div class="compare-cell hl"><span class="check">✓</span>Yes</div>
+      <div class="compare-cell bad"><span class="cross">✗</span>No</div>
+
+      <div class="compare-cell" style="background:var(--surface2);font-size:0.8rem;font-weight:600;color:var(--muted);">Flags renewal dates</div>
+      <div class="compare-cell hl"><span class="check">✓</span>Yes</div>
+      <div class="compare-cell bad"><span class="cross">✗</span>No</div>
+
+      <div class="compare-cell" style="background:var(--surface2);font-size:0.8rem;font-weight:600;color:var(--muted);">Available 24/7 instantly</div>
+      <div class="compare-cell bad"><span class="cross">✗</span>No</div>
+      <div class="compare-cell hl"><span class="check">✓</span>Yes</div>
+
+      <div class="compare-cell" style="background:var(--surface2);font-size:0.8rem;font-weight:600;color:var(--muted);">Scales to millions of users</div>
+      <div class="compare-cell bad"><span class="cross">✗</span>No</div>
+      <div class="compare-cell hl"><span class="check">✓</span>Yes</div>
+
+      <div class="compare-cell" style="background:var(--surface2);font-size:0.8rem;font-weight:600;color:var(--muted);border-radius:0 0 0 10px">Affordable at scale</div>
+      <div class="compare-cell bad"><span class="cross">✗</span>No</div>
+      <div class="compare-cell hl" style="border-radius:0 0 10px 0"><span class="check">✓</span>Yes</div>
+    </div>
+
+    <p style="margin-top:20px;font-size:0.85rem;color:var(--teal);font-weight:600;" class="fade-in">
+      The AI Broker checks every box.
+    </p>
+  </div>
+</section>
+
+<!-- ── Slide 3: Customer Benefits ───────────────────────── -->
+<section id="s3">
+  <div class="slide-inner">
+    <div class="slide-num fade-in">03 / Customer Benefits</div>
+    <h2 class="fade-in">Beyond the <span class="accent-amber">Race to the Bottom</span></h2>
+    <p class="lead fade-in">Price comparison sites optimised for click economics, not customer outcomes. The cheapest policy is rarely the right policy. AI brokers optimise for value — the best cover at a fair price.</p>
+
+    <div class="feature-grid fade-in">
+      <div class="feature-card">
+        <span class="icon">🛡️</span>
+        <h3>Coverage that actually fits</h3>
+        <p>Reads and understands your actual policy documents. Spots gaps between what you think you're covered for and what the small print says.</p>
+      </div>
+      <div class="feature-card">
+        <span class="icon">📅</span>
+        <h3>Never miss a renewal</h3>
+        <p>Tracks every policy renewal date across home, car, life, travel and more. Alerts you in time to shop around — not after auto-renewal locks you in.</p>
+      </div>
+      <div class="feature-card">
+        <span class="icon">💬</span>
+        <h3>Plain-English answers</h3>
+        <p>Ask "am I covered if my boiler floods the kitchen?" and get a direct answer citing your policy, not a wall of jargon to interpret yourself.</p>
+      </div>
+      <div class="feature-card">
+        <span class="icon">⚖️</span>
+        <h3>Compare on value, not price</h3>
+        <p>Illustrative quotes from multiple insurers with feature-by-feature comparison. See exactly what you gain or lose for each pound saved.</p>
+      </div>
+      <div class="feature-card">
+        <span class="icon">📂</span>
+        <h3>One place for everything</h3>
+        <p>All policies — home, cars, bikes, appliances — in a single organised view. No more hunting through email inboxes or filing cabinets.</p>
+      </div>
+      <div class="feature-card">
+        <span class="icon">🔒</span>
+        <h3>Your data, your broker</h3>
+        <p>Documents are embedded into your private vector store. Your policies are never used to train models or shared with insurers.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Slide 4: What It Does ─────────────────────────────── -->
+<section id="s4">
+  <div class="slide-inner">
+    <div class="slide-num fade-in">04 / The Product</div>
+    <h2 class="fade-in">What the <span class="accent-amber">AI Broker</span> Does</h2>
+    <p class="lead fade-in">A working prototype — not a concept. Upload your policy PDFs and talk to your broker immediately.</p>
+
+    <div class="feature-grid fade-in">
+      <div class="feature-card">
+        <span class="icon">🔍</span>
+        <h3>Semantic policy search</h3>
+        <p>Asks questions across all your documents simultaneously. Surfaces the exact clause that answers your question with similarity scoring.</p>
+      </div>
+      <div class="feature-card">
+        <span class="icon">📊</span>
+        <h3>Policy filing cabinet</h3>
+        <p>Visual dashboard of every policy and asset — provider, premium, renewal date, insured entity — all editable in-place. Delete or replace documents at any time.</p>
+      </div>
+      <div class="feature-card">
+        <span class="icon">💰</span>
+        <h3>Live requoting</h3>
+        <p>One click to get illustrative quotes from three competing insurers for home, motor, or pet cover — benchmarked against your current premium.</p>
+      </div>
+      <div class="feature-card">
+        <span class="icon">📸</span>
+        <h3>Photo asset recognition</h3>
+        <p>Photograph a car, bike, or appliance — GPT-4o vision automatically identifies make, model, and value to pre-fill your quote request.</p>
+      </div>
+      <div class="feature-card">
+        <span class="icon">🗓️</span>
+        <h3>Renewal calendar</h3>
+        <p>Chronological view of all upcoming renewals. Policies expiring within 60 days are flagged automatically so you act before auto-renewal.</p>
+      </div>
+      <div class="feature-card">
+        <span class="icon">☁️</span>
+        <h3>Instant PDF ingestion</h3>
+        <p>Drop any policy PDF into the interface. It's chunked, embedded, and searchable in seconds — no manual data entry required.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Slide 5: Architecture ─────────────────────────────── -->
+<section id="s5">
+  <div class="slide-inner">
+    <div class="slide-num fade-in">05 / How It Works</div>
+    <h2 class="fade-in">Architecture — <span class="accent-blue">Built to Scale</span></h2>
+    <p class="lead fade-in">A production-grade RAG pipeline with agentic tool-use, deployed on serverless infrastructure. Every layer is independently scalable.</p>
+
+    <div class="arch-flow fade-in">
+
+      <!-- Layer 1: Ingestion -->
+      <div class="arch-row">
+        <div class="arch-box" style="border-color:var(--teal)">
+          <div class="title" style="color:var(--teal)">📄 Policy PDFs</div>
+          <p>Customer uploads via web UI or local Google Drive sync. Any insurer, any format.</p>
+        </div>
+        <div class="arch-box" style="border-color:var(--teal)">
+          <div class="title" style="color:var(--teal)">⚙️ Ingestion Pipeline</div>
+          <p>PDF extraction → semantic chunking → OpenAI embeddings (text-embedding-3-small). SHA-256 dedup prevents re-processing.</p>
+        </div>
+        <div class="arch-box" style="border-color:var(--teal)">
+          <div class="title" style="color:var(--teal)">🗄️ Supabase Vector DB</div>
+          <p>pgvector with HNSW index. JSONB metadata per chunk: policy type, provider, premium, renewal date, insured entity.</p>
+        </div>
+      </div>
+
+      <div class="arch-arrow">↓</div>
+
+      <!-- Layer 2: MCP Servers -->
+      <div class="arch-row">
+        <div class="arch-box" style="border-color:var(--blue)">
+          <div class="title" style="color:var(--blue)">🔧 Broker MCP Server</div>
+          <p>Railway-hosted. Tools: semantic search, policy inventory, renewal calendar. Also handles PDF upload and metadata updates.</p>
+        </div>
+        <div class="arch-box" style="border-color:var(--blue)">
+          <div class="title" style="color:var(--blue)">💲 Quote MCP Server</div>
+          <p>Stateless Railway service. Tools: home / motor / pet quotes from 3 insurers, GPT-4o-mini photo analysis for asset identification.</p>
+        </div>
+      </div>
+
+      <div class="arch-arrow">↓</div>
+
+      <!-- Layer 3: AI -->
+      <div class="arch-row">
+        <div class="arch-box" style="border-color:var(--purple);grid-column:1/-1">
+          <div class="title" style="color:var(--purple)">🤖 Claude (claude-sonnet-4-6) — Agentic Tool-Use Loop</div>
+          <p>Orchestrates multi-step reasoning across both MCP servers. Searches documents, identifies gaps, generates quotes, and explains findings in plain English — all in a single conversation turn.</p>
+        </div>
+      </div>
+
+      <div class="arch-arrow">↓</div>
+
+      <!-- Layer 4: Frontend -->
+      <div class="arch-row">
+        <div class="arch-box" style="border-color:var(--amber)">
+          <div class="title" style="color:var(--amber)">🌐 React SPA</div>
+          <p>Filing cabinet, chat interface, and quote panel. Deployed on Cloudflare Pages with serverless Functions as API proxy.</p>
+        </div>
+        <div class="arch-box" style="border-color:var(--amber)">
+          <div class="title" style="color:var(--amber)">🖥️ Claude Desktop</div>
+          <p>Alternative power-user interface via stdio↔HTTP bridge. Same MCP servers, richer tool visibility.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ── Slide 6: B2B Distribution ─────────────────────────── -->
+<section id="s6">
+  <div class="slide-inner">
+    <div class="slide-num fade-in">06 / Go-to-Market</div>
+    <h2 class="fade-in">B2B Distribution via <span class="accent-purple">Trusted Retail Brands</span></h2>
+    <p class="lead fade-in">Large retail brands — supermarkets, banks, utilities, telecoms — already hold insurance licences and millions of customer relationships. They need the intelligence layer. We provide it.</p>
+
+    <div class="dist-grid fade-in">
+      <div class="dist-card c1">
+        <div class="tag" style="background:var(--teal-dim);color:var(--teal)">Banking</div>
+        <h3>Banks & Building Societies</h3>
+        <p>Already distribute home and life insurance to their mortgage books. AI broker surfaces gaps and renewal opportunities across their entire customer base automatically.</p>
+      </div>
+      <div class="dist-card c2">
+        <div class="tag" style="background:var(--blue-dim);color:var(--blue)">Retail</div>
+        <h3>Supermarkets & Retailers</h3>
+        <p>Tesco, Sainsbury's, M&S all hold FCA licences. Loyal customer bases with household data — ideal for home, contents, and appliance cover.</p>
+      </div>
+      <div class="dist-card c3">
+        <div class="tag" style="background:var(--purple-dim);color:var(--purple)">Utilities</div>
+        <h3>Energy & Telecoms</h3>
+        <p>Direct relationships with every household. Boiler cover, home emergency, and contents insurance are natural adjacencies to their existing service bundles.</p>
+      </div>
+      <div class="dist-card c4">
+        <div class="tag" style="background:var(--amber-dim);color:var(--amber)">Automotive</div>
+        <h3>Car Manufacturers & Dealers</h3>
+        <p>Sell the vehicle, then provide the AI broker to manage its insurance for life. Manufacturer data pre-fills policies. Renewal reminders drive repeat engagement.</p>
+      </div>
+    </div>
+
+    <hr class="fade-in" />
+
+    <div class="fade-in" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-top:4px">
+      <div>
+        <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:6px">Revenue Model</div>
+        <p style="font-size:0.9rem;color:var(--text)">White-label SaaS licence per brand + commission share on policies placed. No cold-start: brand brings the customers, we bring the intelligence.</p>
+      </div>
+      <div>
+        <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:6px">Competitive Moat</div>
+        <p style="font-size:0.9rem;color:var(--text)">Per-user policy memory compounds over time. The longer a customer uses it, the more personalised and accurate their broker becomes — impossible to replicate quickly.</p>
+      </div>
+      <div>
+        <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:6px">Regulatory</div>
+        <p style="font-size:0.9rem;color:var(--text)">Operates under the brand partner's existing FCA permissions. Broker provides the AI engine; partner owns the customer relationship and compliance wrapper.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  // ── Fade-in on scroll ──────────────────────────────────
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) e.target.classList.add("visible");
+    });
+  }, { threshold: 0.15 });
+
+  document.querySelectorAll(".fade-in").forEach(el => observer.observe(el));
+
+  // ── Active nav dot ─────────────────────────────────────
+  const sections = document.querySelectorAll("section[id]");
+  const navLinks = document.querySelectorAll("nav.dots a");
+
+  const sectionObserver = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        navLinks.forEach(a => a.classList.remove("active"));
+        const link = document.querySelector(`nav.dots a[href="#${e.target.id}"]`);
+        if (link) link.classList.add("active");
+      }
+    });
+  }, { threshold: 0.5 });
+
+  sections.forEach(s => sectionObserver.observe(s));
+</script>
+
+</body>
+</html>
