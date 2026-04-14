@@ -2,13 +2,16 @@
 """
 Insurance Broker MCP Server
 
-Exposes three tools to Claude:
+Exposes four tools to Claude:
   - search_insurance_docs
   - list_policies
   - get_renewal_calendar
+  - ingest_market_policies
 
-Also exposes a plain HTTP upload endpoint:
-  POST /upload  (multipart, field "file")
+Also exposes plain HTTP endpoints:
+  POST   /upload
+  PATCH  /update-policy
+  DELETE /delete-policy
 """
 
 import logging
@@ -18,7 +21,10 @@ import tempfile
 from datetime import date, datetime
 from pathlib import Path
 
+import requests
+
 from dotenv import load_dotenv
+from market_policies import MARKET_POLICIES, slug, filename_from_url, source_path as market_source_path
 from mcp.server.fastmcp import FastMCP
 from openai import OpenAI
 from starlette.applications import Starlette
@@ -193,11 +199,116 @@ def get_renewal_calendar() -> str:
 
 
 # ---------------------------------------------------------------------------
-# Upload endpoint
+# Market policy ingestion tool
 # ---------------------------------------------------------------------------
 
-# Add ingestion modules to path
+# Add ingestion modules to path (shared with upload endpoint below)
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../ingestion"))
+
+_BROWSER_HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/124.0.0.0 Safari/537.36"
+    ),
+    "Accept": "application/pdf,*/*",
+}
+
+
+@mcp.tool()
+def ingest_market_policies(policy_type: str, provider: str = None) -> str:
+    """Download and ingest publicly available policy booklets from major UK insurers
+    into the knowledge base, enabling market-wide coverage comparison.
+
+    policy_type: car, home, or pet
+    provider: optional — ingest only this named provider (e.g. "Admiral").
+              If omitted, ingests all providers for the given type.
+
+    Call this before comparing the user's current policy against the broader market.
+    Re-ingesting the same document is free — duplicates are skipped automatically."""
+
+    if policy_type not in MARKET_POLICIES:
+        return f"Unknown policy_type '{policy_type}'. Valid values: {', '.join(MARKET_POLICIES)}"
+
+    providers = MARKET_POLICIES[policy_type]
+    if provider:
+        # Case-insensitive match
+        matched = {k: v for k, v in providers.items() if k.lower() == provider.lower()}
+        if not matched:
+            available = ", ".join(providers.keys())
+            return f"Provider '{provider}' not found for {policy_type}. Available: {available}"
+        providers = matched
+
+    # Import ingestion modules lazily
+    from chunk import chunk_pdf  # noqa: PLC0415
+    from embed import embed_texts  # noqa: PLC0415
+    from store import get_existing_hashes, upsert_chunks  # noqa: PLC0415
+
+    sb = _supabase_service()
+    oai = _openai_client()
+
+    results = []
+    for provider_name, docs in providers.items():
+        for doc in docs:
+            url = doc["url"]
+            sp = market_source_path(policy_type, provider_name, url)
+            fname = filename_from_url(url)
+
+            # Download PDF
+            try:
+                resp = requests.get(url, headers=_BROWSER_HEADERS, timeout=60)
+                resp.raise_for_status()
+            except Exception as exc:
+                results.append(f"  ✗ {provider_name} — {doc['name']}: download failed ({exc})")
+                continue
+
+            # Write to temp file and ingest
+            try:
+                with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
+                    tmp.write(resp.content)
+                    tmp_path = tmp.name
+
+                base_metadata = {
+                    "doc_type": "policy",
+                    "policy_type": policy_type,
+                    "provider": provider_name,
+                    "filename": fname,
+                    "source_path": sp,
+                }
+
+                chunks = chunk_pdf(Path(tmp_path), source_path=sp, base_metadata=base_metadata)
+                os.unlink(tmp_path)
+
+                if not chunks:
+                    results.append(f"  ✗ {provider_name} — {doc['name']}: no text extracted")
+                    continue
+
+                texts = [c.content for c in chunks]
+                embeddings = embed_texts(texts, oai)
+                existing = get_existing_hashes([c.chunk_hash for c in chunks], sb)
+                new_chunks = [c for c in chunks if c.chunk_hash not in existing]
+                new_embeddings = [
+                    e for c, e in zip(chunks, embeddings) if c.chunk_hash not in existing
+                ]
+
+                stored = upsert_chunks(new_chunks, new_embeddings, sb)
+                skipped = len(chunks) - len(new_chunks)
+                msg = f"  ✓ {provider_name} — {doc['name']}: {stored} chunks stored"
+                if skipped:
+                    msg += f" ({skipped} already existed)"
+                results.append(msg)
+
+            except Exception as exc:
+                logger.exception("Ingest failed for %s", url)
+                results.append(f"  ✗ {provider_name} — {doc['name']}: ingest failed ({exc})")
+
+    summary = f"Market policy ingestion complete for {policy_type}:\n" + "\n".join(results)
+    return summary
+
+
+# ---------------------------------------------------------------------------
+# Upload endpoint
+# ---------------------------------------------------------------------------
 
 
 async def delete_policy(request: Request) -> JSONResponse:

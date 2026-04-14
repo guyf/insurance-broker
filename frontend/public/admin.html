@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Market Policy Registry — Admin</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #0f172a;
+      --surface:  #1e293b;
+      --surface2: #263348;
+      --border:   #334155;
+      --text:     #e2e8f0;
+      --muted:    #94a3b8;
+      --teal:     #0d9488;
+      --green:    #22c55e;
+      --amber:    #f59e0b;
+      --rose:     #f43f5e;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 40px 32px 80px;
+    }
+
+    header {
+      margin-bottom: 32px;
+    }
+
+    header h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 4px;
+    }
+
+    header p {
+      font-size: 0.875rem;
+      color: var(--muted);
+    }
+
+    /* ── Tabs ── */
+    .tabs {
+      display: flex;
+      gap: 2px;
+      margin-bottom: 24px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 4px;
+      width: fit-content;
+    }
+
+    .tab {
+      padding: 7px 20px;
+      border-radius: 7px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .tab.active {
+      background: var(--surface2);
+      color: var(--text);
+    }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* ── Table ── */
+    .provider-section {
+      margin-bottom: 32px;
+    }
+
+    .provider-name {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .provider-count {
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--muted);
+      font-weight: normal;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.825rem;
+    }
+
+    thead th {
+      background: var(--surface2);
+      color: var(--muted);
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 8px 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background 0.1s;
+    }
+
+    tbody tr:hover { background: var(--surface); }
+    tbody tr:last-child { border-bottom: none; }
+
+    td {
+      padding: 10px 12px;
+      color: var(--text);
+      vertical-align: middle;
+    }
+
+    td.doc-name { color: var(--text); max-width: 320px; }
+
+    td.url-cell {
+      max-width: 360px;
+    }
+
+    td.url-cell a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.775rem;
+      word-break: break-all;
+    }
+
+    td.url-cell a:hover { color: var(--teal); text-decoration: underline; }
+
+    /* ── Status badge ── */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 99px;
+      white-space: nowrap;
+    }
+
+    .badge.ingested {
+      background: rgba(34,197,94,0.12);
+      color: var(--green);
+    }
+
+    .badge.not-ingested {
+      background: rgba(148,163,184,0.1);
+      color: var(--muted);
+    }
+
+    .badge.loading {
+      background: rgba(148,163,184,0.08);
+      color: var(--muted);
+      opacity: 0.6;
+    }
+
+    .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+      flex-shrink: 0;
+    }
+
+    /* ── Summary bar ── */
+    .summary {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 16px;
+      margin-bottom: 24px;
+      font-size: 0.825rem;
+    }
+
+    .summary-item { color: var(--muted); }
+    .summary-item strong { color: var(--text); }
+    .summary-item.ok strong { color: var(--green); }
+    .summary-item.pending strong { color: var(--amber); }
+
+    .hint {
+      margin-top: 20px;
+      padding: 12px 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--teal);
+      border-radius: 8px;
+      font-size: 0.825rem;
+      color: var(--muted);
+    }
+
+    .hint strong { color: var(--teal); }
+
+    /* ── Wrapper ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Market Policy Registry</h1>
+  <p>Curated policy booklets from major UK personal lines insurers. Ask Claude to ingest any provider.</p>
+</header>
+
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('car', this)">Motor</button>
+  <button class="tab" onclick="switchTab('home', this)">Home</button>
+  <button class="tab" onclick="switchTab('pet', this)">Pet</button>
+</div>
+
+<div id="tab-car"  class="tab-panel active"></div>
+<div id="tab-home" class="tab-panel"></div>
+<div id="tab-pet"  class="tab-panel"></div>
+
+<script>
+// ── Registry (mirrors mcp-server/market_policies.py) ──────────────────────
+const REGISTRY = {
+  car: {
+    "Admiral": [
+      { name: "Admiral Car Insurance Policy Booklet",
+        url: "https://www.admiral.com/policyDocs/AD-003-022-Your-Cover-with-Admiral.pdf" }
+    ],
+    "Direct Line": [
+      { name: "Direct Line Car Insurance Policy Booklet",
+        url: "https://assets.directline.com/motor-docs/policy-booklet-0622.pdf" }
+    ],
+    "Aviva": [
+      { name: "Aviva Motor Insurance Policy Wording",
+        url: "https://www.online.aviva.co.uk/StaticDocsAV/Insurance_policy_default_v14.pdf" }
+    ],
+    "Churchill": [
+      { name: "Churchill Car Insurance Policy Booklet",
+        url: "https://assets.churchill.com/motor-docs/policy-booklet-1225.pdf" }
+    ],
+    "LV=": [
+      { name: "LV= Motor Insurance Terms & Conditions",
+        url: "https://www.lv.com/rcn/-/insurance/media/partner-microsites/pdfs/car/2024/38905-2024-our-terms-and-conditions---motor--v2.pdf" }
+    ],
+    "Hastings Direct": [
+      { name: "Hastings Direct Car Insurance Policy Wording",
+        url: "https://www.hastingsdirect.com/documents/Policy_documents/Car/HD-PC-GW-11-20.pdf" }
+    ],
+  },
+  home: {
+    "Admiral": [
+      { name: "Admiral Home Insurance Policy Booklet",
+        url: "https://www.admiral.com/policyDocs/HH-005-015-Standard-Policy-Book.pdf" }
+    ],
+    "Direct Line": [
+      { name: "Direct Line Home Insurance Policy Booklet",
+        url: "https://www.directline.com/assets/pdf/dl-home-insurance-policy-document-0925.pdf" }
+    ],
+    "Aviva": [
+      { name: "Aviva Home Insurance Policy Wording",
+        url: "https://www.online.aviva.co.uk/StaticDocsAV/Home_wording_default_v3.pdf" }
+    ],
+    "Churchill": [
+      { name: "Churchill Home Insurance Policy Booklet",
+        url: "https://www.churchill.com/assets/pdf/ch-home-insurance-policy-booklet-0925.pdf" }
+    ],
+    "LV=": [
+      { name: "LV= Home Insurance Terms & Conditions",
+        url: "https://assets-eu-01.kc-usercontent.com/8a09b82e-1cf1-011c-1115-9dc18d2d065f/da90c36d-5b6c-478b-93ee-3887d69b2b30/Download%20LV%20Insurance%20Terms%20and%20Conditions%20document%20(PDF).pdf" }
+    ],
+    "AXA": [
+      { name: "AXA Home Insurance Policy Wording",
+        url: "https://www.axa.co.uk/globalassets/pdfs/home/policy-docs/june-2025/axa-direct-home-policy-wording-acpd0400p-d.pdf" }
+    ],
+  },
+  pet: {
+    "Petplan": [
+      { name: "Petplan Covered for Life Policy Terms & Conditions",
+        url: "https://www.petplan.co.uk/pdf/PP_CFL_TCs.pdf" }
+    ],
+    "Direct Line": [
+      { name: "Direct Line Pet Insurance Policy Booklet",
+        url: "https://www.directline.com/assets/pdf/pet-insurance-policy-document.pdf" }
+    ],
+    "More Than": [
+      { name: "More Than Pet Insurance Policy Wording",
+        url: "https://static.rsagroup.com/more-than/Pet/more-than-pet-insurance-policy-wording.pdf" }
+    ],
+    "Animal Friends": [
+      { name: "Animal Friends Lifetime Pet Insurance Policy Booklet",
+        url: "https://www.animalfriends.co.uk/siteassets/media/pdfs/policy-documents/policy-booklets/v5-2025/lifetime_super_superior_superior-plus.pdf" }
+    ],
+    "Aviva": [
+      { name: "Aviva Pet Insurance Policy",
+        url: "https://www.aviva.co.uk/static/library/pdfs/pet/pet-insurance-policy.pdf" }
+    ],
+  }
+};
+
+// ── Helpers ────────────────────────────────────────────────────────────────
+function slug(name) {
+  return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+}
+
+function filenameFromUrl(url) {
+  const part = url.replace(/\/$/, "").split("/").pop().split("?")[0];
+  return part.endsWith(".pdf") ? part : part + ".pdf";
+}
+
+function sourcePath(type, provider, url) {
+  return `market/${type}/${slug(provider)}/${filenameFromUrl(url)}`;
+}
+
+// ── State ──────────────────────────────────────────────────────────────────
+let ingestedPaths = new Set();
+let loaded = false;
+
+async function loadIngested() {
+  try {
+    const res = await fetch("/api/policies");
+    if (!res.ok) return;
+    const policies = await res.json();
+    ingestedPaths = new Set(
+      policies
+        .filter(p => p.source_path && p.source_path.startsWith("market/"))
+        .map(p => p.source_path)
+    );
+    loaded = true;
+    render();
+  } catch {
+    loaded = true;
+    render();
+  }
+}
+
+// ── Render ─────────────────────────────────────────────────────────────────
+function renderType(type) {
+  const container = document.getElementById(`tab-${type}`);
+  const providers = REGISTRY[type];
+
+  // Count totals
+  let totalDocs = 0, ingestedCount = 0;
+  for (const [provider, docs] of Object.entries(providers)) {
+    for (const doc of docs) {
+      totalDocs++;
+      if (loaded && ingestedPaths.has(sourcePath(type, provider, doc.url))) ingestedCount++;
+    }
+  }
+
+  let html = `
+    <div class="summary">
+      <div class="summary-item ok"><strong>${ingestedCount}</strong> ingested</div>
+      <div class="summary-item pending"><strong>${totalDocs - ingestedCount}</strong> not yet ingested</div>
+      <div class="summary-item"><strong>${totalDocs}</strong> total documents</div>
+    </div>
+  `;
+
+  for (const [provider, docs] of Object.entries(providers)) {
+    const allIngested = loaded && docs.every(d => ingestedPaths.has(sourcePath(type, provider, d.url)));
+    html += `
+      <div class="card">
+        <div style="padding:12px 14px 8px; border-bottom:1px solid var(--border)">
+          <span class="provider-name">
+            ${provider}
+            <span class="provider-count">${docs.length} document${docs.length !== 1 ? "s" : ""}</span>
+          </span>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Document</th>
+              <th>URL</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+    `;
+    for (const doc of docs) {
+      const sp = sourcePath(type, provider, doc.url);
+      const isIngested = loaded && ingestedPaths.has(sp);
+      const badge = !loaded
+        ? `<span class="badge loading"><span class="dot"></span>Checking…</span>`
+        : isIngested
+          ? `<span class="badge ingested"><span class="dot"></span>Ingested</span>`
+          : `<span class="badge not-ingested"><span class="dot"></span>Not ingested</span>`;
+
+      html += `
+        <tr>
+          <td class="doc-name">${doc.name}</td>
+          <td class="url-cell"><a href="${doc.url}" target="_blank" rel="noreferrer">${doc.url}</a></td>
+          <td>${badge}</td>
+        </tr>
+      `;
+    }
+    html += `</tbody></table></div>`;
+  }
+
+  html += `
+    <div class="hint">
+      <strong>To ingest:</strong> ask Claude — e.g.
+      "<em>Ingest all ${type} market policies</em>" or
+      "<em>Ingest Admiral's ${type} policy</em>".
+    </div>
+  `;
+
+  container.innerHTML = html;
+}
+
+function render() {
+  renderType("car");
+  renderType("home");
+  renderType("pet");
+}
+
+// ── Tab switching ──────────────────────────────────────────────────────────
+function switchTab(type, btn) {
+  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+  document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+  btn.classList.add("active");
+  document.getElementById(`tab-${type}`).classList.add("active");
+}
+
+// ── Boot ───────────────────────────────────────────────────────────────────
+render(); // render with loading badges first
+loadIngested(); // then update with real status
+</script>
+
+</body>
+</html>

@@ -463,7 +463,7 @@ function PolicySection({
 }
 
 export function FilingCabinet({ policies, loading, onPolicyClick, onUpload, onDelete, onRequote }: Props) {
-  const relevant = policies.filter((p) => p.doc_type !== "other");
+  const relevant = policies.filter((p) => p.doc_type !== "other" && !p.source_path.startsWith("market/"));
   const policyItems = relevant.filter((p) => !isAsset(p));
   const assetItems = relevant.filter((p) => isAsset(p));
 
