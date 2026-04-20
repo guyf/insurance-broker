@@ -208,7 +208,7 @@
     /* ── Comparison table ─────────────────────────────────── */
     .compare {
       display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
+      grid-template-columns: 1fr 1fr 1fr 1fr;
       gap: 2px;
       background: var(--border);
       border-radius: 12px;
@@ -361,8 +361,10 @@
     #s3 { background: radial-gradient(ellipse at 70% 70%, #0a1a30 0%, var(--bg) 60%); }
     #s4 { background: radial-gradient(ellipse at 30% 30%, #1a1a08 0%, var(--bg) 60%); }
     #s5 { background: radial-gradient(ellipse at 70% 50%, #150a2e 0%, var(--bg) 60%); }
-    #s6 { background: radial-gradient(ellipse at 30% 60%, #0a1a2e 0%, var(--bg) 60%); }
-    #s7 { background: radial-gradient(ellipse at 70% 50%, #0a1830 0%, var(--bg) 60%); }
+    #s6 { background: radial-gradient(ellipse at 30% 60%, #0a1a0a 0%, var(--bg) 60%); }
+    #s7 { background: radial-gradient(ellipse at 70% 50%, #0a1a2e 0%, var(--bg) 60%); }
+    #s8 { background: radial-gradient(ellipse at 30% 50%, #0a1830 0%, var(--bg) 60%); }
+    #s9 { background: radial-gradient(ellipse at 70% 30%, #1a0808 0%, var(--bg) 60%); }
 
     /* ── Fade-in on scroll ────────────────────────────────── */
     .fade-in {
@@ -389,8 +391,10 @@
   <a href="#s3" title="Customer Benefits"></a>
   <a href="#s4" title="What It Does"></a>
   <a href="#s5" title="B2B Distribution"></a>
-  <a href="#s6" title="Regulatory Framework"></a>
-  <a href="#s7" title="Architecture"></a>
+  <a href="#s6" title="User Journey"></a>
+  <a href="#s7" title="Regulatory Framework"></a>
+  <a href="#s8" title="Architecture"></a>
+  <a href="#s9" title="Next Steps"></a>
 </nav>
 
 <!-- ── Slide 1: Disruption ──────────────────────────────── -->
@@ -437,39 +441,43 @@
       <div class="compare-cell header"></div>
       <div class="compare-cell header">Traditional F2F Broker</div>
       <div class="compare-cell header">Price Comparison</div>
+      <div class="compare-cell header" style="color:var(--teal)">AI Broker ✦</div>
 
       <div class="compare-cell" style="background:var(--surface2);font-size:0.8rem;font-weight:600;color:var(--muted);">Whole-of-market access</div>
       <div class="compare-cell hl"><span class="check">✓</span>Yes</div>
       <div class="compare-cell hl"><span class="check">✓</span>Yes</div>
+      <div class="compare-cell hl" style="background:var(--teal-dim)"><span class="check">✓</span>Yes</div>
 
       <div class="compare-cell" style="background:var(--surface2);font-size:0.8rem;font-weight:600;color:var(--muted);">Remembers your policies</div>
       <div class="compare-cell hl"><span class="check">✓</span>Yes</div>
       <div class="compare-cell bad"><span class="cross">✗</span>No</div>
+      <div class="compare-cell hl" style="background:var(--teal-dim)"><span class="check">✓</span>Yes</div>
 
       <div class="compare-cell" style="background:var(--surface2);font-size:0.8rem;font-weight:600;color:var(--muted);">Explains coverage gaps</div>
       <div class="compare-cell hl"><span class="check">✓</span>Yes</div>
       <div class="compare-cell bad"><span class="cross">✗</span>No</div>
+      <div class="compare-cell hl" style="background:var(--teal-dim)"><span class="check">✓</span>Yes</div>
 
       <div class="compare-cell" style="background:var(--surface2);font-size:0.8rem;font-weight:600;color:var(--muted);">Flags renewal dates</div>
       <div class="compare-cell hl"><span class="check">✓</span>Yes</div>
       <div class="compare-cell bad"><span class="cross">✗</span>No</div>
+      <div class="compare-cell hl" style="background:var(--teal-dim)"><span class="check">✓</span>Yes</div>
 
       <div class="compare-cell" style="background:var(--surface2);font-size:0.8rem;font-weight:600;color:var(--muted);">Available 24/7 instantly</div>
       <div class="compare-cell bad"><span class="cross">✗</span>No</div>
       <div class="compare-cell hl"><span class="check">✓</span>Yes</div>
+      <div class="compare-cell hl" style="background:var(--teal-dim)"><span class="check">✓</span>Yes</div>
 
       <div class="compare-cell" style="background:var(--surface2);font-size:0.8rem;font-weight:600;color:var(--muted);">Scales to millions of users</div>
       <div class="compare-cell bad"><span class="cross">✗</span>No</div>
       <div class="compare-cell hl"><span class="check">✓</span>Yes</div>
+      <div class="compare-cell hl" style="background:var(--teal-dim)"><span class="check">✓</span>Yes</div>
 
       <div class="compare-cell" style="background:var(--surface2);font-size:0.8rem;font-weight:600;color:var(--muted);border-radius:0 0 0 10px">Affordable at scale</div>
       <div class="compare-cell bad"><span class="cross">✗</span>No</div>
-      <div class="compare-cell hl" style="border-radius:0 0 10px 0"><span class="check">✓</span>Yes</div>
+      <div class="compare-cell hl"><span class="check">✓</span>Yes</div>
+      <div class="compare-cell hl" style="background:var(--teal-dim);border-radius:0 0 10px 0"><span class="check">✓</span>Yes</div>
     </div>
-
-    <p style="margin-top:20px;font-size:0.85rem;color:var(--teal);font-weight:600;" class="fade-in">
-      The AI Broker checks every box.
-    </p>
   </div>
 </section>
 
@@ -611,10 +619,54 @@
   </div>
 </section>
 
-<!-- ── Slide 6: Regulatory Framework ─────────────────────── -->
+<!-- ── Slide 6: User Journey ──────────────────────────────── -->
 <section id="s6">
   <div class="slide-inner">
-    <div class="slide-num fade-in">06 / Regulatory Framework</div>
+    <div class="slide-num fade-in">06 / User Journey</div>
+    <h2 class="fade-in">What It Feels Like to <span class="accent-teal">Use It</span></h2>
+    <p class="lead fade-in">Six steps from "I have no idea what I'm covered for" to a broker that knows your entire insurance life.</p>
+
+    <div class="arch-flow fade-in">
+      <div class="arch-row">
+        <div class="arch-box" style="border-color:var(--teal)">
+          <div class="title" style="color:var(--teal)">① Upload</div>
+          <p>Drop in any policy PDF — insurer portal download, email attachment, scanned doc. Chunked, embedded, and searchable in under 10 seconds. No forms to fill in.</p>
+        </div>
+        <div class="arch-box" style="border-color:var(--blue)">
+          <div class="title" style="color:var(--blue)">② Organise</div>
+          <p>Policies auto-grouped by type. Provider, premium, renewal date, and insured entity extracted by LLM — editable in-place if anything needs correcting.</p>
+        </div>
+        <div class="arch-box" style="border-color:var(--purple)">
+          <div class="title" style="color:var(--purple)">③ Ask</div>
+          <p>"Am I covered if my boiler floods the kitchen?" Direct answer with the exact policy clause cited — no jargon, no hunting through 40-page PDFs.</p>
+        </div>
+      </div>
+      <div class="arch-row">
+        <div class="arch-box" style="border-color:var(--amber)">
+          <div class="title" style="color:var(--amber)">④ Compare</div>
+          <p>Market booklets from 17 major UK insurers searched alongside your policy. Feature-by-feature comparison — cover limits, excesses, key exclusions — not just price.</p>
+        </div>
+        <div class="arch-box" style="border-color:var(--green)">
+          <div class="title" style="color:var(--green)">⑤ Quote</div>
+          <p>One click. Illustrative quotes from three competing insurers — home, motor, or pet — benchmarked against your current premium. Photograph an asset and the quote pre-fills automatically.</p>
+        </div>
+        <div class="arch-box" style="border-color:var(--rose)">
+          <div class="title" style="color:var(--rose)">⑥ Renew</div>
+          <p>Upcoming renewals flagged 60 days out — time to shop around before auto-renewal locks you in. One prompt starts the comparison and requote flow.</p>
+        </div>
+      </div>
+    </div>
+
+    <p style="margin-top:28px;font-size:0.9rem;color:var(--muted);border-left:3px solid var(--teal);padding-left:16px;" class="fade-in">
+      The entire journey runs inside a single chat window. No portals to log into, no spreadsheets to maintain, no brokers to phone.
+    </p>
+  </div>
+</section>
+
+<!-- ── Slide 7: Regulatory Framework ─────────────────────── -->
+<section id="s7">
+  <div class="slide-inner">
+    <div class="slide-num fade-in">07 / Regulatory Framework</div>
     <h2 class="fade-in">Compliance Built In — <span class="accent-teal">An AI-First Compliance Model</span></h2>
     <p class="lead fade-in">Every conversation is recorded, structured, and queryable. Compliance is not a manual review process — it is an automated layer that runs continuously against the full interaction log.</p>
 
@@ -675,10 +727,10 @@
   </div>
 </section>
 
-<!-- ── Slide 7: Architecture ─────────────────────────────── -->
-<section id="s7">
+<!-- ── Slide 8: Architecture ─────────────────────────────── -->
+<section id="s8">
   <div class="slide-inner">
-    <div class="slide-num fade-in">07 / How It Works</div>
+    <div class="slide-num fade-in">08 / How It Works</div>
     <h2 class="fade-in">Architecture — <span class="accent-blue">Built to Scale</span></h2>
     <p class="lead fade-in">A production-grade RAG pipeline with agentic tool-use, deployed on serverless infrastructure. Every layer is independently scalable.</p>
 
@@ -735,6 +787,65 @@
         <div class="arch-box" style="border-color:var(--teal)">
           <div class="title" style="color:var(--teal)">📄 Policy PDFs</div>
           <p>Customer uploads via web UI or local Google Drive sync. Any insurer, any format.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ── Slide 9: Next Steps & Blockers ────────────────────── -->
+<section id="s9">
+  <div class="slide-inner">
+    <div class="slide-num fade-in">09 / Next Steps</div>
+    <h2 class="fade-in">Next Steps &amp; <span class="accent-rose">Complications</span></h2>
+    <p class="lead fade-in">The prototype is working. Here is what comes next — and what stands between here and market.</p>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:8px;" class="fade-in">
+
+      <!-- Next Steps -->
+      <div>
+        <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--teal);margin-bottom:14px;">Next Steps</div>
+        <div class="arch-flow" style="gap:10px;">
+          <div class="arch-box" style="border-color:var(--teal)">
+            <div class="title" style="color:var(--teal)">1. B2B Pilot Partner</div>
+            <p>Sign a first white-label partner — bank, supermarket, or automotive brand. One live deployment validates the GTM model and anchors the first revenue contract.</p>
+          </div>
+          <div class="arch-box" style="border-color:var(--teal)">
+            <div class="title" style="color:var(--teal)">2. FCA Permissions</div>
+            <p>Agree appointed representative structure under a principal firm. Defines the compliance wrapper before customer-facing launch.</p>
+          </div>
+          <div class="arch-box" style="border-color:var(--teal)">
+            <div class="title" style="color:var(--teal)">3. Multi-User Architecture</div>
+            <p>Activate user-scoped RLS in Supabase. Each customer's documents isolated in their own private vector store. Scaffolding already in place.</p>
+          </div>
+          <div class="arch-box" style="border-color:var(--teal)">
+            <div class="title" style="color:var(--teal)">4. Mobile &amp; Messaging Channels</div>
+            <p>WhatsApp or app interface for renewal alerts and quick coverage questions. Same MCP backend, lower-friction touchpoint.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Complications / Blockers -->
+      <div>
+        <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--rose);margin-bottom:14px;">Complications &amp; Blockers</div>
+        <div class="arch-flow" style="gap:10px;">
+          <div class="arch-box" style="border-color:var(--rose)">
+            <div class="title" style="color:var(--rose)">FCA Authorisation</div>
+            <p>Insurance distribution requires FCA authorisation or an AR agreement. Until this is in place the product cannot quote, recommend, or place live policies with real customers.</p>
+          </div>
+          <div class="arch-box" style="border-color:var(--rose)">
+            <div class="title" style="color:var(--rose)">LLM Hallucination Risk</div>
+            <p>In a compliance-sensitive context, a confidently wrong answer about coverage is a mis-selling event. RAG grounds outputs in actual documents, but edge cases require ongoing red-teaming.</p>
+          </div>
+          <div class="arch-box" style="border-color:var(--rose)">
+            <div class="title" style="color:var(--rose)">Data Privacy &amp; Storage</div>
+            <p>Customer policy documents are sensitive personal data. GDPR Article 9 considerations apply. Each user's data must be isolated, encrypted at rest, and subject to deletion on request.</p>
+          </div>
+          <div class="arch-box" style="border-color:var(--rose)">
+            <div class="title" style="color:var(--rose)">Incumbent Aggregator Contracts</div>
+            <p>Large retail brands may have exclusive or preferred-panel arrangements with aggregators that limit which insurers can be surfaced. Partner diligence required before launch.</p>
+          </div>
         </div>
       </div>
 
