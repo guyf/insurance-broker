@@ -369,6 +369,12 @@ async def upload_document(request: Request) -> JSONResponse:
 
         contents = await file.read()
         filename = file.filename or "upload.pdf"
+        source_folder = form.get("source_folder")
+        source_path = (
+            f"{str(source_folder).rstrip('/')}/{filename}"
+            if source_folder and isinstance(source_folder, str)
+            else filename
+        )
 
         with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
             tmp.write(contents)
@@ -386,7 +392,7 @@ async def upload_document(request: Request) -> JSONResponse:
 
             chunks = chunk_pdf(
                 Path(tmp_path),
-                source_path=filename,
+                source_path=source_path,
                 base_metadata=base_metadata,
             )
 

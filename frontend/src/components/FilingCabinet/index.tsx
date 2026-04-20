@@ -8,7 +8,7 @@ interface Props {
   policies: Policy[];
   loading: boolean;
   onPolicyClick: (policy: Policy) => void;
-  onUpload: (file: File) => Promise<void>;
+  onUpload: (file: File, sourceFolder?: string) => Promise<void>;
   onDelete: (sourcePaths: string[], title: string) => Promise<void>;
   onRequote: (prompt: string) => void;
 }
@@ -128,7 +128,7 @@ function PolicyGroupCard({
   onRename: (name: string) => void;
   onUpdateField: (sourcePaths: string[], field: string, value: string) => Promise<void>;
   onDelete: (sourcePaths: string[], title: string) => Promise<void>;
-  onUpload: (file: File) => Promise<void>;
+  onUpload: (file: File, sourceFolder?: string) => Promise<void>;
 }) {
   const { primary, docs } = group;
   const qt = getQuoteType(primary);
@@ -137,7 +137,13 @@ function PolicyGroupCard({
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleDraft, setTitleDraft] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const uploadRef = useRef<HTMLInputElement>(null);
+
+  // Derive the folder shared by all docs in this group so new uploads land on the same card
+  const sourceFolder = docs[0].source_path.includes("/")
+    ? docs[0].source_path.split("/").slice(0, -1).join("/")
+    : undefined;
 
   const asset = isAsset(primary);
   const fields = cardFields(primary.doc_type);
@@ -203,8 +209,13 @@ function PolicyGroupCard({
   async function handleUploadChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    await onUpload(file);
-    if (uploadRef.current) uploadRef.current.value = "";
+    setUploading(true);
+    try {
+      await onUpload(file, sourceFolder);
+    } finally {
+      setUploading(false);
+      if (uploadRef.current) uploadRef.current.value = "";
+    }
   }
 
   function handleDeleteClick(e: React.MouseEvent) {
@@ -229,6 +240,14 @@ function PolicyGroupCard({
           : "border-gray-200 bg-white hover:border-gray-300"
       }`}
     >
+      {/* Upload progress overlay */}
+      {uploading && (
+        <div className="absolute inset-0 rounded-lg bg-white/80 flex items-center justify-center gap-2 z-10">
+          <span className="w-4 h-4 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin flex-shrink-0" />
+          <span className="text-xs text-gray-500 font-medium">Uploading…</span>
+        </div>
+      )}
+
       {/* Hidden file input for per-card upload */}
       <input
         ref={uploadRef}
@@ -427,7 +446,7 @@ function PolicySection({
   onRename: (key: string, name: string) => void;
   onUpdateField: (sourcePaths: string[], field: string, value: string) => Promise<void>;
   onDelete: (sourcePaths: string[], title: string) => Promise<void>;
-  onUpload: (file: File) => Promise<void>;
+  onUpload: (file: File, sourceFolder?: string) => Promise<void>;
 }) {
   const groups = groupPolicies(items);
   const typeMap = new Map<string, PolicyGroup[]>();

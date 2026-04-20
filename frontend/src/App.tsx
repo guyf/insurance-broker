@@ -86,9 +86,9 @@ export default function App() {
     }
   };
 
-  const handleUpload = async (file: File) => {
+  const handleUpload = async (file: File, sourceFolder?: string) => {
     try {
-      const result = await uploadPolicy(file);
+      const result = await uploadPolicy(file, sourceFolder);
       showToast(`${result.filename} uploaded — ${result.chunks} chunks stored`);
       loadPolicies();
     } catch (err) {

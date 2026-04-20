@@ -41,10 +41,12 @@ export async function deletePolicy(sourcePaths: string[]): Promise<void> {
 }
 
 export async function uploadPolicy(
-  file: File
+  file: File,
+  sourceFolder?: string
 ): Promise<{ status: string; chunks: number; filename: string }> {
   const fd = new FormData();
   fd.append("file", file);
+  if (sourceFolder) fd.append("source_folder", sourceFolder);
   const res = await fetch("/api/upload", { method: "POST", body: fd });
   if (!res.ok) {
     const err = await res.text().catch(() => "Upload failed");
