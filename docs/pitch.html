@@ -615,36 +615,51 @@
 <section id="s6">
   <div class="slide-inner">
     <div class="slide-num fade-in">06 / Regulatory Framework</div>
-    <h2 class="fade-in">Built to <span class="accent-teal">Last</span> — An AI-First Compliance Model</h2>
-    <p class="lead fade-in">Regulation is not a barrier — it is a design constraint. The platform is architected from day one around FCA expectations on consumer protection, advice boundaries, and fair treatment.</p>
+    <h2 class="fade-in">Compliance Built In — <span class="accent-teal">An AI-First Compliance Model</span></h2>
+    <p class="lead fade-in">Every conversation is recorded, structured, and queryable. Compliance is not a manual review process — it is an automated layer that runs continuously against the full interaction log.</p>
 
-    <div class="feature-grid fade-in">
-      <div class="feature-card" style="border-color:var(--teal)">
-        <span class="icon">✅</span>
-        <h3 style="color:var(--teal)">Quality Assurance</h3>
-        <p>Every AI response is grounded in retrieved policy text — citations are mandatory, not optional. Confidence scoring surfaces uncertainty so customers know when to seek a second opinion. Outputs are auditable and logged for review.</p>
-      </div>
-      <div class="feature-card" style="border-color:var(--rose)">
-        <span class="icon">🚧</span>
-        <h3 style="color:var(--rose)">Mis-selling &amp; Advice Safeguards</h3>
-        <p>The platform operates as information and guidance, not regulated advice — clearly disclosed at every interaction. Suitability checks prevent inappropriate product suggestions. Recommendation audit trails support post-sale review and complaints handling.</p>
-      </div>
-      <div class="feature-card" style="border-color:var(--blue)">
-        <span class="icon">⚖️</span>
-        <h3 style="color:var(--blue)">Consumer Duty</h3>
-        <p>Designed around the FCA's Consumer Duty framework: good outcomes, not just compliant processes. Price and value assessments are built into the comparison engine. Vulnerable customer flags trigger simplified language and escalation pathways.</p>
-      </div>
-      <div class="feature-card" style="border-color:var(--amber)">
-        <span class="icon">🤝</span>
-        <h3 style="color:var(--amber)">Treating Customers Fairly</h3>
-        <p>TCF principles are embedded in the system prompt and enforced at the model layer — not bolted on as a policy document. Products are presented on merit, renewal loyalty penalties are surfaced proactively, and customers are never steered by commission incentive.</p>
-      </div>
-    </div>
+    <div class="arch-flow fade-in">
 
-    <div class="fade-in" style="margin-top:28px;padding:18px 22px;background:var(--surface);border:1px solid var(--border);border-radius:12px;">
-      <p style="font-size:0.9rem;color:var(--muted);line-height:1.6;">
-        <span style="color:var(--teal);font-weight:700;">The structural advantage:</span> AI-native compliance is cheaper to maintain than human compliance at scale. Every interaction is logged, searchable, and reviewable. Regulators get more visibility into broker behaviour — not less.
-      </p>
+      <!-- Layer 1: AI Broker -->
+      <div class="arch-row">
+        <div class="arch-box" style="border-color:var(--purple);grid-column:1/-1">
+          <div class="title" style="color:var(--purple)">🤖 AI Broker — Every Customer Conversation</div>
+          <p>Each session captures: user intent, retrieved policy clauses, recommendations made, products surfaced, and final customer outcome. Structured metadata tags every interaction at the point of generation.</p>
+        </div>
+      </div>
+
+      <div class="arch-arrow">↓</div>
+
+      <!-- Layer 2: Recording & Audit -->
+      <div class="arch-row">
+        <div class="arch-box" style="border-color:var(--amber);grid-column:1/-1;background:var(--amber-dim);">
+          <div class="title" style="color:var(--amber)">🗄️ Session Recording &amp; Audit Layer</div>
+          <p>Immutable, timestamped log of every interaction — searchable by session, customer, product type, recommendation, or outcome flag. Full audit trail available to compliance teams and regulators on demand. No interaction is off the record.</p>
+        </div>
+      </div>
+
+      <div class="arch-arrow">↓</div>
+
+      <!-- Layer 3: Compliance Agents -->
+      <div class="arch-row">
+        <div class="arch-box" style="border-color:var(--teal)">
+          <div class="title" style="color:var(--teal)">👁️ Ops QA</div>
+          <p>Humans in the loop. A configurable % of sessions are flagged for manual review — sampled by risk score, product type, or outcome. Reviewers work from the same audit log, closing the loop between AI output and human sign-off.</p>
+        </div>
+        <div class="arch-box" style="border-color:var(--rose)">
+          <div class="title" style="color:var(--rose)">🚫 Mis-selling</div>
+          <p>Automated scan of every recommendation against the customer's stated needs and policy terms. Flags where product suggestions exceed the guidance boundary or conflict with suitability criteria. Feeds directly into complaints handling.</p>
+        </div>
+        <div class="arch-box" style="border-color:var(--blue)">
+          <div class="title" style="color:var(--blue)">⚖️ Consumer Duty</div>
+          <p>Monitors for good consumer outcomes across the four FCA outcomes: products &amp; services, price &amp; value, consumer understanding, and consumer support. Vulnerable customer flags escalate automatically.</p>
+        </div>
+        <div class="arch-box" style="border-color:var(--green)">
+          <div class="title" style="color:var(--green)">🤝 TCF</div>
+          <p>Treating Customers Fairly checks run post-session: were loyalty penalties surfaced? Were alternatives presented fairly? Was the customer steered by commission? Pass/fail scored against TCF outcomes 1–6.</p>
+        </div>
+      </div>
+
     </div>
   </div>
 </section>
