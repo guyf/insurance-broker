@@ -123,7 +123,30 @@
       font-size: clamp(1rem, 2vw, 1.2rem);
       color: var(--muted);
       max-width: 680px;
-      margin-bottom: 40px;
+      margin-bottom: 28px;
+    }
+
+    /* ── Bullet list ──────────────────────────────────────── */
+    ul.bullets {
+      list-style: none;
+      margin-bottom: 36px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    ul.bullets li {
+      font-size: clamp(0.95rem, 1.8vw, 1.1rem);
+      color: var(--muted);
+      padding-left: 22px;
+      position: relative;
+      line-height: 1.5;
+    }
+    ul.bullets li::before {
+      content: "→";
+      position: absolute;
+      left: 0;
+      color: var(--teal);
+      font-weight: 700;
     }
 
     /* ── Stat cards ───────────────────────────────────────── */
@@ -294,16 +317,6 @@
       margin-bottom: 10px;
     }
 
-    /* ── Quote ────────────────────────────────────────────── */
-    blockquote {
-      border-left: 3px solid var(--teal);
-      padding-left: 20px;
-      margin: 32px 0;
-      font-size: 1.1rem;
-      font-style: italic;
-      color: var(--muted);
-    }
-
     /* ── Divider ──────────────────────────────────────────── */
     hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
 
@@ -347,8 +360,9 @@
     #s2 { background: radial-gradient(ellipse at 30% 60%, #0a2218 0%, var(--bg) 60%); }
     #s3 { background: radial-gradient(ellipse at 70% 70%, #0a1a30 0%, var(--bg) 60%); }
     #s4 { background: radial-gradient(ellipse at 30% 30%, #1a1a08 0%, var(--bg) 60%); }
-    #s5 { background: radial-gradient(ellipse at 70% 50%, #0a1830 0%, var(--bg) 60%); }
-    #s6 { background: radial-gradient(ellipse at 30% 60%, #150a2e 0%, var(--bg) 60%); }
+    #s5 { background: radial-gradient(ellipse at 70% 50%, #150a2e 0%, var(--bg) 60%); }
+    #s6 { background: radial-gradient(ellipse at 30% 60%, #0a1a2e 0%, var(--bg) 60%); }
+    #s7 { background: radial-gradient(ellipse at 70% 50%, #0a1830 0%, var(--bg) 60%); }
 
     /* ── Fade-in on scroll ────────────────────────────────── */
     .fade-in {
@@ -374,8 +388,9 @@
   <a href="#s2" title="The AI Broker"></a>
   <a href="#s3" title="Customer Benefits"></a>
   <a href="#s4" title="What It Does"></a>
-  <a href="#s5" title="Architecture"></a>
-  <a href="#s6" title="B2B Distribution"></a>
+  <a href="#s5" title="B2B Distribution"></a>
+  <a href="#s6" title="Regulatory Framework"></a>
+  <a href="#s7" title="Architecture"></a>
 </nav>
 
 <!-- ── Slide 1: Disruption ──────────────────────────────── -->
@@ -383,7 +398,12 @@
   <div class="slide-inner">
     <div class="slide-num fade-in">01 / Market Disruption</div>
     <h1 class="fade-in">AI Is <span class="accent-rose">Disrupting</span><br>Insurance Distribution</h1>
-    <p class="lead fade-in">Legacy brokers and aggregators built for the pre-AI era are already feeling the pressure. The window to define the next model is open — but not for long.</p>
+    <p class="lead fade-in">Brokers and aggregators built for the pre-AI era are already feeling the pressure. The window to define the next model is open — but not for long.</p>
+
+    <ul class="bullets fade-in">
+      <li>Price comparison sites commoditised insurance but stripped out advice, context, and customer relationships — optimising for clicks, not outcomes.</li>
+      <li>Aggregators have dominated personal lines distribution for more than a decade. There is an opportunity to disrupt.</li>
+    </ul>
 
     <div class="stat-row fade-in">
       <div class="stat-card">
@@ -391,16 +411,10 @@
         <div class="label">Avg. share price decline in traditional brokers, 2023–25</div>
       </div>
       <div class="stat-card">
-        <div class="big accent-amber">£90B</div>
-        <div class="label">UK insurance GWP up for disruption</div>
-      </div>
-      <div class="stat-card">
-        <div class="big accent-green">3×</div>
-        <div class="label">Faster policy research with AI vs. manual comparison</div>
+        <div class="big accent-amber">£40B</div>
+        <div class="label">UK B2C personal lines GWP (motor, home &amp; other)</div>
       </div>
     </div>
-
-    <blockquote class="fade-in">"The intermediary model hasn't fundamentally changed in 30 years. AI gives us the first real opportunity to rebuild it from scratch — in the customer's favour."</blockquote>
   </div>
   <div class="scroll-hint">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
@@ -544,10 +558,97 @@
   </div>
 </section>
 
-<!-- ── Slide 5: Architecture ─────────────────────────────── -->
+<!-- ── Slide 5: B2B Distribution ─────────────────────────── -->
 <section id="s5">
   <div class="slide-inner">
-    <div class="slide-num fade-in">05 / How It Works</div>
+    <div class="slide-num fade-in">05 / Go-to-Market</div>
+    <h2 class="fade-in">B2B Distribution via <span class="accent-purple">Trusted Retail Brands</span></h2>
+    <p class="lead fade-in">Large retail brands — supermarkets, banks, utilities, telecoms — already hold insurance licences and millions of customer relationships. They need the intelligence layer. We provide it.</p>
+
+    <div class="dist-grid fade-in">
+      <div class="dist-card c1">
+        <div class="tag" style="background:var(--teal-dim);color:var(--teal)">Banking</div>
+        <h3>Banks &amp; Building Societies</h3>
+        <p>Already distribute home and life insurance to their mortgage books. AI broker surfaces gaps and renewal opportunities across their entire customer base automatically.</p>
+      </div>
+      <div class="dist-card c2">
+        <div class="tag" style="background:var(--blue-dim);color:var(--blue)">Retail</div>
+        <h3>Supermarkets &amp; Retailers</h3>
+        <p>Tesco, Sainsbury's, M&amp;S all hold FCA licences. Loyal customer bases with household data — ideal for home, contents, and appliance cover.</p>
+      </div>
+      <div class="dist-card c3">
+        <div class="tag" style="background:var(--purple-dim);color:var(--purple)">Utilities</div>
+        <h3>Energy &amp; Telecoms</h3>
+        <p>Direct relationships with every household. Boiler cover, home emergency, and contents insurance are natural adjacencies to their existing service bundles.</p>
+      </div>
+      <div class="dist-card c4">
+        <div class="tag" style="background:var(--amber-dim);color:var(--amber)">Automotive</div>
+        <h3>Car Manufacturers &amp; Dealers</h3>
+        <p>Sell the vehicle, then provide the AI broker to manage its insurance for life. Manufacturer data pre-fills policies. Renewal reminders drive repeat engagement.</p>
+      </div>
+    </div>
+
+    <hr class="fade-in" />
+
+    <div class="fade-in" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-top:4px">
+      <div>
+        <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:6px">Revenue Model</div>
+        <p style="font-size:0.9rem;color:var(--text)">White-label SaaS licence per brand + commission share on policies placed. No cold-start: brand brings the customers, we bring the intelligence.</p>
+      </div>
+      <div>
+        <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:6px">Competitive Moat</div>
+        <p style="font-size:0.9rem;color:var(--text)">Per-user policy memory compounds over time. The longer a customer uses it, the more personalised and accurate their broker becomes — impossible to replicate quickly.</p>
+      </div>
+      <div>
+        <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:6px">Regulatory</div>
+        <p style="font-size:0.9rem;color:var(--text)">Operates under the brand partner's existing FCA permissions. Broker provides the AI engine; partner owns the customer relationship and compliance wrapper.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Slide 6: Regulatory Framework ─────────────────────── -->
+<section id="s6">
+  <div class="slide-inner">
+    <div class="slide-num fade-in">06 / Regulatory Framework</div>
+    <h2 class="fade-in">Built to <span class="accent-teal">Last</span> — An AI-First Compliance Model</h2>
+    <p class="lead fade-in">Regulation is not a barrier — it is a design constraint. The platform is architected from day one around FCA expectations on consumer protection, advice boundaries, and fair treatment.</p>
+
+    <div class="feature-grid fade-in">
+      <div class="feature-card" style="border-color:var(--teal)">
+        <span class="icon">✅</span>
+        <h3 style="color:var(--teal)">Quality Assurance</h3>
+        <p>Every AI response is grounded in retrieved policy text — citations are mandatory, not optional. Confidence scoring surfaces uncertainty so customers know when to seek a second opinion. Outputs are auditable and logged for review.</p>
+      </div>
+      <div class="feature-card" style="border-color:var(--rose)">
+        <span class="icon">🚧</span>
+        <h3 style="color:var(--rose)">Mis-selling &amp; Advice Safeguards</h3>
+        <p>The platform operates as information and guidance, not regulated advice — clearly disclosed at every interaction. Suitability checks prevent inappropriate product suggestions. Recommendation audit trails support post-sale review and complaints handling.</p>
+      </div>
+      <div class="feature-card" style="border-color:var(--blue)">
+        <span class="icon">⚖️</span>
+        <h3 style="color:var(--blue)">Consumer Duty</h3>
+        <p>Designed around the FCA's Consumer Duty framework: good outcomes, not just compliant processes. Price and value assessments are built into the comparison engine. Vulnerable customer flags trigger simplified language and escalation pathways.</p>
+      </div>
+      <div class="feature-card" style="border-color:var(--amber)">
+        <span class="icon">🤝</span>
+        <h3 style="color:var(--amber)">Treating Customers Fairly</h3>
+        <p>TCF principles are embedded in the system prompt and enforced at the model layer — not bolted on as a policy document. Products are presented on merit, renewal loyalty penalties are surfaced proactively, and customers are never steered by commission incentive.</p>
+      </div>
+    </div>
+
+    <div class="fade-in" style="margin-top:28px;padding:18px 22px;background:var(--surface);border:1px solid var(--border);border-radius:12px;">
+      <p style="font-size:0.9rem;color:var(--muted);line-height:1.6;">
+        <span style="color:var(--teal);font-weight:700;">The structural advantage:</span> AI-native compliance is cheaper to maintain than human compliance at scale. Every interaction is logged, searchable, and reviewable. Regulators get more visibility into broker behaviour — not less.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ── Slide 7: Architecture ─────────────────────────────── -->
+<section id="s7">
+  <div class="slide-inner">
+    <div class="slide-num fade-in">07 / How It Works</div>
     <h2 class="fade-in">Architecture — <span class="accent-blue">Built to Scale</span></h2>
     <p class="lead fade-in">A production-grade RAG pipeline with agentic tool-use, deployed on serverless infrastructure. Every layer is independently scalable.</p>
 
@@ -607,55 +708,6 @@
         </div>
       </div>
 
-    </div>
-  </div>
-</section>
-
-<!-- ── Slide 6: B2B Distribution ─────────────────────────── -->
-<section id="s6">
-  <div class="slide-inner">
-    <div class="slide-num fade-in">06 / Go-to-Market</div>
-    <h2 class="fade-in">B2B Distribution via <span class="accent-purple">Trusted Retail Brands</span></h2>
-    <p class="lead fade-in">Large retail brands — supermarkets, banks, utilities, telecoms — already hold insurance licences and millions of customer relationships. They need the intelligence layer. We provide it.</p>
-
-    <div class="dist-grid fade-in">
-      <div class="dist-card c1">
-        <div class="tag" style="background:var(--teal-dim);color:var(--teal)">Banking</div>
-        <h3>Banks & Building Societies</h3>
-        <p>Already distribute home and life insurance to their mortgage books. AI broker surfaces gaps and renewal opportunities across their entire customer base automatically.</p>
-      </div>
-      <div class="dist-card c2">
-        <div class="tag" style="background:var(--blue-dim);color:var(--blue)">Retail</div>
-        <h3>Supermarkets & Retailers</h3>
-        <p>Tesco, Sainsbury's, M&S all hold FCA licences. Loyal customer bases with household data — ideal for home, contents, and appliance cover.</p>
-      </div>
-      <div class="dist-card c3">
-        <div class="tag" style="background:var(--purple-dim);color:var(--purple)">Utilities</div>
-        <h3>Energy & Telecoms</h3>
-        <p>Direct relationships with every household. Boiler cover, home emergency, and contents insurance are natural adjacencies to their existing service bundles.</p>
-      </div>
-      <div class="dist-card c4">
-        <div class="tag" style="background:var(--amber-dim);color:var(--amber)">Automotive</div>
-        <h3>Car Manufacturers & Dealers</h3>
-        <p>Sell the vehicle, then provide the AI broker to manage its insurance for life. Manufacturer data pre-fills policies. Renewal reminders drive repeat engagement.</p>
-      </div>
-    </div>
-
-    <hr class="fade-in" />
-
-    <div class="fade-in" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-top:4px">
-      <div>
-        <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:6px">Revenue Model</div>
-        <p style="font-size:0.9rem;color:var(--text)">White-label SaaS licence per brand + commission share on policies placed. No cold-start: brand brings the customers, we bring the intelligence.</p>
-      </div>
-      <div>
-        <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:6px">Competitive Moat</div>
-        <p style="font-size:0.9rem;color:var(--text)">Per-user policy memory compounds over time. The longer a customer uses it, the more personalised and accurate their broker becomes — impossible to replicate quickly.</p>
-      </div>
-      <div>
-        <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:6px">Regulatory</div>
-        <p style="font-size:0.9rem;color:var(--text)">Operates under the brand partner's existing FCA permissions. Broker provides the AI engine; partner owns the customer relationship and compliance wrapper.</p>
-      </div>
     </div>
   </div>
 </section>
