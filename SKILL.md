@@ -58,7 +58,33 @@ Documents are stored in a vector database and accessed via MCP tools from the
 - **`get_renewal_calendar()`** — all policies with recorded renewal dates, sorted
   chronologically. Use for renewal overview requests.
 
-`policy_type` values: `car`, `home`, `breakdown`, `life`, `phone`, `travel`, `asset`
+`policy_type` values: `car`, `home`, `breakdown`, `life`, `phone`, `travel`, `pet`, `asset`
+
+---
+
+## Market Comparison Policies
+
+In addition to the user's personal policy documents, the knowledge base contains
+**public policy booklets from major UK insurers**, ingested for comparison purposes.
+These are identified by a `source_path` starting with `market/`:
+
+- `market/car/{provider}/…` — motor insurance policy booklets
+- `market/home/{provider}/…` — home/buildings/contents policy booklets
+- `market/pet/{provider}/…` — pet insurance policy booklets
+
+**To find out what market policies are available**, call `list_policies()` and look
+for entries where the source_path begins with `market/`. Do not assume which types
+are loaded — always check the live list. Market policies are currently available for
+**car, home, and pet** lines.
+
+**For market comparison questions:**
+1. Call `list_policies()` to confirm which providers and types are loaded under `market/`.
+2. Search the user's personal policy with `search_insurance_docs(query, policy_type=X)`.
+3. Search the market booklets with `search_insurance_docs(query, policy_type=X)` — the
+   same search covers both personal and market documents simultaneously.
+4. Compare key terms side by side: cover limits, excesses, key inclusions/exclusions.
+5. Never present market booklet terms as a current quote — they are reference documents.
+   Direct the user to get a live quote for accurate pricing.
 
 ---
 
@@ -102,6 +128,9 @@ Structure your answers clearly:
   single-item limits on contents, out-of-home cover for phones/valuables
 
 **For comparison questions:**
+- Check `list_policies()` first to confirm which market booklets are available
+  (source_path starting with `market/car/`, `market/home/`, or `market/pet/`)
+- Search both personal and market documents using `search_insurance_docs`
 - Lay out key terms side by side: cover limit, excess, key inclusions,
   key exclusions, renewal date, premium
 
