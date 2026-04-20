@@ -112,6 +112,7 @@ def extract_insurer_info_from_pdf(pdf_path: Path) -> dict:
 _KNOWN_DOC_TYPES = {"policy", "invoice", "other"}
 
 _POLICY_FIELDS = (
+    "- policy_type: type of insurance — one of: car, home, life, travel, breakdown, phone, pet, warranty, other\n"
     "- provider: the insurance company name (e.g. 'NFU Mutual')\n"
     "- underwriter: underwriting company if explicitly different from provider\n"
     "- renewal_date: policy renewal date as DD/MM/YYYY\n"
@@ -159,7 +160,7 @@ def extract_metadata_llm(pdf_path: Path, openai_client, doc_type: str | None = N
             "Return only valid JSON. Omit keys where the value cannot be found."
         )
         user = f"Extract these fields:\n{_POLICY_FIELDS}\n\nDocument:\n{text}"
-        allowed = {"provider", "underwriter", "renewal_date", "premium", "insured_entity"}
+        allowed = {"policy_type", "provider", "underwriter", "renewal_date", "premium", "insured_entity"}
 
     elif doc_type == "invoice":
         system = (
@@ -189,7 +190,7 @@ def extract_metadata_llm(pdf_path: Path, openai_client, doc_type: str | None = N
             f"Document:\n{text}"
         )
         allowed = {
-            "doc_type", "provider", "underwriter", "renewal_date", "premium",
+            "doc_type", "policy_type", "provider", "underwriter", "renewal_date", "premium",
             "insured_entity", "asset_name", "asset_value",
         }
 
@@ -206,13 +207,16 @@ def extract_metadata_llm(pdf_path: Path, openai_client, doc_type: str | None = N
         )
         result = json.loads(resp.choices[0].message.content)
 
-        # Sanitise: only known keys, string values, valid doc_type
+        _KNOWN_POLICY_TYPES = {"car", "home", "life", "travel", "breakdown", "phone", "pet", "warranty", "other"}
+        # Sanitise: only known keys, string values, valid doc_type/policy_type
         cleaned: dict = {}
         for k, v in result.items():
             if k not in allowed or not v:
                 continue
             if k == "doc_type":
                 cleaned[k] = str(v).lower() if str(v).lower() in _KNOWN_DOC_TYPES else "other"
+            elif k == "policy_type":
+                cleaned[k] = str(v).lower() if str(v).lower() in _KNOWN_POLICY_TYPES else "other"
             else:
                 cleaned[k] = str(v)
         return cleaned
@@ -260,7 +264,7 @@ def chunk_pdf(pdf_path: Path, source_path: str, base_metadata: dict) -> list[Chu
                     chunks.append(Chunk(
                         content=chunk_text,
                         source_path=source_path,
-                        filename=pdf_path.name,
+                        filename=base_metadata.get("filename") or pdf_path.name,
                         page_num=page_num,
                         chunk_index=chunk_index,
                         metadata=merged_meta,

@@ -376,12 +376,13 @@ async def upload_document(request: Request) -> JSONResponse:
 
         try:
             # Import ingestion modules (lazy — only needed when upload is called)
-            from pdf_chunk import chunk_pdf  # noqa: PLC0415
+            from pdf_chunk import chunk_pdf, extract_metadata_llm  # noqa: PLC0415
             from embed import embed_texts  # noqa: PLC0415
             from store import get_existing_hashes, upsert_chunks  # noqa: PLC0415
 
-            # Infer basic metadata from filename
-            base_metadata: dict = {"doc_type": "policy", "filename": filename}
+            # Extract metadata (policy_type, provider, renewal_date, etc.) via LLM
+            llm_meta = extract_metadata_llm(Path(tmp_path), _openai_client())
+            base_metadata: dict = {"doc_type": "policy", "filename": filename, **llm_meta}
 
             chunks = chunk_pdf(
                 Path(tmp_path),
