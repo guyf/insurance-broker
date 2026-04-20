@@ -240,7 +240,7 @@ def ingest_market_policies(policy_type: str, provider: str = None) -> str:
         providers = matched
 
     # Import ingestion modules lazily
-    from chunk import chunk_pdf  # noqa: PLC0415
+    from pdf_chunk import chunk_pdf  # noqa: PLC0415
     from embed import embed_texts  # noqa: PLC0415
     from store import get_existing_hashes, upsert_chunks  # noqa: PLC0415
 
@@ -376,7 +376,7 @@ async def upload_document(request: Request) -> JSONResponse:
 
         try:
             # Import ingestion modules (lazy — only needed when upload is called)
-            from chunk import chunk_pdf  # noqa: PLC0415
+            from pdf_chunk import chunk_pdf  # noqa: PLC0415
             from embed import embed_texts  # noqa: PLC0415
             from store import get_existing_hashes, upsert_chunks  # noqa: PLC0415
 
