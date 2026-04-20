@@ -301,7 +301,7 @@ function PolicyGroupCard({
           </dl>
           <ul className="mt-1.5 flex flex-col gap-0.5">
             {docs.map((doc) => (
-              <li key={doc.source_path} className="flex items-center gap-1">
+              <li key={doc.source_path} className="group/doc flex items-center gap-1">
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
@@ -320,6 +320,18 @@ function PolicyGroupCard({
                 >
                   ↗
                 </a>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete([doc.source_path], doc.filename.replace(/\.pdf$/i, ""));
+                  }}
+                  title="Delete document"
+                  className="flex-shrink-0 opacity-0 group-hover/doc:opacity-100 transition-opacity text-gray-300 hover:text-red-500 ml-0.5"
+                >
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
+                  </svg>
+                </button>
               </li>
             ))}
           </ul>
