@@ -684,25 +684,31 @@
 
     <div class="arch-flow fade-in">
 
-      <!-- Layer 1: Ingestion -->
+      <!-- Layer 1: Frontend -->
       <div class="arch-row">
-        <div class="arch-box" style="border-color:var(--teal)">
-          <div class="title" style="color:var(--teal)">📄 Policy PDFs</div>
-          <p>Customer uploads via web UI or local Google Drive sync. Any insurer, any format.</p>
+        <div class="arch-box" style="border-color:var(--amber)">
+          <div class="title" style="color:var(--amber)">🌐 React SPA</div>
+          <p>Filing cabinet, chat interface, and quote panel. Deployed on Cloudflare Pages with serverless Functions as API proxy.</p>
         </div>
-        <div class="arch-box" style="border-color:var(--teal)">
-          <div class="title" style="color:var(--teal)">⚙️ Ingestion Pipeline</div>
-          <p>PDF extraction → semantic chunking → OpenAI embeddings (text-embedding-3-small). SHA-256 dedup prevents re-processing.</p>
-        </div>
-        <div class="arch-box" style="border-color:var(--teal)">
-          <div class="title" style="color:var(--teal)">🗄️ Supabase Vector DB</div>
-          <p>pgvector with HNSW index. JSONB metadata per chunk: policy type, provider, premium, renewal date, insured entity.</p>
+        <div class="arch-box" style="border-color:var(--amber)">
+          <div class="title" style="color:var(--amber)">🖥️ Claude Desktop</div>
+          <p>Alternative power-user interface via stdio↔HTTP bridge. Same MCP servers, richer tool visibility.</p>
         </div>
       </div>
 
       <div class="arch-arrow">↓</div>
 
-      <!-- Layer 2: MCP Servers -->
+      <!-- Layer 2: AI -->
+      <div class="arch-row">
+        <div class="arch-box" style="border-color:var(--purple);grid-column:1/-1">
+          <div class="title" style="color:var(--purple)">🤖 Claude (claude-sonnet-4-6) — Agentic Tool-Use Loop</div>
+          <p>Orchestrates multi-step reasoning across both MCP servers. Searches documents, identifies gaps, generates quotes, and explains findings in plain English — all in a single conversation turn.</p>
+        </div>
+      </div>
+
+      <div class="arch-arrow">↓</div>
+
+      <!-- Layer 3: MCP Servers -->
       <div class="arch-row">
         <div class="arch-box" style="border-color:var(--blue)">
           <div class="title" style="color:var(--blue)">🔧 Broker MCP Server</div>
@@ -716,25 +722,19 @@
 
       <div class="arch-arrow">↓</div>
 
-      <!-- Layer 3: AI -->
+      <!-- Layer 4: Data -->
       <div class="arch-row">
-        <div class="arch-box" style="border-color:var(--purple);grid-column:1/-1">
-          <div class="title" style="color:var(--purple)">🤖 Claude (claude-sonnet-4-6) — Agentic Tool-Use Loop</div>
-          <p>Orchestrates multi-step reasoning across both MCP servers. Searches documents, identifies gaps, generates quotes, and explains findings in plain English — all in a single conversation turn.</p>
+        <div class="arch-box" style="border-color:var(--teal)">
+          <div class="title" style="color:var(--teal)">🗄️ Supabase Vector DB</div>
+          <p>pgvector with HNSW index. JSONB metadata per chunk: policy type, provider, premium, renewal date, insured entity.</p>
         </div>
-      </div>
-
-      <div class="arch-arrow">↓</div>
-
-      <!-- Layer 4: Frontend -->
-      <div class="arch-row">
-        <div class="arch-box" style="border-color:var(--amber)">
-          <div class="title" style="color:var(--amber)">🌐 React SPA</div>
-          <p>Filing cabinet, chat interface, and quote panel. Deployed on Cloudflare Pages with serverless Functions as API proxy.</p>
+        <div class="arch-box" style="border-color:var(--teal)">
+          <div class="title" style="color:var(--teal)">⚙️ Ingestion Pipeline</div>
+          <p>PDF extraction → semantic chunking → OpenAI embeddings (text-embedding-3-small). SHA-256 dedup prevents re-processing.</p>
         </div>
-        <div class="arch-box" style="border-color:var(--amber)">
-          <div class="title" style="color:var(--amber)">🖥️ Claude Desktop</div>
-          <p>Alternative power-user interface via stdio↔HTTP bridge. Same MCP servers, richer tool visibility.</p>
+        <div class="arch-box" style="border-color:var(--teal)">
+          <div class="title" style="color:var(--teal)">📄 Policy PDFs</div>
+          <p>Customer uploads via web UI or local Google Drive sync. Any insurer, any format.</p>
         </div>
       </div>
 
