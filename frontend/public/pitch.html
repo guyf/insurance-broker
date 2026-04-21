@@ -333,6 +333,16 @@
       letter-spacing: 0.02em;
     }
 
+    /* ── Slides 4 & 6 — tighter layout ──────────────────── */
+    #s4 p.lead, #s6 p.lead { margin-bottom: 16px; }
+    #s4 .feature-grid { gap: 12px; }
+    #s4 .feature-card { padding: 14px 16px; }
+    #s4 .feature-card .icon { margin-bottom: 6px; font-size: 1.4rem; }
+    #s4 .feature-card h3 { margin-bottom: 4px; }
+    #s6 .arch-flow { gap: 8px; }
+    #s6 .arch-box { padding: 12px 14px; }
+    #s6 .arch-arrow { font-size: 1rem; }
+
     /* ── Scroll hint ──────────────────────────────────────── */
     .scroll-hint {
       position: absolute;
@@ -534,47 +544,47 @@
       <div class="feature-card">
         <span class="icon">🔍</span>
         <h3>Semantic policy search</h3>
-        <p>Asks questions across all your documents simultaneously. Surfaces the exact clause that answers your question with similarity scoring.</p>
+        <p>Questions across all documents simultaneously. Surfaces the exact clause with similarity scoring.</p>
       </div>
       <div class="feature-card">
         <span class="icon">📊</span>
         <h3>Policy filing cabinet</h3>
-        <p>Visual dashboard of every policy and asset — provider, premium, renewal date, insured entity — all editable in-place. Upload new versions or delete documents per card.</p>
+        <p>Dashboard of every policy and asset — provider, premium, renewal date — editable in-place. Upload new versions or delete per card.</p>
       </div>
       <div class="feature-card">
         <span class="icon">🏢</span>
         <h3>Market-wide comparison</h3>
-        <p>Ingests public policy booklets from 17 major UK insurers across motor, home, and pet lines. Claude searches your policy and the market simultaneously — feature-by-feature, not just price.</p>
+        <p>Public booklets from 17 major UK insurers across motor, home, and pet. Searches your policy and the market simultaneously — feature-by-feature, not just price.</p>
       </div>
       <div class="feature-card">
         <span class="icon">💰</span>
         <h3>Live requoting</h3>
-        <p>One click to get illustrative quotes from three competing insurers for home, motor, or pet cover — benchmarked against your current premium.</p>
+        <p>One click for illustrative quotes from three competing insurers — home, motor, or pet — benchmarked against your current premium.</p>
       </div>
       <div class="feature-card">
         <span class="icon">📸</span>
         <h3>Photo asset recognition</h3>
-        <p>Photograph a car, bike, or appliance — GPT-4o vision automatically identifies make, model, and value to pre-fill your quote request.</p>
+        <p>Photograph a car, bike, or appliance — GPT-4o vision identifies make, model, and value to pre-fill your quote.</p>
       </div>
       <div class="feature-card">
         <span class="icon">🗓️</span>
         <h3>Renewal calendar</h3>
-        <p>Chronological view of all upcoming renewals. Policies expiring within 60 days are flagged automatically so you act before auto-renewal.</p>
+        <p>Upcoming renewals in chronological order. Policies expiring within 60 days flagged automatically.</p>
       </div>
       <div class="feature-card">
         <span class="icon">☁️</span>
         <h3>Instant PDF ingestion</h3>
-        <p>Drop any policy PDF into the interface. It's chunked, embedded, and searchable in seconds — no manual data entry required.</p>
+        <p>Drop any policy PDF into the interface. Chunked, embedded, and searchable in seconds.</p>
       </div>
       <div class="feature-card" style="opacity:0.45;border-style:dashed;">
         <span class="icon">✏️</span>
         <h3 style="color:var(--muted)">Mid-Term Adjustments <span style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;background:var(--surface2);color:var(--muted);padding:2px 7px;border-radius:99px;margin-left:6px;">Coming soon</span></h3>
-        <p>Request policy changes — add a named driver, update an address, change a sum insured — directly through the broker. MTA submitted to the insurer without a phone call.</p>
+        <p>Add a named driver, update an address, change a sum insured — MTA submitted without a phone call.</p>
       </div>
       <div class="feature-card" style="opacity:0.45;border-style:dashed;">
         <span class="icon">🩹</span>
         <h3 style="color:var(--muted)">Claims Management <span style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;background:var(--surface2);color:var(--muted);padding:2px 7px;border-radius:99px;margin-left:6px;">Coming soon</span></h3>
-        <p>Log a claim, track its status, and understand what to expect at each stage — all from the same interface. The broker knows your policy so it knows what you're entitled to.</p>
+        <p>Log a claim and track its status from the same interface. The broker knows your policy — and what you're entitled to.</p>
       </div>
     </div>
   </div>
@@ -637,7 +647,7 @@
       <div class="arch-row">
         <div class="arch-box" style="border-color:var(--purple);grid-column:1/-1">
           <div class="title" style="color:var(--purple)">🤖 AI Broker — Every Customer Conversation</div>
-          <p>Each session captures: user intent, retrieved policy clauses, recommendations made, products surfaced, and final customer outcome. Structured metadata tags every interaction at the point of generation.</p>
+          <p>Each session captures: user intent, retrieved policy clauses, recommendations made, products surfaced, and final customer outcome.</p>
         </div>
       </div>
 
@@ -647,7 +657,7 @@
       <div class="arch-row">
         <div class="arch-box" style="border-color:var(--amber);grid-column:1/-1;background:var(--amber-dim);">
           <div class="title" style="color:var(--amber)">🗄️ Session Recording &amp; Audit Layer</div>
-          <p>Immutable, timestamped log of every interaction — searchable by session, customer, product type, recommendation, or outcome flag. Full audit trail available to compliance teams and regulators on demand. No interaction is off the record.</p>
+          <p>Immutable, timestamped log of every interaction — searchable by session, customer, product type, recommendation, or outcome flag. Full audit trail available to compliance teams and regulators on demand.</p>
         </div>
       </div>
 
@@ -658,7 +668,7 @@
       <div class="arch-row">
         <div class="arch-box" style="border-color:var(--rose)">
           <div class="title" style="color:var(--rose)">🤖 Mis-selling</div>
-          <p>Automated scan of every recommendation against stated needs and policy terms. Flags where suggestions exceed the guidance boundary or conflict with suitability criteria.</p>
+          <p>Automated scan of every recommendation against stated needs and policy terms. Flags where suggestions exceed guidance or conflict with suitability criteria.</p>
         </div>
         <div class="arch-box" style="border-color:var(--blue)">
           <div class="title" style="color:var(--blue)">🤖 Consumer Duty</div>
@@ -666,11 +676,11 @@
         </div>
         <div class="arch-box" style="border-color:var(--green)">
           <div class="title" style="color:var(--green)">🤖 TCF</div>
-          <p>Post-session checks: were loyalty penalties surfaced? Were alternatives presented fairly? Was the customer steered by commission? Scored against TCF outcomes 1–6.</p>
+          <p>Post-session checks: loyalty penalties surfaced? Alternatives presented fairly? Customer steered by commission? Scored against TCF outcomes 1–6.</p>
         </div>
         <div class="arch-box" style="border-color:var(--purple)">
           <div class="title" style="color:var(--purple)">🤖 Vulnerable Customers</div>
-          <p>Per FCA FG21/1: detects vulnerability signals (health, life events, financial resilience, capability) in session language. Triggers simplified explanations and escalation.</p>
+          <p>Detects vulnerability signals (health, life events, financial resilience, capability) per FCA FG21/1. Triggers simplified explanations and escalation.</p>
         </div>
       </div>
 
@@ -680,7 +690,7 @@
       <div class="arch-row">
         <div class="arch-box" style="border-color:var(--teal);grid-column:1/-1;background:var(--teal-dim);">
           <div class="title" style="color:var(--teal)">👤 Ops QA — Humans in the Loop</div>
-          <p>A configurable % of sessions are flagged for manual review by compliance staff — sampled by AI risk score, product type, or outcome flag. Reviewers work directly from the audit log, closing the loop between AI output and human sign-off. Escalations from any AI agent land here first.</p>
+          <p>A configurable % of sessions are flagged for manual review — sampled by AI risk score, product type, or outcome flag. Reviewers work from the audit log, closing the loop between AI output and human sign-off.</p>
         </div>
       </div>
 

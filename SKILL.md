@@ -57,6 +57,10 @@ Documents are stored in a vector database and accessed via MCP tools from the
   what's available.
 - **`get_renewal_calendar()`** — all policies with recorded renewal dates, sorted
   chronologically. Use for renewal overview requests.
+- **`ingest_market_policies(policy_type, provider?)`** — downloads and ingests public
+  policy booklets from major UK insurers into the knowledge base. Call this before a
+  market comparison if the relevant market docs aren't yet loaded. `policy_type`: car,
+  home, or pet. `provider` is optional (e.g. "Admiral") to ingest a single insurer.
 
 `policy_type` values: `car`, `home`, `breakdown`, `life`, `phone`, `travel`, `pet`, `asset`
 
