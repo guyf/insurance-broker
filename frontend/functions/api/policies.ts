@@ -111,20 +111,40 @@ function tag(line: string, key: string): string | null {
 }
 
 function parsePolicies(text: string): Policy[] {
-  // Format: "  type [insured_entity] — filename  (source_path)  [doc_type: X]  [provider: X] ..."
+  // Format: "  type [insured_entity] — filename  (source_path)  [doc_type: X] ..."
+  // Split on the two-space gap before "(source_path)" so parens inside either the
+  // entity or the path don't confuse a single regex.
   const policies: Policy[] = [];
   for (const line of text.split("\n")) {
     if (!line.match(/^\s+\S/)) continue;
-    const m = line.match(
-      /^\s+([\w/.-]+)(?:\s+\[([^\]]+)\])?\s+—\s+(.+?)\s{2,}\((.+?)\)/
-    );
-    if (!m) continue;
+
+    const splitIdx = line.search(/\s{2,}\(/);
+    if (splitIdx === -1) continue;
+
+    const leftPart = line.slice(0, splitIdx).trim();   // "type [entity] — filename"
+    const rightPart = line.slice(splitIdx).trim();     // "(source_path)  [tags...]"
+
+    // source_path: grab from first "(" to last ")" before the tags
+    const spMatch = rightPart.match(/^\((.+)\)/);
+    if (!spMatch) continue;
+    const source_path = spMatch[1].trim();
+
+    // Split "type [entity] — filename" on first " — "
+    const dashIdx = leftPart.indexOf(" — ");
+    if (dashIdx === -1) continue;
+    const typeEntityPart = leftPart.slice(0, dashIdx);
+    const filename = leftPart.slice(dashIdx + 3).trim();
+
+    // Extract policy_type and optional insured_entity from typeEntityPart
+    const teMatch = typeEntityPart.match(/^([\w/.-]+)(?:\s+\[(.+)\])?$/);
+    if (!teMatch) continue;
+
     policies.push({
       doc_type: tag(line, "doc_type"),
-      policy_type: m[1],
-      insured_entity: m[2] ?? null,
-      filename: m[3].trim(),
-      source_path: m[4].trim(),
+      policy_type: teMatch[1],
+      insured_entity: teMatch[2] ?? null,
+      filename,
+      source_path,
       renewal_date: tag(line, "renewal_date"),
       premium: tag(line, "premium"),
       provider: tag(line, "provider"),
