@@ -599,6 +599,8 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     }));
 
     let quoteResult: QuoteResult | null = null;
+    let quoteToolName: string | null = null;
+    let quoteToolArgs: Record<string, unknown> | null = null;
     let finalText = "";
 
     // Agentic loop
@@ -642,7 +644,11 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
           // Check if this is a quote tool call
           if (QUOTE_TOOLS.has(block.name) && block.name !== "analyze_photo") {
             const parsed = parseQuoteResult(block.name, toolOutput);
-            if (parsed) quoteResult = parsed;
+            if (parsed) {
+              quoteResult = parsed;
+              quoteToolName = block.name;
+              quoteToolArgs = block.input as Record<string, unknown>;
+            }
           }
 
           toolResults.push({
@@ -664,8 +670,10 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       break;
     }
 
-    const result: { content: string; quote?: QuoteResult } = { content: finalText };
+    const result: { content: string; quote?: QuoteResult; quoteToolName?: string; quoteToolArgs?: Record<string, unknown> } = { content: finalText };
     if (quoteResult) result.quote = quoteResult;
+    if (quoteToolName) result.quoteToolName = quoteToolName;
+    if (quoteToolArgs) result.quoteToolArgs = quoteToolArgs;
 
     return new Response(JSON.stringify(result), {
       headers: { "Content-Type": "application/json" },

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { FilingCabinet } from "./components/FilingCabinet";
 import { Broker } from "./components/Broker";
 import { QuotePanel } from "./components/QuotePanel";
-import { deletePolicy, fetchPolicies, sendMessage, uploadPolicy } from "./lib/api";
+import { deletePolicy, fetchPolicies, requote, sendMessage, uploadPolicy } from "./lib/api";
 import type { ChatMessage, Policy, QuoteResult } from "./lib/types";
 
 export default function App() {
@@ -17,6 +17,9 @@ export default function App() {
   ]);
   const [thinking, setThinking] = useState(false);
   const [quote, setQuote] = useState<QuoteResult | null>(null);
+  const [lastQuoteParams, setLastQuoteParams] = useState<{ toolName: string; args: Record<string, unknown> } | null>(null);
+  const [quotePanelOpen, setQuotePanelOpen] = useState(false);
+  const [requoting, setRequoting] = useState(false);
   const [toast, setToast] = useState<{ text: string; ok: boolean } | null>(null);
   const [prefillInput, setPrefillInput] = useState("");
   const [leftWidth, setLeftWidth] = useState(480);
@@ -40,6 +43,11 @@ export default function App() {
     document.addEventListener("mousemove", onMove);
     document.addEventListener("mouseup", onUp);
   };
+
+  // Auto-open panel when a quote arrives
+  useEffect(() => {
+    if (quote) setQuotePanelOpen(true);
+  }, [quote]);
 
   const loadPolicies = async () => {
     setPoliciesLoading(true);
@@ -73,6 +81,9 @@ export default function App() {
       const response = await sendMessage(nextMessages);
       setMessages([...nextMessages, { role: "assistant", content: response.content }]);
       if (response.quote) setQuote(response.quote);
+      if (response.quoteToolName && response.quoteToolArgs) {
+        setLastQuoteParams({ toolName: response.quoteToolName, args: response.quoteToolArgs });
+      }
     } catch (err) {
       setMessages([
         ...nextMessages,
@@ -83,6 +94,19 @@ export default function App() {
       ]);
     } finally {
       setThinking(false);
+    }
+  };
+
+  const handleRequote = async () => {
+    if (!lastQuoteParams) return;
+    setRequoting(true);
+    try {
+      const newQuote = await requote(lastQuoteParams.toolName, lastQuoteParams.args);
+      setQuote(newQuote);
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : "Requote failed", false);
+    } finally {
+      setRequoting(false);
     }
   };
 
@@ -131,7 +155,7 @@ export default function App() {
       />
 
       {/* Middle — Broker Chat */}
-      <main className="flex-1 flex flex-col bg-white min-w-0 border-r border-gray-200">
+      <main className="flex-1 flex flex-col bg-white min-w-0 relative">
         <Broker
           messages={messages}
           thinking={thinking}
@@ -139,11 +163,36 @@ export default function App() {
           onPrefillConsumed={() => setPrefillInput("")}
           onSend={handleSend}
         />
+
+        {/* Quotes tab — appears on the right edge when panel is closed and a quote exists */}
+        {!quotePanelOpen && quote && (
+          <button
+            onClick={() => setQuotePanelOpen(true)}
+            className="absolute right-0 top-1/2 -translate-y-1/2 bg-white border border-gray-200 border-r-0 rounded-l-lg px-1.5 py-3 shadow-sm hover:bg-gray-50 transition-colors z-10"
+            title="Show quotes"
+          >
+            <span
+              className="text-[11px] font-medium text-gray-500 select-none"
+              style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}
+            >
+              Quotes
+            </span>
+          </button>
+        )}
       </main>
 
-      {/* Right — Quote Panel */}
-      <aside className="w-96 flex-shrink-0 flex flex-col bg-gray-50">
-        <QuotePanel quote={quote} />
+      {/* Right — Quote Panel (slides in from right like Preview thumbnails) */}
+      <aside
+        className={`flex-shrink-0 flex flex-col bg-gray-50 transition-[width,border] duration-300 ease-in-out overflow-hidden ${
+          quotePanelOpen ? "w-80 border-l border-gray-200" : "w-0 border-l-0"
+        }`}
+      >
+        <QuotePanel
+          quote={quote}
+          onClose={() => setQuotePanelOpen(false)}
+          onRequote={lastQuoteParams ? handleRequote : undefined}
+          requoting={requoting}
+        />
       </aside>
 
       {/* Toast */}

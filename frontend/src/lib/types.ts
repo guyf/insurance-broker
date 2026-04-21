@@ -36,4 +36,6 @@ export interface QuoteResult {
 export interface ChatResponse {
   content: string;
   quote?: QuoteResult;
+  quoteToolName?: string;
+  quoteToolArgs?: Record<string, unknown>;
 }

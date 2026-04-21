@@ -1,4 +1,4 @@
-import type { ChatMessage, ChatResponse, Policy } from "./types";
+import type { ChatMessage, ChatResponse, Policy, QuoteResult } from "./types";
 
 export async function sendMessage(messages: ChatMessage[]): Promise<ChatResponse> {
   const res = await fetch("/api/chat", {
@@ -38,6 +38,19 @@ export async function deletePolicy(sourcePaths: string[]): Promise<void> {
     body: JSON.stringify({ source_paths: sourcePaths }),
   });
   if (!res.ok) throw new Error("Failed to delete policy");
+}
+
+export async function requote(toolName: string, args: Record<string, unknown>): Promise<QuoteResult> {
+  const res = await fetch("/api/requote", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ toolName, args }),
+  });
+  if (!res.ok) {
+    const err = await res.text().catch(() => "Unknown error");
+    throw new Error(`Requote failed: ${err}`);
+  }
+  return (await res.json() as { quote: QuoteResult }).quote;
 }
 
 export async function uploadPolicy(

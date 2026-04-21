@@ -79,14 +79,47 @@ function InsurerCard({ insurer, rank }: { insurer: InsurerQuote; rank: number })
   );
 }
 
-export function QuoteTable({ quote }: { quote: QuoteResult }) {
+export function QuoteTable({
+  quote,
+  onRequote,
+  requoting,
+}: {
+  quote: QuoteResult;
+  onRequote?: () => void;
+  requoting?: boolean;
+}) {
   return (
     <div>
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-sm font-semibold text-gray-900">{TYPE_LABELS[quote.type]}</h3>
-        {quote.ref && (
-          <span className="text-[10px] text-gray-400 font-mono">{quote.ref}</span>
-        )}
+        <div className="flex items-center gap-2">
+          {quote.ref && (
+            <span className="text-[10px] text-gray-400 font-mono">{quote.ref}</span>
+          )}
+          {onRequote && (
+            <button
+              onClick={onRequote}
+              disabled={requoting}
+              className="flex items-center gap-1 text-[10px] font-medium text-gray-500 hover:text-gray-900 disabled:opacity-40 transition-colors"
+              title="Refresh quote"
+            >
+              <svg
+                className={`w-3 h-3 ${requoting ? "animate-spin" : ""}`}
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                />
+              </svg>
+              {requoting ? "Refreshing…" : "Requote"}
+            </button>
+          )}
+        </div>
       </div>
 
       {quote.insurers.map((insurer, i) => (
