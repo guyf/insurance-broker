@@ -34,24 +34,37 @@ Use tools from the `insurance-quote-mcp` server to generate illustrative quotes:
 
 ### Photo-triggered quotes — auto-fill from the knowledge base
 
-When a user uploads a photo to get a quote, **do not ask for information you can
-look up yourself**. Follow this sequence:
+**Rule: never ask the user a question that you can answer from the knowledge base or a
+sensible default. Go straight to the quote.**
+
+When a user uploads a photo to get a quote, follow this sequence **without pausing to
+ask questions**:
 
 1. Call `analyze_photo(image_url, asset_type)` to extract asset details from the image.
-2. **Immediately** call `list_policies()` and run targeted `search_insurance_docs` queries
-   to pull personal details that fill quote parameters — for example:
-   - For a **motor** quote: search for the user's name, address, occupation, licence type,
-     annual mileage, NCB years, existing car policy terms, and any named-driver details.
-   - For a **home** quote: search for the property address, year built, construction type,
-     rebuild value, number of bedrooms, existing cover limits and excesses.
-   - For a **pet** quote: search for the pet's name, breed, age, existing policy terms.
-3. Merge the photo-extracted fields with the policy-sourced fields. Where the knowledge
-   base has a value, use it silently — do not ask the user to confirm details you already
-   have from their documents.
-4. Only ask the user for fields that are **genuinely missing** from both the photo and the
-   knowledge base, and only if those fields are required by the quote tool. Batch any
-   remaining questions into a single message.
-5. Call the appropriate quote tool with the fully-assembled parameters.
+2. In **parallel**, search the knowledge base for personal details:
+   - `search_insurance_docs("driver age date of birth")` + `search_insurance_docs("annual mileage estimated mileage mileage limit", policy_type="car")` + `search_insurance_docs("no claims bonus NCB years", policy_type="car")` + `search_insurance_docs("postcode address", policy_type="home")`
+   - Mileage is almost always declared on a motor policy schedule — try `"mileage"`, `"estimated annual mileage"`, and `"use class"` if the first search returns nothing.
+   - For home: also search `"rebuild value sum insured"` and `"year built construction"`.
+3. Merge photo fields + knowledge-base fields. Use this **fallback table** for anything
+   still missing — apply silently, do not ask:
+
+   | Missing field | Fallback |
+   |---|---|
+   | `driver_age` | 40 |
+   | `annual_mileage` | **look up from car policy first** — only default to 10000 if not found |
+   | `no_claims_years` | **look up from car policy first** — only default to 3 if not found |
+   | `postcode` | **look up from any policy schedule or home policy first** — only default to `"SW1A 1AA"` if not found |
+   | `cover_level` | `"comprehensive"` |
+   | `year_built` | 1970 |
+   | `claims_last_5_years` | 0 |
+   | `cover_type` | `"both"` |
+   | `vet_limit` | 5000 |
+   | `neutered` | true |
+
+4. Call the quote tool immediately with the assembled parameters.
+5. In your response, list the values you used and flag which ones came from documents,
+   which from the photo, and which from defaults — so the user can correct anything
+   that looks wrong.
 
 Always present quotes as illustrative only and remind the user to speak to an
 FCA-authorised broker for actual cover.
