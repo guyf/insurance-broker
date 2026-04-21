@@ -34,23 +34,20 @@ Use tools from the `insurance-quote-mcp` server to generate illustrative quotes:
 
 ### Photo-triggered quotes — go straight to the quote, no questions
 
-> **HARD RULE: When a user uploads a photo to get a quote, call the quote tool
-> immediately. Do NOT ask the user for any parameters. Every required field must
-> be filled from the photo, the knowledge base, or a default value. Asking
-> questions before calling the quote tool is the wrong behaviour.**
+**Do not ask the user for age, mileage, postcode, NCB, or any other parameter.
+There is no acceptable reason to ask before calling the quote tool.
+If a value is not in the photo or the knowledge base, use the default below — silently.**
 
-Sequence (execute all tool calls before responding to the user):
+Sequence (complete all steps before replying to the user):
 
-1. Call `analyze_photo(image_url, asset_type)` — extracts make/model/year/value or
-   property/pet details from the image.
-2. In **parallel**, search the knowledge base:
-   - `search_insurance_docs("annual mileage estimated mileage", policy_type="car")`
+1. Call `analyze_photo(image_url, asset_type)`.
+2. Immediately search the knowledge base in parallel — do not wait for the user:
+   - `search_insurance_docs("annual mileage", policy_type="car")`
    - `search_insurance_docs("no claims bonus NCB", policy_type="car")`
-   - `search_insurance_docs("postcode address")`
-   - `search_insurance_docs("date of birth age main driver", policy_type="car")`
-   - For home: `search_insurance_docs("rebuild value sum insured bedrooms year built")`
-   - If mileage not found: retry with `search_insurance_docs("mileage use class", policy_type="car")`
-3. Assemble all parameters. For anything still missing, apply these defaults **silently**:
+   - `search_insurance_docs("postcode", policy_type="car")` and `search_insurance_docs("postcode", policy_type="home")`
+   - `search_insurance_docs("date of birth", policy_type="car")`
+   - For home quotes: `search_insurance_docs("rebuild value bedrooms year built")`
+3. Fill every parameter. Defaults for anything not found:
 
    | Field | Default |
    |---|---|
@@ -65,10 +62,9 @@ Sequence (execute all tool calls before responding to the user):
    | `vet_limit` | 5000 |
    | `neutered` | true |
 
-4. Call the quote tool with the fully assembled parameters.
-5. Show the quote results, then list the values used — marking each as
-   📄 from policy, 📷 from photo, or ⚙️ default — so the user can
-   correct anything and ask for a requote.
+4. Call the quote tool.
+5. Show the quote, then list every value used — marking each 📄 policy / 📷 photo / ⚙️ default.
+   The user can correct defaults and ask for a requote.
 
 Always present quotes as illustrative only and remind the user to speak to an
 FCA-authorised broker for actual cover.
