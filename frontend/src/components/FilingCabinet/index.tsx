@@ -132,7 +132,10 @@ function PolicyGroupCard({
 }) {
   const { primary, docs } = group;
   const qt = getQuoteType(primary);
-  const autoTitle = primary.filename.replace(/\.pdf$/i, "");
+  const entityTitle =
+    docs.find((d) => d.insured_entity)?.insured_entity ??
+    docs.find((d) => d.asset_name)?.asset_name;
+  const autoTitle = entityTitle ?? primary.filename.replace(/\.pdf$/i, "");
   const title = customName ?? autoTitle;
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleDraft, setTitleDraft] = useState("");
