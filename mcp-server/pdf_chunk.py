@@ -117,7 +117,11 @@ _POLICY_FIELDS = (
     "- underwriter: underwriting company if explicitly different from provider\n"
     "- renewal_date: policy renewal date as DD/MM/YYYY\n"
     "- premium: annual premium as digits only, no £ or commas (e.g. '1234')\n"
-    "- insured_entity: what is insured — property address, vehicle make/model/reg, or person name"
+    "- insured_entity: the specific thing or person being insured — "
+    "for car: vehicle make/model and/or registration (e.g. 'BMW i3 LD19KFP'); "
+    "for home: the property address; "
+    "for other types: the person or item name. "
+    "NEVER use document type names like 'Certificate of Motor Insurance', 'Policy Schedule', or 'Insurance Document' here."
 )
 _INVOICE_FIELDS = (
     "- asset_name: full name/description of the purchased item (e.g. 'BMW i3 2020 Electric')\n"
