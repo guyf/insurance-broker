@@ -370,11 +370,6 @@ async def upload_document(request: Request) -> JSONResponse:
         contents = await file.read()
         filename = file.filename or "upload.pdf"
         source_folder = form.get("source_folder")
-        source_path = (
-            f"{str(source_folder).rstrip('/')}/{filename}"
-            if source_folder and isinstance(source_folder, str)
-            else filename
-        )
 
         with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
             tmp.write(contents)
@@ -391,6 +386,26 @@ async def upload_document(request: Request) -> JSONResponse:
             # Web uploads are always insurance documents — don't let LLM override doc_type
             llm_meta.pop("doc_type", None)
             base_metadata: dict = {"doc_type": "policy", "filename": filename, **llm_meta}
+
+            # Build source_path. Per-card uploads supply source_folder explicitly.
+            # Global uploads get a structured path so that two PDFs with the same
+            # filename but different content (e.g. two "Policy Schedule" PDFs for
+            # different vehicles) don't collide on the same chunk hashes.
+            if source_folder and isinstance(source_folder, str):
+                source_path = f"{str(source_folder).rstrip('/')}/{filename}"
+            else:
+                policy_type = llm_meta.get("policy_type", "")
+                insured_entity = llm_meta.get("insured_entity", "")
+                if policy_type and insured_entity:
+                    source_path = f"Insurance/{policy_type.capitalize()}/{insured_entity}/{filename}"
+                elif policy_type:
+                    # No entity extracted — use a content fingerprint to keep same-named
+                    # files distinct while still deduplicating identical re-uploads.
+                    import hashlib as _hashlib
+                    fingerprint = _hashlib.sha256(contents).hexdigest()[:12]
+                    source_path = f"Insurance/{policy_type.capitalize()}/{fingerprint}/{filename}"
+                else:
+                    source_path = filename
 
             chunks = chunk_pdf(
                 Path(tmp_path),
