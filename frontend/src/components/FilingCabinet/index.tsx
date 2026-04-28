@@ -61,12 +61,20 @@ function groupPolicies(policies: Policy[]): PolicyGroup[] {
     // Insurance/Car/BMW i3/file.pdf  (4 parts) → "car|BMW i3"   (one group per vehicle)
     // Insurance/Travel/file.pdf      (3 parts) → "travel|"       (all travel docs together)
     // Cars/BMW i3/file.pdf           (3 parts) → "asset|BMW i3"  (group by asset subfolder)
+    // file.pdf                       (1 part)  → "car|file.pdf"  (global upload — own card)
     const parts = p.source_path.split("/");
     let key: string;
     if (isAsset(p)) {
       key = parts.length >= 2 ? `${p.policy_type}|${parts[1]}` : `${p.policy_type}|${parts[0]}`;
     } else {
-      key = parts.length >= 4 ? `${p.policy_type}|${parts[2]}` : `${p.policy_type}|`;
+      if (parts.length >= 4) {
+        key = `${p.policy_type}|${parts[2]}`;
+      } else if (parts.length === 1) {
+        // Flat global upload (no source_folder) — each file is its own card
+        key = `${p.policy_type}|${parts[0]}`;
+      } else {
+        key = `${p.policy_type}|`;
+      }
     }
     if (!map.has(key)) map.set(key, []);
     map.get(key)!.push(p);

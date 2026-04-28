@@ -388,6 +388,8 @@ async def upload_document(request: Request) -> JSONResponse:
 
             # Extract metadata (policy_type, provider, renewal_date, etc.) via LLM
             llm_meta = extract_metadata_llm(Path(tmp_path), _openai_client())
+            # Web uploads are always insurance documents — don't let LLM override doc_type
+            llm_meta.pop("doc_type", None)
             base_metadata: dict = {"doc_type": "policy", "filename": filename, **llm_meta}
 
             chunks = chunk_pdf(
