@@ -224,6 +224,7 @@ function PolicyGroupCard({
   function handleDeleteClick(e: React.MouseEvent) {
     e.stopPropagation();
     setMenuOpen(false);
+    onRename(""); // clear any stored custom name so re-adding starts fresh
     const sourcePaths = docs.map((d) => d.source_path);
     onDelete(sourcePaths, title);
   }
@@ -507,7 +508,12 @@ export function FilingCabinet({ policies, loading, onPolicyClick, onUpload, onDe
   });
 
   function handleRename(key: string, name: string) {
-    const next = { ...groupNames, [key]: name };
+    const next = { ...groupNames };
+    if (name) {
+      next[key] = name;
+    } else {
+      delete next[key];
+    }
     setGroupNames(next);
     localStorage.setItem("insurance-group-names", JSON.stringify(next));
   }
