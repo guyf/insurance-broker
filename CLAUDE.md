@@ -118,6 +118,8 @@ insurance-broker/
 - `SUPABASE_URL` — Supabase project URL
 - `SUPABASE_ANON_KEY` — safe to expose in client code; RLS enforces access
 
+**Deployment:** Railway auto-deploys `mcp-server/` on every push to `main`. To deploy a change, commit and `git push origin main` — Railway picks it up automatically (no manual trigger needed).
+
 ## Ingestion Pipeline
 
 **Docs root:** `~/Library/CloudStorage/GoogleDrive-guyfarley@gmail.com/My Drive/AI Broker/personal data/`
@@ -200,7 +202,9 @@ Market policy paths (`market/…`) are filtered out of the Filing Cabinet UI —
 }
 ```
 
-**Deploy:** Add as a second Railway service in the same project, pointing root to `quote-mcp/`.
+**Deployment:** Same as broker — Railway auto-deploys `mcp-quote/` on every push to `main`.
+
+**Initial setup:** Add as a second Railway service in the same project, pointing root to `mcp-quote/`.
 
 ---
 
