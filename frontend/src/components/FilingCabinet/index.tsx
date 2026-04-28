@@ -135,8 +135,8 @@ function PolicyGroupCard({
   const entityTitle =
     docs.find((d) => d.insured_entity)?.insured_entity ??
     docs.find((d) => d.asset_name)?.asset_name;
-  // DB insured_entity wins over any stored rename; customName only applies when there's no entity
-  const title = entityTitle ?? customName ?? primary.filename.replace(/\.pdf$/i, "");
+  const autoTitle = entityTitle ?? primary.filename.replace(/\.pdf$/i, "");
+  const title = customName ?? autoTitle;
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleDraft, setTitleDraft] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
@@ -177,7 +177,8 @@ function PolicyGroupCard({
   }
 
   function commitTitleEdit() {
-    onRename(titleDraft.trim()); // empty string clears stored name; title falls back to entity/filename
+    const trimmed = titleDraft.trim();
+    onRename(trimmed || autoTitle);
     setEditingTitle(false);
   }
 
