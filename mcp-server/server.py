@@ -87,12 +87,20 @@ def _embed_query(query: str) -> list[float]:
 # ---------------------------------------------------------------------------
 
 @mcp.tool()
-def search_insurance_docs(query: str, policy_type: str = None, limit: int = 5) -> str:
+def search_insurance_docs(query: str, policy_type: str = None, limit: int = 5, tenant_id: str = None) -> str:
     """Semantic search across all insurance policy and asset documents.
     Use for any question about coverage, terms, exclusions, or limits.
-    policy_type values: car, home, breakdown, life, phone, travel, asset"""
+    policy_type values: car, home, breakdown, life, phone, travel, asset, public_liability, employers_liability, professional_indemnity, cyber.
+    tenant_id: pass the Xero organisation tenant ID to scope results to a specific company."""
     embedding = _embed_query(query)
-    filter_meta = {"policy_type": policy_type} if policy_type else None
+    # Build metadata filter — combine policy_type and tenant_id if provided
+    filter_meta: dict | None = None
+    if policy_type or tenant_id:
+        filter_meta = {}
+        if policy_type:
+            filter_meta["policy_type"] = policy_type
+        if tenant_id:
+            filter_meta["tenant_id"] = tenant_id
 
     resp = _supabase().rpc(
         "search_documents",
@@ -123,10 +131,12 @@ def search_insurance_docs(query: str, policy_type: str = None, limit: int = 5) -
 
 
 @mcp.tool()
-def list_policies() -> str:
+def list_policies(tenant_id: str = None) -> str:
     """List all documents in the knowledge base.
-    Use first to check what's available before searching."""
-    resp = _supabase().rpc("list_policies").execute()
+    Use first to check what's available before searching.
+    tenant_id: pass the Xero organisation tenant ID to scope results to a specific company."""
+    rpc_args = {"p_tenant_id": tenant_id} if tenant_id else {}
+    resp = _supabase().rpc("list_policies", rpc_args).execute()
     if not resp.data:
         return "No policies found in the knowledge base."
 
@@ -161,10 +171,12 @@ def list_policies() -> str:
 
 
 @mcp.tool()
-def get_renewal_calendar() -> str:
+def get_renewal_calendar(tenant_id: str = None) -> str:
     """All policies with recorded renewal dates, sorted chronologically.
-    Flags renewals within 60 days. Use for renewal overview requests."""
-    resp = _supabase().rpc("get_renewal_calendar").execute()
+    Flags renewals within 60 days. Use for renewal overview requests.
+    tenant_id: pass the Xero organisation tenant ID to scope results to a specific company."""
+    rpc_args = {"p_tenant_id": tenant_id} if tenant_id else {}
+    resp = _supabase().rpc("get_renewal_calendar", rpc_args).execute()
     if not resp.data:
         return "No renewal dates found in the knowledge base."
 
@@ -370,6 +382,7 @@ async def upload_document(request: Request) -> JSONResponse:
         contents = await file.read()
         filename = file.filename or "upload.pdf"
         source_folder = form.get("source_folder")
+        tenant_id = form.get("tenant_id") or None
 
         with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
             tmp.write(contents)
@@ -386,6 +399,8 @@ async def upload_document(request: Request) -> JSONResponse:
             # Web uploads are always insurance documents — don't let LLM override doc_type
             llm_meta.pop("doc_type", None)
             base_metadata: dict = {"doc_type": "policy", "filename": filename, **llm_meta}
+            if tenant_id:
+                base_metadata["tenant_id"] = tenant_id
 
             # Build source_path. Per-card uploads supply source_folder explicitly.
             # Global uploads get a structured path so that two PDFs with the same

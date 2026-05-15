@@ -235,6 +235,178 @@ def price_pet(
 
 
 # ---------------------------------------------------------------------------
+# Commercial — Public Liability
+# ---------------------------------------------------------------------------
+
+INDUSTRY_RISK = {
+    "office": 1.00,
+    "technology": 1.05,
+    "retail": 1.10,
+    "hospitality": 1.20,
+    "healthcare": 1.30,
+    "manufacturing": 1.40,
+    "engineering": 1.50,
+    "construction": 1.80,
+    "other": 1.10,
+}
+
+COVER_LIMIT_FACTOR_PL = {
+    1_000_000: 1.00,
+    2_000_000: 1.30,
+    5_000_000: 1.65,
+    10_000_000: 2.10,
+}
+
+
+def price_public_liability(
+    revenue: float,
+    employees: int,
+    industry: str,
+    postcode: str = "",
+    cover_limit: float = 2_000_000,
+) -> dict:
+    base = 250.0
+    # Revenue loading: +£20 per £100k above first £100k
+    base += max(0, (revenue - 100_000) / 100_000) * 20.0
+    # Employee loading: +£30 per employee above 2
+    base += max(0, employees - 2) * 30.0
+    # Industry risk
+    base *= INDUSTRY_RISK.get(industry.lower(), 1.10)
+    # Cover limit
+    closest = min(COVER_LIMIT_FACTOR_PL, key=lambda x: abs(x - cover_limit))
+    base *= COVER_LIMIT_FACTOR_PL[closest]
+    # Postcode variation: ±10%
+    if postcode:
+        base *= _hash_variation(postcode.upper().replace(" ", ""), 0.10)
+    return {
+        "base": round(base, 2),
+        "ref": _quote_ref({
+            "type": "public_liability",
+            "revenue": revenue,
+            "employees": employees,
+            "industry": industry.lower(),
+            "cover_limit": cover_limit,
+        }),
+    }
+
+
+# ---------------------------------------------------------------------------
+# Commercial — Employers' Liability
+# ---------------------------------------------------------------------------
+
+def price_employers_liability(
+    employees: int,
+    annual_payroll: float,
+    industry: str,
+) -> dict:
+    # Statutory minimum £5m — we quote £10m (market standard)
+    base = 180.0
+    # Employee loading: +£45 per employee
+    base += employees * 45.0
+    # Payroll loading: +£30 per £50k payroll above £100k
+    base += max(0, (annual_payroll - 100_000) / 50_000) * 30.0
+    # Industry risk
+    base *= INDUSTRY_RISK.get(industry.lower(), 1.10)
+    return {
+        "base": round(base, 2),
+        "ref": _quote_ref({
+            "type": "employers_liability",
+            "employees": employees,
+            "annual_payroll": annual_payroll,
+            "industry": industry.lower(),
+        }),
+    }
+
+
+# ---------------------------------------------------------------------------
+# Commercial — Professional Indemnity
+# ---------------------------------------------------------------------------
+
+PROFESSION_BASE = {
+    "technology": 600.0,
+    "consulting": 700.0,
+    "marketing": 500.0,
+    "architecture": 950.0,
+    "engineering": 950.0,
+    "legal": 1_200.0,
+    "financial": 900.0,
+    "general": 600.0,
+}
+
+COVER_LIMIT_FACTOR_PI = {
+    250_000: 0.80,
+    500_000: 1.00,
+    1_000_000: 1.40,
+    2_000_000: 1.85,
+}
+
+
+def price_professional_indemnity(
+    revenue: float,
+    profession: str,
+    cover_limit: float = 500_000,
+) -> dict:
+    base = PROFESSION_BASE.get(profession.lower(), 600.0)
+    # Revenue loading: +0.08% of revenue above £100k
+    base += max(0, revenue - 100_000) * 0.0008
+    # Cover limit factor
+    closest = min(COVER_LIMIT_FACTOR_PI, key=lambda x: abs(x - cover_limit))
+    base *= COVER_LIMIT_FACTOR_PI[closest]
+    return {
+        "base": round(base, 2),
+        "ref": _quote_ref({
+            "type": "professional_indemnity",
+            "revenue": revenue,
+            "profession": profession.lower(),
+            "cover_limit": cover_limit,
+        }),
+    }
+
+
+# ---------------------------------------------------------------------------
+# Commercial — Cyber Liability
+# ---------------------------------------------------------------------------
+
+CYBER_INDUSTRY_FACTOR = {
+    "finance": 1.80,
+    "healthcare": 1.60,
+    "technology": 1.50,
+    "retail": 1.20,
+    "other": 1.00,
+    "office": 1.00,
+    "construction": 0.90,
+    "manufacturing": 0.95,
+}
+
+
+def price_cyber(
+    revenue: float,
+    employees: int,
+    industry: str,
+    data_records_held: int = 0,
+) -> dict:
+    base = 800.0
+    # Revenue loading: +0.15% of revenue
+    base += revenue * 0.0015
+    # Employee loading: +£25 per employee above 5
+    base += max(0, employees - 5) * 25.0
+    # Data records loading: +£100 per 10k records above 1k
+    base += max(0, (data_records_held - 1_000) / 10_000) * 100.0
+    # Industry factor
+    base *= CYBER_INDUSTRY_FACTOR.get(industry.lower(), 1.00)
+    return {
+        "base": round(base, 2),
+        "ref": _quote_ref({
+            "type": "cyber",
+            "revenue": revenue,
+            "employees": employees,
+            "industry": industry.lower(),
+            "data_records": data_records_held,
+        }),
+    }
+
+
+# ---------------------------------------------------------------------------
 # Three-insurer panel
 # ---------------------------------------------------------------------------
 
@@ -244,6 +416,10 @@ INSURERS = [
         "medal": "🥇",
         "price_factor": 1.00,
         "home_excess": 250, "motor_excess": 500, "pet_excess": 99,
+        "public_liability_excess": 500,
+        "employers_liability_excess": 0,
+        "professional_indemnity_excess": 1_000,
+        "cyber_excess": 1_000,
         "features": {
             "home": [
                 ("✓", "Accidental damage included"),
@@ -263,6 +439,30 @@ INSURERS = [
                 ("✗", "No complementary therapy"),
                 ("✗", "No death from illness benefit"),
             ],
+            "public_liability": [
+                ("✓", "UK & EU cover included"),
+                ("✓", "Products liability included"),
+                ("✓", "Legal defence costs"),
+                ("✗", "No worldwide cover"),
+            ],
+            "employers_liability": [
+                ("✓", "£10m statutory cover"),
+                ("✓", "Legal defence costs"),
+                ("✓", "HSE investigation cover"),
+                ("✗", "No management liability"),
+            ],
+            "professional_indemnity": [
+                ("✓", "Claims-made basis"),
+                ("✓", "Libel & slander cover"),
+                ("✓", "Court attendance costs"),
+                ("✗", "No cyber endorsement"),
+            ],
+            "cyber": [
+                ("✓", "Data breach response"),
+                ("✓", "Ransomware payments"),
+                ("✓", "Business interruption"),
+                ("✗", "No social engineering cover"),
+            ],
         },
     },
     {
@@ -270,6 +470,10 @@ INSURERS = [
         "medal": "🥈",
         "price_factor": 1.05,
         "home_excess": 200, "motor_excess": 400, "pet_excess": 75,
+        "public_liability_excess": 250,
+        "employers_liability_excess": 0,
+        "professional_indemnity_excess": 500,
+        "cyber_excess": 500,
         "features": {
             "home": [
                 ("✓", "Accidental damage included"),
@@ -289,6 +493,30 @@ INSURERS = [
                 ("✓", "Death from illness benefit"),
                 ("✗", "No behavioural treatment"),
             ],
+            "public_liability": [
+                ("✓", "Worldwide cover included"),
+                ("✓", "Products liability included"),
+                ("✓", "Legal defence costs"),
+                ("✓", "Contractors extension"),
+            ],
+            "employers_liability": [
+                ("✓", "£10m statutory cover"),
+                ("✓", "Legal defence costs"),
+                ("✓", "HSE investigation cover"),
+                ("✓", "Employee theft extension"),
+            ],
+            "professional_indemnity": [
+                ("✓", "Claims-made basis"),
+                ("✓", "Libel & slander cover"),
+                ("✓", "Court attendance costs"),
+                ("✓", "Cyber liability endorsement"),
+            ],
+            "cyber": [
+                ("✓", "Data breach response"),
+                ("✓", "Ransomware payments"),
+                ("✓", "Business interruption"),
+                ("✓", "Social engineering cover"),
+            ],
         },
     },
     {
@@ -296,6 +524,10 @@ INSURERS = [
         "medal": "🥉",
         "price_factor": 1.23,
         "home_excess": 100, "motor_excess": 250, "pet_excess": 50,
+        "public_liability_excess": 100,
+        "employers_liability_excess": 0,
+        "professional_indemnity_excess": 250,
+        "cyber_excess": 250,
         "features": {
             "home": [
                 ("✓", "Comprehensive accidental damage"),
@@ -314,6 +546,30 @@ INSURERS = [
                 ("✓", "Complementary therapy"),
                 ("✓", "Death from illness benefit"),
                 ("✓", "Behavioural treatment"),
+            ],
+            "public_liability": [
+                ("✓", "Worldwide cover included"),
+                ("✓", "Products liability included"),
+                ("✓", "Legal defence costs"),
+                ("✓", "Contractors & tools extension"),
+            ],
+            "employers_liability": [
+                ("✓", "£10m statutory cover"),
+                ("✓", "Legal defence costs"),
+                ("✓", "HSE investigation cover"),
+                ("✓", "Management liability extension"),
+            ],
+            "professional_indemnity": [
+                ("✓", "Claims-made basis"),
+                ("✓", "Libel, slander & IP cover"),
+                ("✓", "Court attendance costs"),
+                ("✓", "Full cyber liability endorsement"),
+            ],
+            "cyber": [
+                ("✓", "Data breach response"),
+                ("✓", "Ransomware & extortion"),
+                ("✓", "Business interruption"),
+                ("✓", "Reputational harm PR costs"),
             ],
         },
     },
