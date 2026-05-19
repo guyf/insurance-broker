@@ -371,6 +371,14 @@ async def update_policy(request: Request) -> JSONResponse:
         return JSONResponse({"error": str(exc)}, status_code=500)
 
 
+async def list_policies_http(request: Request) -> JSONResponse:
+    """Return all policy documents for a tenant as structured JSON."""
+    tenant_id = request.query_params.get("tenant_id") or None
+    rpc_args = {"p_tenant_id": tenant_id} if tenant_id else {}
+    resp = _supabase().rpc("list_policies", rpc_args).execute()
+    return JSONResponse(resp.data or [])
+
+
 async def upload_document(request: Request) -> JSONResponse:
     """Receive a PDF, chunk/embed it, and store in Supabase."""
     try:
@@ -474,6 +482,9 @@ def build_app() -> Starlette:
     )
     broker_app.router.routes.insert(
         0, Route("/upload", upload_document, methods=["POST"])
+    )
+    broker_app.router.routes.insert(
+        0, Route("/list-policies", list_policies_http, methods=["GET"])
     )
     return broker_app
 
