@@ -18,7 +18,7 @@ import logging
 import os
 import sys
 import tempfile
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from pathlib import Path
 
 import requests
@@ -399,7 +399,7 @@ async def store_coverage_analysis(request: Request) -> JSONResponse:
         body = await request.json()
         analysis = body.get("analysis", {})
         _supabase_service().table("coverage_analysis").upsert(
-            {"tenant_id": tenant_id, "analysis": analysis, "updated_at": datetime.now(datetime.UTC).isoformat()},
+            {"tenant_id": tenant_id, "analysis": analysis, "updated_at": datetime.now(timezone.utc).isoformat()},
             on_conflict="tenant_id",
         ).execute()
         return JSONResponse({"status": "ok"})
