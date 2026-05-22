@@ -379,6 +379,34 @@ async def list_policies_http(request: Request) -> JSONResponse:
     return JSONResponse(resp.data or [])
 
 
+async def search_docs_http(request: Request) -> JSONResponse:
+    """REST search endpoint — bypasses MCP protocol for internal callers."""
+    try:
+        body = await request.json()
+        query = body.get("query", "")
+        tenant_id = body.get("tenant_id") or None
+        policy_type = body.get("policy_type") or None
+        limit = int(body.get("limit", 5))
+
+        embedding = _embed_query(query)
+        filter_meta: dict | None = None
+        if tenant_id or policy_type:
+            filter_meta = {}
+            if tenant_id:
+                filter_meta["tenant_id"] = tenant_id
+            if policy_type:
+                filter_meta["policy_type"] = policy_type
+
+        resp = _supabase().rpc(
+            "search_documents",
+            {"query_embedding": embedding, "match_count": limit, "filter_metadata": filter_meta},
+        ).execute()
+        return JSONResponse(resp.data or [])
+    except Exception as exc:
+        logger.exception("search-docs failed")
+        return JSONResponse({"error": str(exc)}, status_code=500)
+
+
 async def get_coverage_analysis(request: Request) -> JSONResponse:
     """Return stored coverage analysis JSON for a tenant, or {} if none exists."""
     tenant_id = request.query_params.get("tenant_id") or None
@@ -514,6 +542,9 @@ def build_app() -> Starlette:
     )
     broker_app.router.routes.insert(
         0, Route("/list-policies", list_policies_http, methods=["GET"])
+    )
+    broker_app.router.routes.insert(
+        0, Route("/search-docs", search_docs_http, methods=["POST"])
     )
     broker_app.router.routes.insert(
         0, Route("/coverage-analysis", get_coverage_analysis, methods=["GET"])
