@@ -112,7 +112,9 @@ def extract_insurer_info_from_pdf(pdf_path: Path) -> dict:
 _KNOWN_DOC_TYPES = {"policy", "invoice", "other"}
 
 _POLICY_FIELDS = (
-    "- policy_type: type of insurance — one of: car, home, life, travel, breakdown, phone, pet, warranty, other\n"
+    "- policy_type: type of insurance — one of: car, home, life, travel, breakdown, phone, pet, warranty, "
+    "employers_liability, public_liability, professional_indemnity, cyber, commercial_property, "
+    "business_interruption, product_liability, goods_in_transit, directors_officers, key_person, other\n"
     "- provider: the insurance company name (e.g. 'NFU Mutual')\n"
     "- underwriter: underwriting company if explicitly different from provider\n"
     "- renewal_date: policy renewal date as DD/MM/YYYY\n"
@@ -211,7 +213,12 @@ def extract_metadata_llm(pdf_path: Path, openai_client, doc_type: str | None = N
         )
         result = json.loads(resp.choices[0].message.content)
 
-        _KNOWN_POLICY_TYPES = {"car", "home", "life", "travel", "breakdown", "phone", "pet", "warranty", "other"}
+        _KNOWN_POLICY_TYPES = {
+            "car", "home", "life", "travel", "breakdown", "phone", "pet", "warranty",
+            "employers_liability", "public_liability", "professional_indemnity", "cyber",
+            "commercial_property", "business_interruption", "product_liability",
+            "goods_in_transit", "directors_officers", "key_person", "other",
+        }
         # Sanitise: only known keys, string values, valid doc_type/policy_type
         cleaned: dict = {}
         for k, v in result.items():
