@@ -379,6 +379,35 @@ async def list_policies_http(request: Request) -> JSONResponse:
     return JSONResponse(resp.data or [])
 
 
+async def get_coverage_analysis(request: Request) -> JSONResponse:
+    """Return stored coverage analysis JSON for a tenant, or {} if none exists."""
+    tenant_id = request.query_params.get("tenant_id") or None
+    if not tenant_id:
+        return JSONResponse({})
+    resp = _supabase_service().table("coverage_analysis").select("analysis").eq("tenant_id", tenant_id).execute()
+    if resp.data:
+        return JSONResponse(resp.data[0]["analysis"])
+    return JSONResponse({})
+
+
+async def store_coverage_analysis(request: Request) -> JSONResponse:
+    """Upsert coverage analysis JSON for a tenant."""
+    try:
+        tenant_id = request.query_params.get("tenant_id") or None
+        if not tenant_id:
+            return JSONResponse({"error": "tenant_id is required"}, status_code=400)
+        body = await request.json()
+        analysis = body.get("analysis", {})
+        _supabase_service().table("coverage_analysis").upsert(
+            {"tenant_id": tenant_id, "analysis": analysis, "updated_at": datetime.utcnow().isoformat()},
+            on_conflict="tenant_id",
+        ).execute()
+        return JSONResponse({"status": "ok"})
+    except Exception as exc:
+        logger.exception("Store coverage analysis failed")
+        return JSONResponse({"error": str(exc)}, status_code=500)
+
+
 async def upload_document(request: Request) -> JSONResponse:
     """Receive a PDF, chunk/embed it, and store in Supabase."""
     try:
@@ -485,6 +514,12 @@ def build_app() -> Starlette:
     )
     broker_app.router.routes.insert(
         0, Route("/list-policies", list_policies_http, methods=["GET"])
+    )
+    broker_app.router.routes.insert(
+        0, Route("/coverage-analysis", get_coverage_analysis, methods=["GET"])
+    )
+    broker_app.router.routes.insert(
+        0, Route("/coverage-analysis", store_coverage_analysis, methods=["POST"])
     )
     return broker_app
 
