@@ -399,7 +399,7 @@ async def store_coverage_analysis(request: Request) -> JSONResponse:
         body = await request.json()
         analysis = body.get("analysis", {})
         _supabase_service().table("coverage_analysis").upsert(
-            {"tenant_id": tenant_id, "analysis": analysis, "updated_at": datetime.utcnow().isoformat()},
+            {"tenant_id": tenant_id, "analysis": analysis, "updated_at": datetime.now(datetime.UTC).isoformat()},
             on_conflict="tenant_id",
         ).execute()
         return JSONResponse({"status": "ok"})
