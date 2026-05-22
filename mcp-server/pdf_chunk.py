@@ -111,10 +111,16 @@ def extract_insurer_info_from_pdf(pdf_path: Path) -> dict:
 
 _KNOWN_DOC_TYPES = {"policy", "invoice", "other"}
 
-_POLICY_FIELDS = (
-    "- policy_type: type of insurance — one of: car, home, life, travel, breakdown, phone, pet, warranty, "
+_KNOWN_POLICY_TYPE_VALUES = (
+    "car, home, life, travel, breakdown, phone, pet, warranty, "
     "employers_liability, public_liability, professional_indemnity, cyber, commercial_property, "
-    "business_interruption, product_liability, goods_in_transit, directors_officers, key_person, other\n"
+    "business_interruption, product_liability, goods_in_transit, directors_officers, key_person, other"
+)
+_POLICY_FIELDS = (
+    "- policy_types: JSON array of ALL insurance types this document covers. "
+    "Use multiple values for combined policies (e.g. [\"employers_liability\", \"public_liability\"]). "
+    "Single type example: [\"cyber\"]. "
+    f"Each value must be one of: {_KNOWN_POLICY_TYPE_VALUES}\n"
     "- provider: the insurance company name (e.g. 'NFU Mutual')\n"
     "- underwriter: underwriting company if explicitly different from provider\n"
     "- renewal_date: policy renewal date as DD/MM/YYYY\n"
@@ -166,7 +172,7 @@ def extract_metadata_llm(pdf_path: Path, openai_client, doc_type: str | None = N
             "Return only valid JSON. Omit keys where the value cannot be found."
         )
         user = f"Extract these fields:\n{_POLICY_FIELDS}\n\nDocument:\n{text}"
-        allowed = {"policy_type", "provider", "underwriter", "renewal_date", "premium", "insured_entity"}
+        allowed = {"policy_types", "provider", "underwriter", "renewal_date", "premium", "insured_entity"}
 
     elif doc_type == "invoice":
         system = (
@@ -196,7 +202,7 @@ def extract_metadata_llm(pdf_path: Path, openai_client, doc_type: str | None = N
             f"Document:\n{text}"
         )
         allowed = {
-            "doc_type", "policy_type", "provider", "underwriter", "renewal_date", "premium",
+            "doc_type", "policy_types", "provider", "underwriter", "renewal_date", "premium",
             "insured_entity", "asset_name", "asset_value",
         }
 
@@ -219,15 +225,23 @@ def extract_metadata_llm(pdf_path: Path, openai_client, doc_type: str | None = N
             "commercial_property", "business_interruption", "product_liability",
             "goods_in_transit", "directors_officers", "key_person", "other",
         }
-        # Sanitise: only known keys, string values, valid doc_type/policy_type
+        # Sanitise: only known keys, string values, valid doc_type/policy_types
         cleaned: dict = {}
         for k, v in result.items():
             if k not in allowed or not v:
                 continue
             if k == "doc_type":
                 cleaned[k] = str(v).lower() if str(v).lower() in _KNOWN_DOC_TYPES else "other"
-            elif k == "policy_type":
-                cleaned[k] = str(v).lower() if str(v).lower() in _KNOWN_POLICY_TYPES else "other"
+            elif k == "policy_types":
+                if isinstance(v, list):
+                    valid = [str(t).lower() for t in v if str(t).lower() in _KNOWN_POLICY_TYPES]
+                elif isinstance(v, str):
+                    valid = [str(v).lower()] if str(v).lower() in _KNOWN_POLICY_TYPES else []
+                else:
+                    valid = []
+                if valid:
+                    cleaned["policy_types"] = valid
+                    cleaned["policy_type"] = valid[0]  # keep single field for backward compat
             else:
                 cleaned[k] = str(v)
         return cleaned
