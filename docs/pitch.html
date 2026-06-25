@@ -698,16 +698,10 @@
   <div class="slide-inner">
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;">
 
-      <!-- Left: chart / photo -->
+      <!-- Left: chart -->
       <div class="fi">
-        <div style="border-radius:16px;overflow:hidden;height:360px;position:relative;background:var(--surface2);">
-          <img
-            src="https://images.unsplash.com/photo-1521737711867-e3b97375f902?auto=format&fit=crop&w=700&q=80"
-            alt="UK small business"
-            style="width:100%;height:100%;object-fit:cover;display:block;"
-            onerror="this.style.display='none';"
-          />
-          <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 60%,rgba(255,255,255,0.6));"></div>
+        <div style="border-radius:16px;overflow:hidden;padding:24px 20px 12px;position:relative;background:var(--surface2);">
+          <div id="topic-pie-chart"></div>
         </div>
       </div>
 
@@ -716,7 +710,7 @@
         <div class="slide-num fi">06</div>
         <h2 class="fi">Why <span class="accent-green">SMEs?</span></h2>
         <ul class="why-bullets fi">
-          <li>Business insurance is the second-largest category of demand for AI insurance assistance in the UK</li>
+          <li>Business insurance is a significant category of demand for AI insurance assistance in the UK</li>
           <li>Regulatory requirements are less onerous than with consumers</li>
         </ul>
         <p class="footnote fi">Data source: SimilarWeb / Balance</p>
@@ -878,11 +872,23 @@
   <div class="slide-inner">
     <div class="slide-num fi">09</div>
     <h2 class="fi">Distribution #1: <span class="accent-purple">AEO.</span></h2>
-    <ul class="aeo-bullets fi">
-      <li>ChatGPT is now the second-biggest referrer of traffic to the financial services category, surpassing all comparison sites.</li>
-      <li>By wrapping Denney's functionality in MCP, we position ourselves to win a meaningful share of this traffic.</li>
-      <li>We benefit further from convergence of Google Search with Gemini and the evolution of ChatGPT ads.</li>
-    </ul>
+    <div style="display:grid;grid-template-columns:1.1fr 1fr;gap:48px;align-items:center;margin-top:8px;">
+
+      <!-- Left: text -->
+      <ul class="aeo-bullets fi">
+        <li>ChatGPT is now the second-biggest referrer of traffic to the financial services category, surpassing all comparison sites.</li>
+        <li>By wrapping Denney's functionality in MCP, we position ourselves to win a meaningful share of this traffic.</li>
+        <li>We benefit further from convergence of Google Search with Gemini and the evolution of ChatGPT ads.</li>
+      </ul>
+
+      <!-- Right: chart -->
+      <div class="fi">
+        <div style="border-radius:16px;overflow:hidden;padding:24px 20px 12px;background:var(--surface2);">
+          <div id="referral-bar-chart"></div>
+        </div>
+      </div>
+
+    </div>
     <p class="footnote fi">Data source: SimilarWeb / Balance</p>
   </div>
 </section>
@@ -1292,6 +1298,138 @@
 
 
 <script>
+  /* ── Charts ─────────────────────────────────────────────── */
+  const NS = "http://www.w3.org/2000/svg";
+  function svgEl(tag, attrs) {
+    const el = document.createElementNS(NS, tag);
+    for (const k in attrs) el.setAttribute(k, attrs[k]);
+    return el;
+  }
+
+  function drawBarChart(targetId, data, highlightLabel) {
+    const el = document.getElementById(targetId);
+    if (!el) return;
+    const w = 420, h = 280, padL = 36, padR = 16, padT = 30, padB = 56;
+    const plotW = w - padL - padR, plotH = h - padT - padB;
+    const max = Math.max(...data.map(d => d.value));
+    const barGap = 18;
+    const barW = (plotW - barGap * (data.length - 1)) / data.length;
+
+    const svg = svgEl("svg", { viewBox: `0 0 ${w} ${h}`, width: "100%", height: "auto" });
+
+    svg.appendChild(svgEl("line", {
+      x1: padL, y1: padT + plotH, x2: padL + plotW, y2: padT + plotH,
+      stroke: "var(--border)", "stroke-width": 1
+    }));
+
+    data.forEach((d, i) => {
+      const isHi = d.label === highlightLabel;
+      const barH = (d.value / max) * plotH;
+      const x = padL + i * (barW + barGap);
+      const y = padT + plotH - barH;
+
+      svg.appendChild(svgEl("rect", {
+        x, y, width: barW, height: barH, rx: 4,
+        fill: isHi ? "var(--purple)" : "var(--dim)",
+        opacity: isHi ? 1 : 0.55
+      }));
+
+      const valLabel = svgEl("text", {
+        x: x + barW / 2, y: y - 8, "text-anchor": "middle",
+        "font-size": "12", "font-weight": isHi ? "800" : "600",
+        fill: isHi ? "var(--purple)" : "var(--muted)"
+      });
+      valLabel.textContent = `${d.value}m`;
+      svg.appendChild(valLabel);
+
+      const lbl = svgEl("text", {
+        x: 0, y: 0, "text-anchor": "end",
+        "font-size": "11", "font-weight": isHi ? "800" : "500",
+        fill: isHi ? "var(--purple)" : "var(--muted)",
+        transform: `translate(${x + barW / 2 + 4}, ${padT + plotH + 14}) rotate(-40)`
+      });
+      lbl.textContent = d.label;
+      svg.appendChild(lbl);
+    });
+
+    el.appendChild(svg);
+  }
+
+  function drawPieChart(targetId, data, highlightLabel) {
+    const el = document.getElementById(targetId);
+    if (!el) return;
+    const w = 420, h = 280, cx = 130, cy = 140, r = 105;
+    const greys = ["#94A3B8","#A8B4C4","#BCC6D2","#CBD5E1","#D8DEE7","#E2E8F0","#ECEFF3","#F1F5F9"];
+
+    function polar(angleDeg, radius) {
+      const a = (angleDeg - 90) * Math.PI / 180;
+      return { x: cx + radius * Math.cos(a), y: cy + radius * Math.sin(a) };
+    }
+
+    const svg = svgEl("svg", { viewBox: `0 0 ${w} ${h}`, width: "100%", height: "auto" });
+    let angle = 0, greyIdx = 0;
+
+    data.forEach(d => {
+      const isHi = d.label === highlightLabel;
+      const sweep = d.value * 360;
+      const start = polar(angle, r);
+      const end = polar(angle + sweep, r);
+      const largeArc = sweep > 180 ? 1 : 0;
+      const path = svgEl("path", {
+        d: `M ${cx} ${cy} L ${start.x} ${start.y} A ${r} ${r} 0 ${largeArc} 1 ${end.x} ${end.y} Z`,
+        fill: isHi ? "var(--green)" : greys[greyIdx % greys.length],
+        stroke: "var(--surface2)", "stroke-width": 2
+      });
+      svg.appendChild(path);
+      if (!isHi) greyIdx++;
+      angle += sweep;
+    });
+
+    // Legend
+    const legend = svgEl("g", {});
+    const legendX = 270, legendY = 30, rowH = 25;
+    data.forEach((d, i) => {
+      const isHi = d.label === highlightLabel;
+      const y = legendY + i * rowH;
+      const dot = svgEl("circle", {
+        cx: legendX, cy: y, r: 5,
+        fill: isHi ? "var(--green)" : greys[data.slice(0, i).filter(x => x.label !== highlightLabel).length % greys.length]
+      });
+      legend.appendChild(dot);
+      const text = svgEl("text", {
+        x: legendX + 12, y: y + 4, "font-size": "11",
+        "font-weight": isHi ? "800" : "500",
+        fill: isHi ? "var(--green)" : "var(--muted)"
+      });
+      text.textContent = `${d.label} — ${(d.value * 100).toFixed(1)}%`;
+      legend.appendChild(text);
+    });
+    svg.appendChild(legend);
+
+    el.appendChild(svg);
+  }
+
+  drawBarChart("referral-bar-chart", [
+    { label: "MoneySavingExpert", value: 3.1 },
+    { label: "ChatGPT", value: 2.2 },
+    { label: "MoneySuperMarket", value: 1.7 },
+    { label: "CompareTheMarket", value: 1.7 },
+    { label: "Uswitch", value: 1.3 },
+    { label: "GoCompare", value: 0.7 }
+  ], "ChatGPT");
+
+  drawPieChart("topic-pie-chart", [
+    { label: "Car insurance", value: 0.377 },
+    { label: "Claim management", value: 0.224 },
+    { label: "Business Insurance", value: 0.091 },
+    { label: "Travel insurance", value: 0.077 },
+    { label: "Life Insurance", value: 0.070 },
+    { label: "General", value: 0.060 },
+    { label: "Pet insurance", value: 0.045 },
+    { label: "Tech insurance", value: 0.031 },
+    { label: "Home insurance", value: 0.026 }
+  ], "Business Insurance");
+
   /* ── Intersection observers ─────────────────────────────── */
   const io = new IntersectionObserver(entries => {
     entries.forEach(e => { if (e.isIntersecting) e.target.classList.add("v"); });
