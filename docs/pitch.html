@@ -11,16 +11,27 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg:       #0B1120;
-      --surface:  #141E30;
-      --surface2: #1C2A40;
-      --border:   #263548;
-      --text:     #E0E8F4;
-      --muted:    #6B82A0;
-      --dim:      #4A5F7A;
-      --brand:    #0DB8AE;
-      --brand-bg: #082822;
-      --ink:      #FFFFFF;
+      --bg:          #0B1120;
+      --surface:     #141E30;
+      --surface2:    #1C2A40;
+      --border:      #263548;
+      --text:        #E0E8F4;
+      --muted:       #6B82A0;
+      --dim:         #4A5F7A;
+      --ink:         #FFFFFF;
+      /* Accent palette */
+      --teal:        #0DB8AE;
+      --teal-dim:    #082822;
+      --blue:        #4B8EF5;
+      --blue-dim:    #0E1F42;
+      --purple:      #8B6CF0;
+      --purple-dim:  #1A0F3A;
+      --amber:       #E89B0A;
+      --amber-dim:   #2C1E04;
+      --green:       #22C97A;
+      --green-dim:   #062616;
+      --rose:        #F04560;
+      --rose-dim:    #2A060E;
     }
 
     html { scroll-behavior: smooth; }
@@ -52,7 +63,7 @@
       transition: background 0.2s, transform 0.2s;
     }
     nav.dots a:hover,
-    nav.dots a.active { background: var(--brand); transform: scale(1.5); }
+    nav.dots a.active { background: var(--teal); transform: scale(1.5); }
 
     /* ── Slide base ───────────────────────────────────────── */
     section {
@@ -73,6 +84,14 @@
     }
 
     /* ── Typography ───────────────────────────────────────── */
+    .slide-num {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 18px;
+    }
     h1 {
       font-size: clamp(2.2rem, 5.5vw, 3.8rem);
       font-weight: 800;
@@ -82,33 +101,31 @@
       margin-bottom: 28px;
     }
     h2 {
-      font-size: clamp(1.6rem, 4vw, 2.8rem);
+      font-size: clamp(1.6rem, 4vw, 2.6rem);
       font-weight: 700;
       line-height: 1.15;
       letter-spacing: -0.025em;
       color: var(--ink);
       margin-bottom: 20px;
     }
-    .eyebrow {
-      font-size: 0.7rem;
-      font-weight: 700;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: var(--brand);
-      margin-bottom: 18px;
-    }
-    p.body {
+    .accent-teal   { color: var(--teal); }
+    .accent-blue   { color: var(--blue); }
+    .accent-purple { color: var(--purple); }
+    .accent-amber  { color: var(--amber); }
+    .accent-green  { color: var(--green); }
+    .accent-rose   { color: var(--rose); }
+
+    p.lead {
       font-size: clamp(1rem, 2vw, 1.15rem);
-      font-weight: 400;
       color: var(--muted);
       line-height: 1.7;
-      max-width: 680px;
+      max-width: 700px;
       margin-bottom: 24px;
     }
     .footnote {
       font-size: 0.72rem;
       color: var(--dim);
-      margin-top: 24px;
+      margin-top: 20px;
     }
 
     /* ── Cards / boxes ────────────────────────────────────── */
@@ -116,18 +133,18 @@
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 14px;
-      padding: 24px 22px;
+      padding: 22px 20px;
     }
     .card-label {
-      font-size: 0.68rem;
+      font-size: 0.65rem;
       font-weight: 700;
       letter-spacing: 0.14em;
       text-transform: uppercase;
-      color: var(--brand);
-      margin-bottom: 10px;
+      color: var(--teal);
+      margin-bottom: 8px;
     }
     .card h3 {
-      font-size: 1.05rem;
+      font-size: 1rem;
       font-weight: 700;
       color: var(--ink);
       margin-bottom: 10px;
@@ -139,40 +156,43 @@
       line-height: 1.55;
     }
 
-    /* ── Grid helpers ─────────────────────────────────────── */
-    .grid-3 {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 14px;
+    /* ── Arch boxes ───────────────────────────────────────── */
+    .arch-flow { display: flex; flex-direction: column; gap: 10px; margin-top: 8px; }
+    .arch-row  { display: grid; gap: 10px; }
+    .arch-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
     }
-    .grid-2 {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
+    .arch-box .title {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 5px;
     }
+    .arch-box p { font-size: 0.78rem; color: var(--muted); line-height: 1.45; }
+    .arch-arrow { text-align: center; color: var(--border); font-size: 1rem; }
 
-    /* ── Section background tints ─────────────────────────── */
+    /* ── Section backgrounds ──────────────────────────────── */
     #s1  { background: radial-gradient(ellipse 80% 60% at 75% 20%, #1a0a2e 0%, var(--bg) 65%); }
     #s2  { background: radial-gradient(ellipse 80% 60% at 25% 70%, #081c30 0%, var(--bg) 65%); }
-    #s3  { background: radial-gradient(ellipse 80% 60% at 50% 40%, var(--brand-bg) 0%, var(--bg) 60%); }
+    #s3  { background: radial-gradient(ellipse 80% 60% at 50% 40%, var(--teal-dim) 0%, var(--bg) 60%); }
     #s4  { background: radial-gradient(ellipse 80% 60% at 30% 60%, #06201e 0%, var(--bg) 65%); }
     #s5  { background: radial-gradient(ellipse 80% 60% at 70% 30%, #141008 0%, var(--bg) 65%); }
     #s6  { background: radial-gradient(ellipse 80% 60% at 30% 50%, #081810 0%, var(--bg) 65%); }
     #s7  { background: radial-gradient(ellipse 80% 60% at 65% 45%, #081526 0%, var(--bg) 65%); }
-    #s8  { background: radial-gradient(ellipse 60% 60% at 50% 50%, var(--brand-bg) 0%, var(--bg) 55%); }
+    #s8  { background: radial-gradient(ellipse 60% 60% at 50% 50%, #150a2e 0%, var(--bg) 55%); }
     #s9  { background: radial-gradient(ellipse 80% 60% at 70% 25%, #100820 0%, var(--bg) 65%); }
     #s10 { background: radial-gradient(ellipse 80% 60% at 30% 65%, #081626 0%, var(--bg) 65%); }
     #s11 { background: radial-gradient(ellipse 80% 60% at 65% 55%, #061e18 0%, var(--bg) 65%); }
     #s12 { background: radial-gradient(ellipse 80% 60% at 35% 35%, #140a06 0%, var(--bg) 65%); }
     #s13 { background: radial-gradient(ellipse 80% 60% at 65% 60%, #10081a 0%, var(--bg) 65%); }
-    #s14 { background: radial-gradient(ellipse 80% 60% at 50% 50%, var(--brand-bg) 0%, var(--bg) 55%); }
+    #s14 { background: radial-gradient(ellipse 80% 60% at 50% 50%, var(--teal-dim) 0%, var(--bg) 55%); }
 
     /* ── Fade-in ──────────────────────────────────────────── */
-    .fi {
-      opacity: 0;
-      transform: translateY(22px);
-      transition: opacity 0.65s ease, transform 0.65s ease;
-    }
+    .fi { opacity: 0; transform: translateY(22px); transition: opacity 0.65s ease, transform 0.65s ease; }
     .fi.v { opacity: 1; transform: none; }
     .fi:nth-child(2) { transition-delay: 0.08s; }
     .fi:nth-child(3) { transition-delay: 0.16s; }
@@ -182,18 +202,9 @@
 
     /* ── Scroll hint ──────────────────────────────────────── */
     .scroll-hint {
-      position: absolute;
-      bottom: 28px;
-      left: 50%;
-      transform: translateX(-50%);
-      color: var(--dim);
-      font-size: 0.65rem;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 5px;
+      position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%);
+      color: var(--dim); font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase;
+      display: flex; flex-direction: column; align-items: center; gap: 5px;
       animation: bounce 2.2s ease-in-out infinite;
     }
     @keyframes bounce {
@@ -201,14 +212,7 @@
       50%       { transform: translateX(-50%) translateY(5px); }
     }
 
-    /* =========================================================
-       SLIDE-SPECIFIC STYLES
-       ========================================================= */
-
-    /* S1 */
-    #s1 .asterisk { color: var(--muted); font-weight: 400; }
-
-    /* S2 — horizontal timeline */
+    /* ── S2 Timeline ──────────────────────────────────────── */
     .era-timeline {
       display: grid;
       grid-template-columns: 1fr 1fr 1fr;
@@ -225,301 +229,154 @@
       height: 2px;
       background: var(--border);
     }
-    .era-col {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-      padding: 0 16px;
-    }
+    .era-col { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 0 16px; }
     .era-marker {
-      width: 52px;
-      height: 52px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.65rem;
-      font-weight: 800;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      margin-bottom: 18px;
-      flex-shrink: 0;
-      position: relative;
-      z-index: 1;
+      width: 52px; height: 52px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.65rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase;
+      margin-bottom: 18px; flex-shrink: 0; position: relative; z-index: 1;
     }
-    .era-marker.now    { background: var(--brand-bg); border: 2px solid var(--brand); color: var(--brand); }
-    .era-marker.mid    { background: var(--surface2); border: 2px solid var(--border); color: var(--dim); font-size: 1.2rem; }
-    .era-marker.future { background: var(--surface2); border: 2px solid var(--border); color: var(--dim); font-size: 1.4rem; }
-    .era-title {
-      font-size: 0.95rem;
-      font-weight: 700;
-      color: var(--ink);
-      margin-bottom: 10px;
-      letter-spacing: -0.01em;
-    }
-    .era-body {
-      font-size: 0.78rem;
-      color: var(--muted);
-      line-height: 1.55;
-    }
-    .era-tagline {
-      margin-top: 32px;
-      font-size: 1.05rem;
-      font-weight: 600;
-      color: var(--brand);
-      text-align: center;
-      letter-spacing: -0.01em;
-    }
+    .era-marker.now    { background: var(--teal-dim);   border: 2px solid var(--teal);   color: var(--teal); }
+    .era-marker.mid    { background: var(--surface2);   border: 2px solid var(--border); color: var(--muted); font-size: 1.1rem; }
+    .era-marker.future { background: var(--surface2);   border: 2px solid var(--border); color: var(--muted); font-size: 1.4rem; }
+    .era-title { font-size: 0.95rem; font-weight: 700; color: var(--ink); margin-bottom: 10px; }
+    .era-body  { font-size: 0.78rem; color: var(--muted); line-height: 1.55; }
+    .era-tagline { margin-top: 32px; font-size: 1.05rem; font-weight: 600; color: var(--teal); text-align: center; }
 
-    /* S3 — hero */
+    /* ── S3 hero ──────────────────────────────────────────── */
     #s3 .slide-inner { text-align: center; }
-    #s3 h1 { font-size: clamp(3rem, 8vw, 6rem); color: var(--brand); letter-spacing: -0.04em; margin-bottom: 20px; }
-    #s3 p.body { max-width: 540px; margin: 0 auto; text-align: center; font-size: 1.2rem; }
+    #s3 h1 { font-size: clamp(3.5rem, 9vw, 6.5rem); letter-spacing: -0.04em; margin-bottom: 16px; }
+    #s3 p.lead { max-width: 520px; margin: 0 auto; text-align: center; font-size: 1.2rem; }
 
-    /* S6 — Why SMEs */
-    .why-bullets {
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-      margin: 20px 0;
+    /* ── S4 comparison ────────────────────────────────────── */
+    .compare-col-label {
+      font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.14em; margin-bottom: 12px;
     }
-    .why-bullets li {
-      font-size: 1.05rem;
-      font-weight: 500;
-      color: var(--text);
-      padding-left: 24px;
-      position: relative;
-      line-height: 1.5;
-    }
-    .why-bullets li::before {
-      content: "—";
-      position: absolute;
-      left: 0;
-      color: var(--brand);
-      font-weight: 700;
+    .compare-boxes { display: flex; flex-direction: column; gap: 8px; }
+    .compare-box {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 12px 14px;
+      font-size: 0.8rem; color: var(--muted); line-height: 1.45;
     }
 
-    /* S7 — Architecture */
-    .arch-flow {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
+    /* ── S5 roadmap ───────────────────────────────────────── */
+    .phase-tag {
+      font-size: 0.62rem; font-weight: 800; text-transform: uppercase;
+      letter-spacing: 0.1em; padding: 3px 9px; border-radius: 99px;
+      display: inline-block; margin-bottom: 10px;
     }
-    .arch-row {
-      display: grid;
-      gap: 10px;
-    }
-    .arch-box {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 14px 16px;
-    }
-    .arch-box .name {
-      font-size: 0.78rem;
-      font-weight: 700;
-      color: var(--ink);
-      margin-bottom: 4px;
-      letter-spacing: -0.005em;
-    }
-    .arch-box .desc {
-      font-size: 0.74rem;
-      color: var(--muted);
-      line-height: 1.45;
-    }
-    .arch-connector {
-      text-align: center;
-      color: var(--border);
-      font-size: 1rem;
-    }
-
-    /* S8 — Compliance section break */
-    #s8 .slide-inner { text-align: center; }
-    #s8 h1 { font-size: clamp(4rem, 10vw, 7rem); color: var(--brand); letter-spacing: -0.04em; }
-
-    /* S9 — AEO bullets */
-    .aeo-bullets {
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-      margin-top: 4px;
-    }
-    .aeo-bullets li {
-      font-size: 1.05rem;
-      color: var(--text);
-      line-height: 1.6;
-      padding-left: 22px;
-      position: relative;
-    }
-    .aeo-bullets li::before {
-      content: "→";
-      position: absolute;
-      left: 0;
-      color: var(--brand);
-      font-weight: 700;
-    }
-
-    /* S10 — Embedded */
-    .xero-tag {
-      display: inline-block;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 8px 14px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      color: var(--brand);
-      margin-top: 20px;
-      letter-spacing: 0.02em;
-    }
-
-    /* S11 — Team */
-    .team-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 14px;
-      margin-top: 24px;
-    }
-    .team-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 28px 16px 22px;
-      text-align: center;
-    }
-    .team-card .avatar {
-      width: 52px;
-      height: 52px;
-      border-radius: 50%;
-      background: var(--surface2);
-      border: 1.5px solid var(--border);
-      margin: 0 auto 16px;
-    }
-    .team-card .person-name {
-      font-size: 0.95rem;
-      font-weight: 700;
-      color: var(--ink);
-      margin-bottom: 4px;
-    }
-    .team-card .person-role {
-      font-size: 0.7rem;
-      font-weight: 500;
-      color: var(--brand);
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-    }
-
-    /* S12 — Commercial roadmap */
     .roadmap-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 22px 20px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; padding: 20px 18px;
     }
-    .roadmap-card h3 {
-      font-size: 1rem;
-      font-weight: 700;
-      color: var(--ink);
-      margin-bottom: 14px;
-      letter-spacing: -0.01em;
-    }
-    .roadmap-card ul {
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .roadmap-card ul li {
-      font-size: 0.78rem;
-      color: var(--muted);
-      line-height: 1.5;
-      padding-left: 14px;
-      position: relative;
-    }
-    .roadmap-card ul li::before {
-      content: "·";
-      position: absolute;
-      left: 2px;
-      color: var(--brand);
-      font-weight: 900;
-      font-size: 1.1rem;
-      line-height: 1.3;
-    }
-    .roadmap-card .reg {
-      font-size: 0.68rem;
-      color: var(--dim);
-      margin-top: 12px;
-      padding-top: 10px;
-      border-top: 1px solid var(--border);
-    }
+    .roadmap-card h3 { font-size: 1rem; font-weight: 700; color: var(--ink); margin-bottom: 8px; letter-spacing: -0.01em; }
+    .roadmap-card p  { font-size: 0.8rem; color: var(--muted); line-height: 1.5; }
 
-    /* S13 — Competitors table */
-    .comp-table {
-      width: 100%;
-      border-collapse: separate;
-      border-spacing: 0;
-      border-radius: 12px;
-      overflow: hidden;
-      background: var(--border);
-      gap: 1px;
-      display: grid;
-      grid-template-columns: 1fr 1.4fr 1fr;
+    /* ── S6 Why SMEs ──────────────────────────────────────── */
+    .why-bullets { list-style: none; display: flex; flex-direction: column; gap: 14px; margin: 20px 0; }
+    .why-bullets li {
+      font-size: 1.05rem; font-weight: 500; color: var(--text);
+      padding-left: 24px; position: relative; line-height: 1.5;
     }
-    .comp-table .ch {
-      background: var(--surface2);
-      padding: 12px 16px;
-      font-size: 0.7rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      color: var(--dim);
-    }
-    .comp-table .cc {
-      background: var(--surface);
-      padding: 14px 16px;
-      font-size: 0.82rem;
-      color: var(--muted);
-      line-height: 1.45;
-    }
-    .comp-table .cc.name {
-      color: var(--text);
-      font-weight: 500;
-    }
-    .comp-table .cc.edge {
-      color: var(--brand);
-      font-weight: 500;
-    }
+    .why-bullets li::before { content: "—"; position: absolute; left: 0; color: var(--teal); font-weight: 700; }
 
-    /* S14 — The raise */
-    #s14 h1 { font-size: clamp(2rem, 5vw, 3.4rem); text-align: center; max-width: 720px; margin: 0 auto 36px; }
-    .use-grid {
+    /* ── S7 architecture with right sidebar ───────────────── */
+    .arch-layout {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 12px;
+      grid-template-columns: 1fr 260px;
+      gap: 16px;
+      margin-top: 8px;
+      align-items: start;
+    }
+    .sub-boxes {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
       margin-top: 8px;
     }
-    .use-card {
-      background: var(--surface);
+    .sub-box {
+      background: var(--surface2);
       border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 20px 16px;
-    }
-    .use-card .use-label {
-      font-size: 0.75rem;
-      font-weight: 700;
-      color: var(--brand);
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      margin-bottom: 8px;
-    }
-    .use-card p {
-      font-size: 0.8rem;
+      border-radius: 6px;
+      padding: 6px 8px;
+      font-size: 0.68rem;
       color: var(--muted);
-      line-height: 1.5;
+      text-align: center;
     }
+
+    /* ── S8 compliance ────────────────────────────────────── */
+    .comp-agents {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+
+    /* ── S9 AEO bullets ───────────────────────────────────── */
+    .aeo-bullets { list-style: none; display: flex; flex-direction: column; gap: 16px; margin-top: 4px; }
+    .aeo-bullets li {
+      font-size: 1.05rem; color: var(--text); line-height: 1.6;
+      padding-left: 22px; position: relative;
+    }
+    .aeo-bullets li::before { content: "→"; position: absolute; left: 0; color: var(--teal); font-weight: 700; }
+
+    /* ── S10 Embedded ─────────────────────────────────────── */
+    .xero-tag {
+      display: inline-block; background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; padding: 8px 14px; font-size: 0.75rem; font-weight: 600;
+      color: var(--teal); margin-top: 16px; letter-spacing: 0.02em;
+    }
+
+    /* ── S11 Team ─────────────────────────────────────────── */
+    .team-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 24px; }
+    .team-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; padding: 28px 16px 22px; text-align: center;
+    }
+    .team-card .avatar {
+      width: 52px; height: 52px; border-radius: 50%;
+      background: var(--surface2); border: 1.5px solid var(--border);
+      margin: 0 auto 16px;
+    }
+    .team-card .person-name { font-size: 0.95rem; font-weight: 700; color: var(--ink); margin-bottom: 4px; }
+    .team-card .person-role { font-size: 0.7rem; font-weight: 500; color: var(--teal); text-transform: uppercase; letter-spacing: 0.1em; }
+
+    /* ── S12 Commercial ───────────────────────────────────── */
+    .comm-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; padding: 22px 20px;
+    }
+    .comm-card h3 { font-size: 1rem; font-weight: 700; color: var(--ink); margin-bottom: 14px; letter-spacing: -0.01em; }
+    .comm-card ul { list-style: none; display: flex; flex-direction: column; gap: 7px; }
+    .comm-card ul li {
+      font-size: 0.78rem; color: var(--muted); line-height: 1.5;
+      padding-left: 14px; position: relative;
+    }
+    .comm-card ul li::before { content: "·"; position: absolute; left: 2px; color: var(--teal); font-weight: 900; font-size: 1.1rem; line-height: 1.3; }
+    .comm-card .reg { font-size: 0.68rem; color: var(--dim); margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+
+    /* ── S13 Competitors table ────────────────────────────── */
+    .comp-table {
+      width: 100%; border-collapse: separate; border-spacing: 0;
+      border-radius: 12px; overflow: hidden; background: var(--border);
+      display: grid; grid-template-columns: 1fr 1.4fr 1fr;
+    }
+    .comp-table .ch {
+      background: var(--surface2); padding: 12px 16px;
+      font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.1em; color: var(--dim);
+    }
+    .comp-table .cc { background: var(--surface); padding: 14px 16px; font-size: 0.82rem; color: var(--muted); line-height: 1.45; }
+    .comp-table .cc.name  { color: var(--text); font-weight: 500; }
+    .comp-table .cc.edge  { color: var(--teal); font-weight: 500; }
+
+    /* ── S14 Raise ────────────────────────────────────────── */
+    #s14 .slide-inner { text-align: center; }
+    #s14 h1 { font-size: clamp(2rem, 5vw, 3.4rem); max-width: 720px; margin: 0 auto 36px; }
+    .use-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    .use-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px 16px; }
+    .use-card .use-label { font-size: 0.75rem; font-weight: 700; color: var(--teal); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; }
+    .use-card p { font-size: 0.8rem; color: var(--muted); line-height: 1.5; text-align: left; }
   </style>
 </head>
 <body>
@@ -543,12 +400,13 @@
 
 
 <!-- ═══════════════════════════════════════════════════════════
-     SLIDE 1 — A £16 Billion Mess
+     01 — A £16 Billion Mess
      ═══════════════════════════════════════════════════════════ -->
 <section id="s1">
   <div class="slide-inner">
-    <h1 class="fi">A £16 Billion Mess<span class="asterisk">*</span></h1>
-    <p class="body fi">Business insurance is a mess. Cover is made up of multiple policies from multiple carriers, written in arcane language and shared as pdf attachments. Without the time to unravel it, SMEs are left exposed to under-insurance, duplicate cover, and opportunistic pricing.</p>
+    <div class="slide-num fi">01 / The Problem</div>
+    <h1 class="fi">A <span class="accent-rose">£16 Billion</span> Mess<span style="color:var(--muted);font-weight:400">*</span></h1>
+    <p class="lead fi">Business insurance is a mess. Cover is made up of multiple policies from multiple carriers, written in arcane language and shared as pdf attachments. Without the time to unravel it, SMEs are left exposed to under-insurance, duplicate cover, and opportunistic pricing.</p>
     <p class="footnote fi">* £16 billion is the market size of UK SME insurance in gross written premium</p>
   </div>
   <div class="scroll-hint">
@@ -559,11 +417,12 @@
 
 
 <!-- ═══════════════════════════════════════════════════════════
-     SLIDE 2 — Agent-to-Agent Era
+     02 — Agent-to-Agent Era
      ═══════════════════════════════════════════════════════════ -->
 <section id="s2">
   <div class="slide-inner">
-    <h2 class="fi">Agent-to-Agent Era</h2>
+    <div class="slide-num fi">02 / Market Timing</div>
+    <h2 class="fi"><span class="accent-blue">Agent-to-Agent Era</span></h2>
 
     <div class="era-timeline fi">
       <div class="era-col">
@@ -589,44 +448,71 @@
 
 
 <!-- ═══════════════════════════════════════════════════════════
-     SLIDE 3 — Meet Denney
+     03 — Meet Denney
      ═══════════════════════════════════════════════════════════ -->
 <section id="s3">
   <div class="slide-inner">
-    <h1 class="fi">Meet Denney</h1>
-    <p class="body fi">The agentic insurance broker for businesses.</p>
+    <div class="slide-num fi" style="text-align:center">03 / The Product</div>
+    <h1 class="fi accent-teal">Meet Denney</h1>
+    <p class="lead fi">The agentic insurance broker for businesses.</p>
   </div>
 </section>
 
 
 <!-- ═══════════════════════════════════════════════════════════
-     SLIDE 4 — On the customer's side
+     04 — On the customer's side
      ═══════════════════════════════════════════════════════════ -->
 <section id="s4">
   <div class="slide-inner">
-    <h2 class="fi">Denney is on the customer's side.</h2>
-    <p class="body fi">Like a traditional broker, Denney looks at the full picture and makes proactive suggestions about purchases, renewals, switching, MTAs and claims – but without being influenced by commission rates.</p>
+    <div class="slide-num fi">04 / The Difference</div>
+    <h2 class="fi">Denney is on the <span class="accent-teal">customer's side.</span></h2>
+    <p class="lead fi">Like a traditional broker, Denney looks at the full picture and makes proactive suggestions about purchases, renewals, switching, MTAs and claims – but without being influenced by commission rates.</p>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:8px;" class="fi">
+      <div>
+        <div class="compare-col-label" style="color:var(--muted)">Traditional broker</div>
+        <div class="compare-boxes">
+          <div class="compare-box">Paid by insurers via commission — incentives structurally misaligned with the customer.</div>
+          <div class="compare-box">Capacity constrained — a human can manage a finite book; advice degrades as the book scales.</div>
+          <div class="compare-box">Reactive — waits for renewal or a claim; rarely proactive about gaps or switching.</div>
+          <div class="compare-box">Opaque reasoning — you take their word for it; you can't see how a recommendation was reached.</div>
+        </div>
+      </div>
+      <div>
+        <div class="compare-col-label" style="color:var(--teal)">Denney</div>
+        <div class="compare-boxes">
+          <div class="compare-box" style="border-color:var(--teal);background:var(--teal-dim);color:var(--text)">Commission-free recommendations. Denney's interest is aligned with the customer's — not the insurer's.</div>
+          <div class="compare-box" style="border-color:var(--teal)">Unlimited scale — every customer gets the same depth of advice, instantly, at any time.</div>
+          <div class="compare-box" style="border-color:var(--teal)">Proactive — monitors all policies continuously and flags issues before they become losses.</div>
+          <div class="compare-box" style="border-color:var(--teal)">Citable — every answer references the exact policy clause it came from. Full audit trail.</div>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
 
 <!-- ═══════════════════════════════════════════════════════════
-     SLIDE 5 — Product roadmap
+     05 — Product roadmap
      ═══════════════════════════════════════════════════════════ -->
 <section id="s5">
   <div class="slide-inner">
-    <div class="eyebrow fi">Denney product roadmap.</div>
-    <div class="grid-3 fi">
-      <div class="card">
+    <div class="slide-num fi">05 / Roadmap</div>
+    <h2 class="fi">Denney <span class="accent-amber">product roadmap.</span></h2>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;" class="fi">
+      <div class="roadmap-card">
+        <div class="phase-tag" style="background:var(--teal-dim);color:var(--teal);">Phase 1 — Now</div>
         <h3>Smart Wallet</h3>
         <p>Email policy documents straight to your wallet and chat to them. Find the right cover for your business with intelligent product feature comparison. Get help when you need to make a decision about renewals and claims. Available via web and ecosystem apps (inc. ChatGPT).</p>
       </div>
-      <div class="card">
+      <div class="roadmap-card">
+        <div class="phase-tag" style="background:var(--blue-dim);color:var(--blue);">Phase 2 — Next</div>
         <h3>Agentic Broker v1</h3>
         <p>Proactively flags cover gaps, under-insurance and duplicate cover. Recommends tailored cover from own panel. Alerts you to notifiable events as your business evolves by connecting to banking or accounting software. Available via web, ecosystem apps, WhatsApp, Teams, &amp; Slack.</p>
       </div>
-      <div class="card" style="border-color:var(--brand);background:var(--brand-bg)">
-        <div class="card-label">Agentic Broker v2</div>
+      <div class="roadmap-card" style="border-color:var(--teal);background:var(--teal-dim)">
+        <div class="phase-tag" style="background:rgba(13,184,174,0.15);color:var(--teal);">Phase 3 — Future</div>
+        <h3>Agentic Broker v2</h3>
         <p>Authorised to monitor cover, recommend product switches, request MTAs, and challenge renewal quotes. Makes purchases and claims with user approval. Can distribute own-label products. Available everywhere.</p>
       </div>
     </div>
@@ -635,23 +521,24 @@
 
 
 <!-- ═══════════════════════════════════════════════════════════
-     SLIDE 6 — Why SMEs
+     06 — Why SMEs
      ═══════════════════════════════════════════════════════════ -->
 <section id="s6">
   <div class="slide-inner">
-    <div class="grid-2" style="align-items:start;gap:60px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:start;">
       <div>
-        <h2 class="fi">Why SMEs?</h2>
+        <div class="slide-num fi">06 / Market Focus</div>
+        <h2 class="fi">Why <span class="accent-green">SMEs?</span></h2>
         <ul class="why-bullets fi">
           <li>Business insurance is the second-largest category of demand for AI insurance assistance in the UK</li>
           <li>Regulatory requirements are less onerous than with consumers</li>
         </ul>
         <p class="footnote fi">Data source: SimilarWeb / Balance</p>
       </div>
-      <div class="fi" style="display:flex;flex-direction:column;justify-content:center;min-height:220px;">
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:28px;text-align:center;">
-          <div style="font-size:0.7rem;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--brand);margin-bottom:12px;">Target customers.</div>
-          <div style="width:100%;height:120px;background:var(--surface2);border-radius:8px;display:flex;align-items:center;justify-content:center;">
+      <div class="fi" style="padding-top:48px;">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px;text-align:center;">
+          <div style="font-size:0.68rem;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--teal);margin-bottom:12px;">Target customers.</div>
+          <div style="width:100%;height:140px;background:var(--surface2);border-radius:8px;display:flex;align-items:center;justify-content:center;">
             <span style="font-size:0.75rem;color:var(--dim)">Chart</span>
           </div>
         </div>
@@ -662,61 +549,144 @@
 
 
 <!-- ═══════════════════════════════════════════════════════════
-     SLIDE 7 — MCP-driven Architecture
+     07 — MCP-driven Architecture
      ═══════════════════════════════════════════════════════════ -->
 <section id="s7">
   <div class="slide-inner">
-    <div class="eyebrow fi">MCP-driven Architecture.</div>
+    <div class="slide-num fi">07 / How It Works</div>
+    <h2 class="fi"><span class="accent-blue">MCP-driven</span> Architecture.</h2>
+
+    <div class="arch-layout fi">
+
+      <!-- Main flow (left) -->
+      <div class="arch-flow" style="margin-top:0;">
+
+        <!-- Top: two interface boxes with sub-boxes -->
+        <div class="arch-row" style="grid-template-columns:1fr 1fr;">
+          <div class="arch-box">
+            <div class="title" style="color:var(--amber)">Denney Website / Chatbot</div>
+            <div class="sub-boxes">
+              <div class="sub-box">Web App</div>
+              <div class="sub-box">WhatsApp / Teams / Slack</div>
+            </div>
+          </div>
+          <div class="arch-box">
+            <div class="title" style="color:var(--amber)">Chatbot (ChatGPT, Claude etc.)</div>
+            <div class="sub-boxes">
+              <div class="sub-box">ChatGPT</div>
+              <div class="sub-box">Claude</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="arch-arrow">↓</div>
+
+        <!-- LLM -->
+        <div class="arch-row" style="grid-template-columns:1fr;">
+          <div class="arch-box" style="border-color:var(--purple)">
+            <div class="title" style="color:var(--purple)">LLM</div>
+          </div>
+        </div>
+
+        <div class="arch-arrow">↓</div>
+
+        <!-- MCP + Skills -->
+        <div class="arch-row" style="grid-template-columns:1fr 1fr;">
+          <div class="arch-box" style="border-color:var(--blue)">
+            <div class="title" style="color:var(--blue)">Insurance Broker MCP</div>
+            <p>Standardised API layer enabling frictionless, machine-to-machine agent-carrier interactions.</p>
+          </div>
+          <div class="arch-box" style="border-color:var(--blue)">
+            <div class="title" style="color:var(--blue)">Insurance Broker Skills/Apps</div>
+            <p>Domain knowledge, regulatory awareness, product expertise.</p>
+          </div>
+        </div>
+
+        <div class="arch-arrow">↓</div>
+
+        <!-- Data -->
+        <div class="arch-row" style="grid-template-columns:1fr 1fr;">
+          <div class="arch-box" style="border-color:var(--teal)">
+            <div class="title" style="color:var(--teal)">Smart Insurance Wallet</div>
+            <p>Policy storage, chat interface, product comparison, decision support.</p>
+          </div>
+          <div class="arch-box" style="border-color:var(--teal)">
+            <div class="title" style="color:var(--teal)">Vector Database</div>
+            <p>Semantic search over policy documents, product data, and customer history.</p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Compliance Model (right sidebar) -->
+      <div class="arch-box" style="border-color:var(--rose);background:var(--rose-dim);align-self:stretch;display:flex;flex-direction:column;justify-content:center;">
+        <div class="title" style="color:var(--rose);margin-bottom:10px;">Compliance Model</div>
+        <p>Guardrails ensuring FCA-compliant outputs and full audit trail.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     08 — Compliance
+     ═══════════════════════════════════════════════════════════ -->
+<section id="s8">
+  <div class="slide-inner">
+    <div class="slide-num fi">08 / Regulatory</div>
+    <h2 class="fi">Compliance<span class="accent-purple">.</span></h2>
+
     <div class="arch-flow fi">
 
-      <!-- Top layer: interfaces -->
-      <div class="arch-row" style="grid-template-columns:1fr 1fr;">
-        <div class="arch-box">
-          <div class="name">Denney Website / Chatbot</div>
-        </div>
-        <div class="arch-box">
-          <div class="name">Chatbot (ChatGPT, Claude etc.)</div>
-        </div>
-      </div>
-
-      <div class="arch-connector">↓</div>
-
-      <!-- LLM -->
+      <!-- Layer 1 -->
       <div class="arch-row" style="grid-template-columns:1fr;">
-        <div class="arch-box" style="border-color:var(--brand);">
-          <div class="name" style="color:var(--brand)">LLM</div>
+        <div class="arch-box" style="border-color:var(--purple);grid-column:1/-1">
+          <div class="title" style="color:var(--purple)">AI Broker — Every Customer Conversation</div>
+          <p>Each session captures: user intent, retrieved policy clauses, recommendations made, products surfaced, and final customer outcome.</p>
         </div>
       </div>
 
-      <div class="arch-connector">↓</div>
+      <div class="arch-arrow">↓</div>
 
-      <!-- MCP + Skills -->
-      <div class="arch-row" style="grid-template-columns:repeat(2,1fr);">
-        <div class="arch-box">
-          <div class="name">Insurance Broker MCP</div>
-          <div class="desc">Standardised API layer enabling frictionless, machine-to-machine agent-carrier interactions.</div>
-        </div>
-        <div class="arch-box">
-          <div class="name">Insurance Broker Skills/Apps</div>
-          <div class="desc">Domain knowledge, regulatory awareness, product expertise.</div>
+      <!-- Layer 2 -->
+      <div class="arch-row" style="grid-template-columns:1fr;">
+        <div class="arch-box" style="border-color:var(--amber);background:var(--amber-dim);grid-column:1/-1">
+          <div class="title" style="color:var(--amber)">Session Recording &amp; Audit Layer</div>
+          <p>Immutable, timestamped log of every interaction — searchable by session, customer, product type, recommendation, or outcome flag. Full audit trail available to compliance teams and regulators on demand.</p>
         </div>
       </div>
 
-      <div class="arch-connector">↓</div>
+      <div class="arch-arrow">↓</div>
 
-      <!-- Data + Compliance -->
-      <div class="arch-row" style="grid-template-columns:repeat(3,1fr);">
-        <div class="arch-box">
-          <div class="name">Smart Insurance Wallet</div>
-          <div class="desc">Policy storage, chat interface, product comparison, decision support.</div>
+      <!-- Layer 3: Agents -->
+      <div style="font-size:0.62rem;font-weight:700;text-transform:uppercase;letter-spacing:0.14em;color:var(--muted);margin-bottom:6px;text-align:center;">Specialist AI Compliance Agents</div>
+      <div class="comp-agents">
+        <div class="arch-box" style="border-color:var(--rose)">
+          <div class="title" style="color:var(--rose)">Mis-selling</div>
+          <p>Automated scan of every recommendation against stated needs and policy terms. Flags where suggestions exceed guidance or conflict with suitability criteria.</p>
         </div>
-        <div class="arch-box">
-          <div class="name">Vector Database</div>
-          <div class="desc">Semantic search over policy documents, product data, and customer history.</div>
+        <div class="arch-box" style="border-color:var(--blue)">
+          <div class="title" style="color:var(--blue)">Consumer Duty</div>
+          <p>Monitors for good outcomes across the four FCA outcomes: products &amp; services, price &amp; value, consumer understanding, and consumer support.</p>
         </div>
-        <div class="arch-box">
-          <div class="name">Compliance Model</div>
-          <div class="desc">Guardrails ensuring FCA-compliant outputs and full audit trail.</div>
+        <div class="arch-box" style="border-color:var(--green)">
+          <div class="title" style="color:var(--green)">TCF</div>
+          <p>Post-session checks: loyalty penalties surfaced? Alternatives presented fairly? Customer steered by commission? Scored against TCF outcomes 1–6.</p>
+        </div>
+        <div class="arch-box" style="border-color:var(--purple)">
+          <div class="title" style="color:var(--purple)">Vulnerable Customers</div>
+          <p>Detects vulnerability signals (health, life events, financial resilience, capability) per FCA FG21/1. Triggers simplified explanations and escalation.</p>
+        </div>
+      </div>
+
+      <div class="arch-arrow">↓</div>
+
+      <!-- Layer 4 -->
+      <div class="arch-row" style="grid-template-columns:1fr;">
+        <div class="arch-box" style="border-color:var(--teal);background:var(--teal-dim);grid-column:1/-1">
+          <div class="title" style="color:var(--teal)">Ops QA — Humans in the Loop</div>
+          <p>A configurable % of sessions are flagged for manual review — sampled by AI risk score, product type, or outcome flag. Reviewers work from the audit log, closing the loop between AI output and human sign-off.</p>
         </div>
       </div>
 
@@ -726,21 +696,12 @@
 
 
 <!-- ═══════════════════════════════════════════════════════════
-     SLIDE 8 — Compliance (section break)
-     ═══════════════════════════════════════════════════════════ -->
-<section id="s8">
-  <div class="slide-inner">
-    <h1 class="fi">Compliance.</h1>
-  </div>
-</section>
-
-
-<!-- ═══════════════════════════════════════════════════════════
-     SLIDE 9 — Distribution #1: AEO
+     09 — Distribution #1: AEO
      ═══════════════════════════════════════════════════════════ -->
 <section id="s9">
   <div class="slide-inner">
-    <h2 class="fi">Distribution #1: AEO.</h2>
+    <div class="slide-num fi">09 / Distribution #1</div>
+    <h2 class="fi">Distribution #1: <span class="accent-purple">AEO.</span></h2>
     <ul class="aeo-bullets fi">
       <li>ChatGPT is now the second-biggest referrer of traffic to the financial services category, surpassing all comparison sites.</li>
       <li>By wrapping Denney's functionality in MCP, we position ourselves to win a meaningful share of this traffic.</li>
@@ -752,15 +713,16 @@
 
 
 <!-- ═══════════════════════════════════════════════════════════
-     SLIDE 10 — Distribution #2: Embedded
+     10 — Distribution #2: Embedded
      ═══════════════════════════════════════════════════════════ -->
 <section id="s10">
   <div class="slide-inner">
-    <div class="grid-2" style="align-items:center;gap:52px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:52px;align-items:center;">
       <div>
-        <h2 class="fi">Distribution #2: Embedded.</h2>
-        <p class="body fi">MCP-driven architecture also enables embedded distribution through software platforms with established user bases.</p>
-        <p class="body fi">In the US, Next Insurance's integration with QuickBooks shows that embedded solutions that leverage platform data into insurance offers brings new customers into the market*</p>
+        <div class="slide-num fi">10 / Distribution #2</div>
+        <h2 class="fi">Distribution #2: <span class="accent-blue">Embedded.</span></h2>
+        <p class="lead fi">MCP-driven architecture also enables embedded distribution through software platforms with established user bases.</p>
+        <p class="lead fi">In the US, Next Insurance's integration with QuickBooks shows that embedded solutions that leverage platform data into insurance offers brings new customers into the market*</p>
         <p class="footnote fi">* c.40% of Next Insurance customers have never bought insurance before</p>
       </div>
       <div class="fi" style="display:flex;flex-direction:column;align-items:center;gap:12px;">
@@ -775,12 +737,12 @@
 
 
 <!-- ═══════════════════════════════════════════════════════════
-     SLIDE 11 — Team
+     11 — Team
      ═══════════════════════════════════════════════════════════ -->
 <section id="s11">
   <div class="slide-inner">
-    <div class="eyebrow fi">Team.</div>
-    <h2 class="fi">We got the Bought By Many band back together.</h2>
+    <div class="slide-num fi">11 / Team</div>
+    <h2 class="fi">We got the <span class="accent-teal">Bought By Many</span> band back together.</h2>
     <div class="team-grid fi">
       <div class="team-card">
         <div class="avatar"></div>
@@ -808,13 +770,14 @@
 
 
 <!-- ═══════════════════════════════════════════════════════════
-     SLIDE 12 — Commercial roadmap
+     12 — Commercial roadmap
      ═══════════════════════════════════════════════════════════ -->
 <section id="s12">
   <div class="slide-inner">
-    <div class="eyebrow fi">Commercial roadmap.</div>
-    <div class="grid-3 fi">
-      <div class="roadmap-card">
+    <div class="slide-num fi">12 / Commercial Model</div>
+    <h2 class="fi">Commercial <span class="accent-amber">roadmap.</span></h2>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;" class="fi">
+      <div class="comm-card">
         <h3>Affiliate Model</h3>
         <ul>
           <li>Monetize new business referrals to insurance providers through affiliate platforms (e.g. AWIN)</li>
@@ -823,7 +786,7 @@
         </ul>
         <div class="reg">Regulatory status: Introducer Appointed Representative</div>
       </div>
-      <div class="roadmap-card">
+      <div class="comm-card">
         <h3>Broker Model</h3>
         <ul>
           <li>Monetize new business and renewals primarily through panel of MGAs and carriers.</li>
@@ -832,14 +795,14 @@
         </ul>
         <div class="reg">Regulatory status: Appointed Representative then directly authorised by the FCA</div>
       </div>
-      <div class="roadmap-card" style="border-color:var(--brand);background:var(--brand-bg)">
+      <div class="comm-card" style="border-color:var(--teal);background:var(--teal-dim)">
         <h3>Broker-MGA model</h3>
         <ul>
           <li>Filter share of new business and renewals to own MGA, insurer panel members, depending on customer's best interest.</li>
           <li>Leverage insights from MGA claims data to optimize filtering.</li>
           <li>Use AI-driven opex savings to enable aggressive new business pricing in priority segments.</li>
         </ul>
-        <div class="reg" style="border-color:rgba(13,184,174,0.2);color:var(--brand);opacity:0.7">Regulatory status: Directly authorised by the FCA</div>
+        <div class="reg" style="border-color:rgba(13,184,174,0.2);color:var(--teal);opacity:0.8">Regulatory status: Directly authorised by the FCA</div>
       </div>
     </div>
   </div>
@@ -847,29 +810,29 @@
 
 
 <!-- ═══════════════════════════════════════════════════════════
-     SLIDE 13 — Competitors
+     13 — Competitors
      ═══════════════════════════════════════════════════════════ -->
 <section id="s13">
   <div class="slide-inner">
-    <h2 class="fi">Competitors?</h2>
+    <div class="slide-num fi">13 / Competitive Landscape</div>
+    <h2 class="fi">Competitors<span class="accent-rose">?</span></h2>
     <div class="comp-table fi">
-      <!-- Header -->
       <div class="ch">Competitor type</div>
       <div class="ch">Why they won't win</div>
       <div class="ch">Denney's edge</div>
-      <!-- Row 1 -->
+
       <div class="cc name">Price-comparison sites<br><span style="color:var(--muted);font-weight:400">(e.g. MoneySuperMarket, CompareTheMarket)</span></div>
       <div class="cc">Strong incentives to perpetuate the current paradigm. Quarterly results focus prevents long-term platform investment.</div>
       <div class="cc edge">Full lifecycle focus, not just new business pricing.</div>
-      <!-- Row 2 -->
+
       <div class="cc name">Brokers<br><span style="color:var(--muted);font-weight:400">(e.g. Marsh, Aon, Simply Business)</span></div>
       <div class="cc">Constrained by legacy IT infrastructure. Internal AI transformation efforts hampered by competing IT priorities.</div>
       <div class="cc edge">"Born agentic" with no legacy to overcome.</div>
-      <!-- Row 3 -->
+
       <div class="cc name">Insurance wallets<br><span style="color:var(--muted);font-weight:400">(e.g. Rehuman)</span></div>
       <div class="cc">Early-stage with limited user traction. Focused on storage, not advocacy or autonomous action.</div>
       <div class="cc edge">An active agent, not a passive wallet - plus the Bought By Many team.</div>
-      <!-- Row 4 -->
+
       <div class="cc name">AI labs<br><span style="color:var(--muted);font-weight:400">(e.g. OpenAI, Anthropic)</span></div>
       <div class="cc">Insurance is too complicated for generalist agents to handle; labs don't want the regulatory overhead</div>
       <div class="cc edge">Industry expertise and insight.</div>
@@ -879,11 +842,12 @@
 
 
 <!-- ═══════════════════════════════════════════════════════════
-     SLIDE 14 — The raise
+     14 — The raise
      ═══════════════════════════════════════════════════════════ -->
 <section id="s14">
-  <div class="slide-inner" style="text-align:center;">
-    <h1 class="fi">We are raising £5m at £20m pre.</h1>
+  <div class="slide-inner">
+    <div class="slide-num fi" style="text-align:center">14 / The Ask</div>
+    <h1 class="fi">We are raising <span class="accent-teal">£5m</span> at <span class="accent-teal">£20m</span> pre.</h1>
     <div class="use-grid fi">
       <div class="use-card">
         <div class="use-label">Tokens</div>
@@ -907,13 +871,11 @@
 
 
 <script>
-  // Fade-in
   const io = new IntersectionObserver(entries => {
     entries.forEach(e => { if (e.isIntersecting) e.target.classList.add("v"); });
   }, { threshold: 0.12 });
   document.querySelectorAll(".fi").forEach(el => io.observe(el));
 
-  // Nav dot active state
   const sections = document.querySelectorAll("section[id]");
   const links = document.querySelectorAll("nav.dots a");
   const sio = new IntersectionObserver(entries => {
