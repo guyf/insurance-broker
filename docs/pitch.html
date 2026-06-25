@@ -11,27 +11,26 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg:          #0B1120;
-      --surface:     #141E30;
-      --surface2:    #1C2A40;
-      --border:      #263548;
-      --text:        #E0E8F4;
-      --muted:       #6B82A0;
-      --dim:         #4A5F7A;
-      --ink:         #FFFFFF;
-      /* Accent palette */
-      --teal:        #0DB8AE;
-      --teal-dim:    #082822;
-      --blue:        #4B8EF5;
-      --blue-dim:    #0E1F42;
-      --purple:      #8B6CF0;
-      --purple-dim:  #1A0F3A;
-      --amber:       #E89B0A;
-      --amber-dim:   #2C1E04;
-      --green:       #22C97A;
-      --green-dim:   #062616;
-      --rose:        #F04560;
-      --rose-dim:    #2A060E;
+      --bg:          #FFFFFF;
+      --surface:     #F8FAFC;
+      --surface2:    #F1F5F9;
+      --border:      #E2E8F0;
+      --text:        #334155;
+      --muted:       #64748B;
+      --dim:         #94A3B8;
+      --ink:         #0F172A;
+      --teal:        #0D9488;
+      --teal-dim:    #F0FDFA;
+      --blue:        #2563EB;
+      --blue-dim:    #EFF6FF;
+      --purple:      #7C3AED;
+      --purple-dim:  #F5F3FF;
+      --amber:       #D97706;
+      --amber-dim:   #FFFBEB;
+      --green:       #059669;
+      --green-dim:   #ECFDF5;
+      --rose:        #E11D48;
+      --rose-dim:    #FFF1F2;
     }
 
     html { scroll-behavior: smooth; }
@@ -89,7 +88,7 @@
       font-weight: 700;
       letter-spacing: 0.2em;
       text-transform: uppercase;
-      color: var(--muted);
+      color: var(--dim);
       margin-bottom: 18px;
     }
     h1 {
@@ -176,20 +175,21 @@
     .arch-arrow { text-align: center; color: var(--border); font-size: 1rem; }
 
     /* ── Section backgrounds ──────────────────────────────── */
-    #s1  { background: radial-gradient(ellipse 80% 60% at 75% 20%, #1a0a2e 0%, var(--bg) 65%); }
-    #s2  { background: radial-gradient(ellipse 80% 60% at 25% 70%, #081c30 0%, var(--bg) 65%); }
-    #s3  { background: radial-gradient(ellipse 80% 60% at 50% 40%, var(--teal-dim) 0%, var(--bg) 60%); }
-    #s4  { background: radial-gradient(ellipse 80% 60% at 30% 60%, #06201e 0%, var(--bg) 65%); }
-    #s5  { background: radial-gradient(ellipse 80% 60% at 70% 30%, #141008 0%, var(--bg) 65%); }
-    #s6  { background: radial-gradient(ellipse 80% 60% at 30% 50%, #081810 0%, var(--bg) 65%); }
-    #s7  { background: radial-gradient(ellipse 80% 60% at 65% 45%, #081526 0%, var(--bg) 65%); }
-    #s8  { background: radial-gradient(ellipse 60% 60% at 50% 50%, #150a2e 0%, var(--bg) 55%); }
-    #s9  { background: radial-gradient(ellipse 80% 60% at 70% 25%, #100820 0%, var(--bg) 65%); }
-    #s10 { background: radial-gradient(ellipse 80% 60% at 30% 65%, #081626 0%, var(--bg) 65%); }
-    #s11 { background: radial-gradient(ellipse 80% 60% at 65% 55%, #061e18 0%, var(--bg) 65%); }
-    #s12 { background: radial-gradient(ellipse 80% 60% at 35% 35%, #140a06 0%, var(--bg) 65%); }
-    #s13 { background: radial-gradient(ellipse 80% 60% at 65% 60%, #10081a 0%, var(--bg) 65%); }
-    #s14 { background: radial-gradient(ellipse 80% 60% at 50% 50%, var(--teal-dim) 0%, var(--bg) 55%); }
+    #s1  { background: linear-gradient(135deg, rgba(225,29,72,0.05) 0%, #fff 70%); }
+    #s2  { background: linear-gradient(135deg, rgba(37,99,235,0.05) 0%, #fff 70%); }
+    #s3  { background: linear-gradient(135deg, rgba(13,148,136,0.07) 0%, #fff 70%); }
+    #s4  { background: linear-gradient(135deg, rgba(13,148,136,0.05) 0%, #fff 70%); }
+    #s5  { background: linear-gradient(135deg, rgba(217,119,6,0.05) 0%, #fff 70%); }
+    #s6  { background: linear-gradient(135deg, rgba(5,150,105,0.05) 0%, #fff 70%); }
+    #s7  { background: linear-gradient(135deg, rgba(37,99,235,0.04) 0%, #fff 70%); }
+    #s8  { background: linear-gradient(135deg, rgba(124,58,237,0.05) 0%, #fff 70%); }
+    #s9  { background: linear-gradient(135deg, rgba(124,58,237,0.04) 0%, #fff 70%); }
+    #s10 { background: linear-gradient(135deg, rgba(37,99,235,0.04) 0%, #fff 70%); }
+    #s11 { background: linear-gradient(135deg, rgba(13,148,136,0.04) 0%, #fff 70%); }
+    #s12 { background: linear-gradient(135deg, rgba(217,119,6,0.04) 0%, #fff 70%); }
+    #s13 { background: linear-gradient(135deg, rgba(225,29,72,0.04) 0%, #fff 70%); }
+    #s14 { background: linear-gradient(135deg, rgba(13,148,136,0.07) 0%, #fff 70%); }
+    #s-appendix { background: linear-gradient(135deg, rgba(124,58,237,0.05) 0%, #fff 70%); }
 
     /* ── Fade-in ──────────────────────────────────────────── */
     .fi { opacity: 0; transform: translateY(22px); transition: opacity 0.65s ease, transform 0.65s ease; }
@@ -212,66 +212,81 @@
       50%       { transform: translateX(-50%) translateY(5px); }
     }
 
-    /* ── S2 Timeline ──────────────────────────────────────── */
-    .era-timeline {
+    /* ── McKinsey stepped / 3-horizons ───────────────────── */
+    .step-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 0;
-      margin-top: 8px;
-      position: relative;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2px;
+      align-items: end;
+      margin-top: 24px;
     }
-    .era-timeline::before {
-      content: "";
-      position: absolute;
-      top: 26px;
-      left: calc(50% / 3);
-      right: calc(50% / 3);
-      height: 2px;
-      background: var(--border);
+    .step-col {
+      display: flex;
+      flex-direction: column;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: #fff;
     }
-    .era-col { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 0 16px; }
-    .era-marker {
-      width: 52px; height: 52px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 0.65rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase;
-      margin-bottom: 18px; flex-shrink: 0; position: relative; z-index: 1;
+    .step-bar {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 14px 20px 12px;
     }
-    .era-marker.now    { background: var(--teal-dim);   border: 2px solid var(--teal);   color: var(--teal); }
-    .era-marker.mid    { background: var(--surface2);   border: 2px solid var(--border); color: var(--muted); font-size: 1.1rem; }
-    .era-marker.future { background: var(--surface2);   border: 2px solid var(--border); color: var(--muted); font-size: 1.4rem; }
-    .era-title { font-size: 0.95rem; font-weight: 700; color: var(--ink); margin-bottom: 10px; }
-    .era-body  { font-size: 0.78rem; color: var(--muted); line-height: 1.55; }
-    .era-tagline { margin-top: 32px; font-size: 1.05rem; font-weight: 600; color: var(--teal); text-align: center; }
+    .step-col:nth-child(1) .step-bar { height: 60px; }
+    .step-col:nth-child(2) .step-bar { height: 110px; }
+    .step-col:nth-child(3) .step-bar { height: 160px; }
+    .step-bar-label {
+      font-size: 0.65rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: #fff;
+    }
+    .step-body {
+      padding: 20px;
+      background: #fff;
+      flex: 1;
+    }
+    .step-body h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 8px;
+      letter-spacing: -0.01em;
+    }
+    .step-body p {
+      font-size: 0.8rem;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+    /* Now-indicator for slide 2 */
+    .now-indicator {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 10px;
+      font-size: 0.62rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--teal);
+    }
+    .now-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--teal);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.4; }
+    }
 
     /* ── S3 hero ──────────────────────────────────────────── */
     #s3 .slide-inner { text-align: center; }
     #s3 h1 { font-size: clamp(3.5rem, 9vw, 6.5rem); letter-spacing: -0.04em; margin-bottom: 16px; }
     #s3 p.lead { max-width: 520px; margin: 0 auto; text-align: center; font-size: 1.2rem; }
-
-    /* ── S4 comparison ────────────────────────────────────── */
-    .compare-col-label {
-      font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
-      letter-spacing: 0.14em; margin-bottom: 12px;
-    }
-    .compare-boxes { display: flex; flex-direction: column; gap: 8px; }
-    .compare-box {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 10px; padding: 12px 14px;
-      font-size: 0.8rem; color: var(--muted); line-height: 1.45;
-    }
-
-    /* ── S5 roadmap ───────────────────────────────────────── */
-    .phase-tag {
-      font-size: 0.62rem; font-weight: 800; text-transform: uppercase;
-      letter-spacing: 0.1em; padding: 3px 9px; border-radius: 99px;
-      display: inline-block; margin-bottom: 10px;
-    }
-    .roadmap-card {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 14px; padding: 20px 18px;
-    }
-    .roadmap-card h3 { font-size: 1rem; font-weight: 700; color: var(--ink); margin-bottom: 8px; letter-spacing: -0.01em; }
-    .roadmap-card p  { font-size: 0.8rem; color: var(--muted); line-height: 1.5; }
 
     /* ── S6 Why SMEs ──────────────────────────────────────── */
     .why-bullets { list-style: none; display: flex; flex-direction: column; gap: 14px; margin: 20px 0; }
@@ -322,7 +337,7 @@
 
     /* ── S10 Embedded ─────────────────────────────────────── */
     .xero-tag {
-      display: inline-block; background: var(--surface2); border: 1px solid var(--border);
+      display: inline-block; background: var(--surface); border: 1px solid var(--border);
       border-radius: 8px; padding: 8px 14px; font-size: 0.75rem; font-weight: 600;
       color: var(--teal); margin-top: 16px; letter-spacing: 0.02em;
     }
@@ -341,20 +356,6 @@
     .team-card .person-name { font-size: 0.95rem; font-weight: 700; color: var(--ink); margin-bottom: 4px; }
     .team-card .person-role { font-size: 0.7rem; font-weight: 500; color: var(--teal); text-transform: uppercase; letter-spacing: 0.1em; }
 
-    /* ── S12 Commercial ───────────────────────────────────── */
-    .comm-card {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 14px; padding: 22px 20px;
-    }
-    .comm-card h3 { font-size: 1rem; font-weight: 700; color: var(--ink); margin-bottom: 14px; letter-spacing: -0.01em; }
-    .comm-card ul { list-style: none; display: flex; flex-direction: column; gap: 7px; }
-    .comm-card ul li {
-      font-size: 0.78rem; color: var(--muted); line-height: 1.5;
-      padding-left: 14px; position: relative;
-    }
-    .comm-card ul li::before { content: "·"; position: absolute; left: 2px; color: var(--teal); font-weight: 900; font-size: 1.1rem; line-height: 1.3; }
-    .comm-card .reg { font-size: 0.68rem; color: var(--dim); margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
-
     /* ── S13 Competitors table ────────────────────────────── */
     .comp-table {
       width: 100%; border-collapse: separate; border-spacing: 0;
@@ -364,9 +365,9 @@
     .comp-table .ch {
       background: var(--surface2); padding: 12px 16px;
       font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
-      letter-spacing: 0.1em; color: var(--dim);
+      letter-spacing: 0.1em; color: var(--muted);
     }
-    .comp-table .cc { background: var(--surface); padding: 14px 16px; font-size: 0.82rem; color: var(--muted); line-height: 1.45; }
+    .comp-table .cc { background: #fff; padding: 14px 16px; font-size: 0.82rem; color: var(--muted); line-height: 1.45; }
     .comp-table .cc.name  { color: var(--text); font-weight: 500; }
     .comp-table .cc.edge  { color: var(--teal); font-weight: 500; }
 
@@ -377,37 +378,186 @@
     .use-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px 16px; }
     .use-card .use-label { font-size: 0.75rem; font-weight: 700; color: var(--teal); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; }
     .use-card p { font-size: 0.8rem; color: var(--muted); line-height: 1.5; text-align: left; }
+
+    /* ── Appendix / Quiz ──────────────────────────────────── */
+    .quiz-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px;
+      margin-top: 24px;
+    }
+    .quiz-step { display: none; }
+    .quiz-step.active { display: block; }
+    .quiz-q {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--ink);
+      margin-bottom: 20px;
+    }
+    .quiz-options {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 10px;
+    }
+    .quiz-opt {
+      background: #fff;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--text);
+      transition: border-color 0.15s, background 0.15s;
+      text-align: left;
+    }
+    .quiz-opt:hover { border-color: var(--teal); background: var(--teal-dim); }
+    .quiz-opt.selected { border-color: var(--teal); background: var(--teal-dim); color: var(--teal); font-weight: 700; }
+    .quiz-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 24px;
+    }
+    .quiz-btn {
+      background: var(--teal);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 24px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      transition: opacity 0.15s;
+    }
+    .quiz-btn:hover { opacity: 0.85; }
+    .quiz-btn:disabled { opacity: 0.35; cursor: default; }
+    .quiz-btn-back {
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .quiz-progress {
+      font-size: 0.72rem;
+      color: var(--dim);
+      font-weight: 500;
+    }
+    .quiz-results { display: none; }
+    .quiz-results.active { display: block; }
+    .result-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 20px; }
+    .result-card {
+      background: #fff;
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 16px;
+    }
+    .result-card.recommended { border-color: var(--teal); }
+    .result-card.required { border-color: var(--rose); }
+    .result-tag {
+      font-size: 0.6rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 3px 8px;
+      border-radius: 99px;
+      display: inline-block;
+      margin-bottom: 8px;
+    }
+    .tag-required { background: #FFF1F2; color: var(--rose); }
+    .tag-recommended { background: var(--teal-dim); color: var(--teal); }
+    .tag-optional { background: var(--surface2); color: var(--muted); }
+    .result-card h4 { font-size: 0.88rem; font-weight: 700; color: var(--ink); margin-bottom: 4px; }
+    .result-card p { font-size: 0.75rem; color: var(--muted); line-height: 1.45; }
+    .quiz-restart {
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 18px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      font-family: inherit;
+      margin-top: 20px;
+    }
+
+    /* ── S1 photo layout ──────────────────────────────────── */
+    .hero-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+      align-items: center;
+    }
+    .hero-photo {
+      border-radius: 20px;
+      overflow: hidden;
+      height: 420px;
+      position: relative;
+    }
+    .hero-photo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .hero-photo-credit {
+      position: absolute;
+      bottom: 10px;
+      right: 12px;
+      font-size: 0.6rem;
+      color: rgba(255,255,255,0.5);
+    }
   </style>
 </head>
 <body>
 
 <nav class="dots" id="nav-dots">
-  <a href="#s1"  title="The Problem"></a>
-  <a href="#s2"  title="The Agentic Era"></a>
-  <a href="#s3"  title="Meet Denney"></a>
-  <a href="#s4"  title="Customer's Side"></a>
-  <a href="#s5"  title="Product Roadmap"></a>
-  <a href="#s6"  title="Why SMEs"></a>
-  <a href="#s7"  title="Architecture"></a>
-  <a href="#s8"  title="Compliance"></a>
-  <a href="#s9"  title="Distribution: AEO"></a>
-  <a href="#s10" title="Distribution: Embedded"></a>
-  <a href="#s11" title="Team"></a>
-  <a href="#s12" title="Commercial Roadmap"></a>
-  <a href="#s13" title="Competitors"></a>
-  <a href="#s14" title="The Raise"></a>
+  <a href="#s1"  title="01"></a>
+  <a href="#s2"  title="02"></a>
+  <a href="#s3"  title="03"></a>
+  <a href="#s4"  title="04"></a>
+  <a href="#s5"  title="05"></a>
+  <a href="#s6"  title="06"></a>
+  <a href="#s7"  title="07"></a>
+  <a href="#s8"  title="08"></a>
+  <a href="#s9"  title="09"></a>
+  <a href="#s10" title="10"></a>
+  <a href="#s11" title="11"></a>
+  <a href="#s12" title="12"></a>
+  <a href="#s13" title="13"></a>
+  <a href="#s14" title="14"></a>
+  <a href="#s-appendix" title="A"></a>
 </nav>
 
 
 <!-- ═══════════════════════════════════════════════════════════
-     01 — A £16 Billion Mess
+     01
      ═══════════════════════════════════════════════════════════ -->
 <section id="s1">
   <div class="slide-inner">
-    <div class="slide-num fi">01 / The Problem</div>
-    <h1 class="fi">A <span class="accent-rose">£16 Billion</span> Mess<span style="color:var(--muted);font-weight:400">*</span></h1>
-    <p class="lead fi">Business insurance is a mess. Cover is made up of multiple policies from multiple carriers, written in arcane language and shared as pdf attachments. Without the time to unravel it, SMEs are left exposed to under-insurance, duplicate cover, and opportunistic pricing.</p>
-    <p class="footnote fi">* £16 billion is the market size of UK SME insurance in gross written premium</p>
+    <div class="hero-layout">
+      <div>
+        <div class="slide-num fi">01</div>
+        <h1 class="fi">A <span class="accent-rose">£16 Billion</span> Mess<span style="color:var(--dim);font-weight:400">*</span></h1>
+        <p class="lead fi">Business insurance is a mess. Cover is made up of multiple policies from multiple carriers, written in arcane language and shared as pdf attachments. Without the time to unravel it, SMEs are left exposed to under-insurance, duplicate cover, and opportunistic pricing.</p>
+        <p class="footnote fi">* £16 billion is the market size of UK SME insurance in gross written premium</p>
+      </div>
+      <div class="hero-photo fi">
+        <img
+          src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&w=800&q=80"
+          alt="Small business owner at work"
+          onerror="this.parentElement.style.background='var(--surface2)';this.style.display='none';"
+        />
+      </div>
+    </div>
   </div>
   <div class="scroll-hint">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
@@ -417,42 +567,60 @@
 
 
 <!-- ═══════════════════════════════════════════════════════════
-     02 — Agent-to-Agent Era
+     02
      ═══════════════════════════════════════════════════════════ -->
 <section id="s2">
   <div class="slide-inner">
-    <div class="slide-num fi">02 / Market Timing</div>
-    <h2 class="fi"><span class="accent-blue">Agent-to-Agent Era</span></h2>
+    <div class="slide-num fi">02</div>
+    <h2 class="fi">The future of business insurance is <span class="accent-blue">agentic.</span></h2>
 
-    <div class="era-timeline fi">
-      <div class="era-col">
-        <div class="era-marker now">Now</div>
-        <div class="era-title">Co-Pilot Era</div>
-        <div class="era-body">AI is used at the margins of insurance. SMEs leverage AI-powered tools to inform decisions; brokers and carriers upgrade customer services chatbots and automate simple process steps in claims. The broking paradigm is unchanged.</div>
+    <div class="step-grid fi">
+
+      <!-- Horizon 1: Co-Pilot -->
+      <div class="step-col">
+        <div class="step-bar" style="background:var(--teal);">
+          <span class="step-bar-label">Co-Pilot Era</span>
+        </div>
+        <div class="step-body">
+          <div class="now-indicator" style="margin-bottom:10px;">
+            <div class="now-dot"></div>
+            We are here
+          </div>
+          <p>AI is used at the margins of insurance. SMEs leverage AI-powered tools to inform decisions; brokers and carriers upgrade customer services chatbots and automate simple process steps in claims. The broking paradigm is unchanged.</p>
+        </div>
       </div>
-      <div class="era-col">
-        <div class="era-marker mid">→</div>
-        <div class="era-title">Interregnum</div>
-        <div class="era-body">Early adopters begin turning over control to agents, allowing access to policy documents, inboxes, and data stores. Agents sometimes interact with insurance providers on SMEs behalf – but mainly through today's web interfaces and without authority to transact.</div>
+
+      <!-- Horizon 2: Interregnum -->
+      <div class="step-col">
+        <div class="step-bar" style="background:var(--blue);">
+          <span class="step-bar-label">Interregnum</span>
+        </div>
+        <div class="step-body">
+          <p>Early adopters begin turning over control to agents, allowing access to policy documents, inboxes, and data stores. Agents sometimes interact with insurance providers on SMEs behalf – but mainly through today's web interfaces and without authority to transact.</p>
+        </div>
       </div>
-      <div class="era-col">
-        <div class="era-marker future">?</div>
-        <div class="era-title">Agent-to-Agent Era</div>
-        <div class="era-body">Agents can take decisions and make payments on SMEs' behalf. All current forms of intermediation (including traditional broking, price comparison, &amp; Google search) are superseded. Carriers and MGAs have MCPs, meaning SMEs' agents can interact with minimal friction based on a new FCA regulatory framework.</div>
+
+      <!-- Horizon 3: Agent-to-Agent -->
+      <div class="step-col">
+        <div class="step-bar" style="background:var(--purple);">
+          <span class="step-bar-label">Agent-to-Agent Era</span>
+        </div>
+        <div class="step-body">
+          <p>Agents can take decisions and make payments on SMEs' behalf. All current forms of intermediation (including traditional broking, price comparison, &amp; Google search) are superseded. Carriers and MGAs have MCPs, meaning SMEs' agents can interact with minimal friction based on a new FCA regulatory framework.</p>
+        </div>
       </div>
+
     </div>
-
-    <p class="era-tagline fi">The future of business insurance is agentic.</p>
   </div>
 </section>
 
 
 <!-- ═══════════════════════════════════════════════════════════
-     03 — Meet Denney
+     03
      ═══════════════════════════════════════════════════════════ -->
 <section id="s3">
   <div class="slide-inner">
-    <div class="slide-num fi" style="text-align:center">03 / The Product</div>
+    <div class="slide-num fi" style="text-align:center">03</div>
     <h1 class="fi accent-teal">Meet Denney</h1>
     <p class="lead fi">The agentic insurance broker for businesses.</p>
   </div>
@@ -460,74 +628,88 @@
 
 
 <!-- ═══════════════════════════════════════════════════════════
-     04 — On the customer's side
+     04
      ═══════════════════════════════════════════════════════════ -->
 <section id="s4">
-  <div class="slide-inner">
-    <div class="slide-num fi">04 / The Difference</div>
+  <div class="slide-inner" style="text-align:center;max-width:680px;">
+    <div class="slide-num fi" style="text-align:center">04</div>
     <h2 class="fi">Denney is on the <span class="accent-teal">customer's side.</span></h2>
-    <p class="lead fi">Like a traditional broker, Denney looks at the full picture and makes proactive suggestions about purchases, renewals, switching, MTAs and claims – but without being influenced by commission rates.</p>
-
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:8px;" class="fi">
-      <div>
-        <div class="compare-col-label" style="color:var(--muted)">Traditional broker</div>
-        <div class="compare-boxes">
-          <div class="compare-box">Paid by insurers via commission — incentives structurally misaligned with the customer.</div>
-          <div class="compare-box">Capacity constrained — a human can manage a finite book; advice degrades as the book scales.</div>
-          <div class="compare-box">Reactive — waits for renewal or a claim; rarely proactive about gaps or switching.</div>
-          <div class="compare-box">Opaque reasoning — you take their word for it; you can't see how a recommendation was reached.</div>
-        </div>
-      </div>
-      <div>
-        <div class="compare-col-label" style="color:var(--teal)">Denney</div>
-        <div class="compare-boxes">
-          <div class="compare-box" style="border-color:var(--teal);background:var(--teal-dim);color:var(--text)">Commission-free recommendations. Denney's interest is aligned with the customer's — not the insurer's.</div>
-          <div class="compare-box" style="border-color:var(--teal)">Unlimited scale — every customer gets the same depth of advice, instantly, at any time.</div>
-          <div class="compare-box" style="border-color:var(--teal)">Proactive — monitors all policies continuously and flags issues before they become losses.</div>
-          <div class="compare-box" style="border-color:var(--teal)">Citable — every answer references the exact policy clause it came from. Full audit trail.</div>
-        </div>
-      </div>
-    </div>
+    <p class="lead fi" style="margin:0 auto 24px;">Like a traditional broker, Denney looks at the full picture and makes proactive suggestions about purchases, renewals, switching, MTAs and claims – but without being influenced by commission rates.</p>
   </div>
 </section>
 
 
 <!-- ═══════════════════════════════════════════════════════════
-     05 — Product roadmap
+     05
      ═══════════════════════════════════════════════════════════ -->
 <section id="s5">
   <div class="slide-inner">
-    <div class="slide-num fi">05 / Roadmap</div>
+    <div class="slide-num fi">05</div>
     <h2 class="fi">Denney <span class="accent-amber">product roadmap.</span></h2>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;" class="fi">
-      <div class="roadmap-card">
-        <div class="phase-tag" style="background:var(--teal-dim);color:var(--teal);">Phase 1 — Now</div>
-        <h3>Smart Wallet</h3>
-        <p>Email policy documents straight to your wallet and chat to them. Find the right cover for your business with intelligent product feature comparison. Get help when you need to make a decision about renewals and claims. Available via web and ecosystem apps (inc. ChatGPT).</p>
+
+    <div class="step-grid fi">
+
+      <!-- Phase 1 -->
+      <div class="step-col">
+        <div class="step-bar" style="background:var(--teal);">
+          <span class="step-bar-label">Smart Wallet</span>
+        </div>
+        <div class="step-body">
+          <h3><a href="#s-appendix" style="color:inherit;text-decoration:none;border-bottom:1px dashed var(--teal);" title="See prototype">Smart Wallet</a></h3>
+          <p>Email policy documents straight to your wallet and chat to them. Find the right cover for your business with intelligent product feature comparison. Get help when you need to make a decision about renewals and claims. Available via web and ecosystem apps (inc. ChatGPT).</p>
+        </div>
       </div>
-      <div class="roadmap-card">
-        <div class="phase-tag" style="background:var(--blue-dim);color:var(--blue);">Phase 2 — Next</div>
-        <h3>Agentic Broker v1</h3>
-        <p>Proactively flags cover gaps, under-insurance and duplicate cover. Recommends tailored cover from own panel. Alerts you to notifiable events as your business evolves by connecting to banking or accounting software. Available via web, ecosystem apps, WhatsApp, Teams, &amp; Slack.</p>
+
+      <!-- Phase 2 -->
+      <div class="step-col">
+        <div class="step-bar" style="background:var(--blue);">
+          <span class="step-bar-label">Agentic Broker v1</span>
+        </div>
+        <div class="step-body">
+          <h3>Agentic Broker v1</h3>
+          <p>Proactively flags cover gaps, under-insurance and duplicate cover. Recommends tailored cover from own panel. Alerts you to notifiable events as your business evolves by connecting to banking or accounting software. Available via web, ecosystem apps, WhatsApp, Teams, &amp; Slack.</p>
+        </div>
       </div>
-      <div class="roadmap-card" style="border-color:var(--teal);background:var(--teal-dim)">
-        <div class="phase-tag" style="background:rgba(13,184,174,0.15);color:var(--teal);">Phase 3 — Future</div>
-        <h3>Agentic Broker v2</h3>
-        <p>Authorised to monitor cover, recommend product switches, request MTAs, and challenge renewal quotes. Makes purchases and claims with user approval. Can distribute own-label products. Available everywhere.</p>
+
+      <!-- Phase 3 -->
+      <div class="step-col" style="border-color:var(--teal);">
+        <div class="step-bar" style="background:var(--purple);">
+          <span class="step-bar-label">Agentic Broker v2</span>
+        </div>
+        <div class="step-body">
+          <h3>Agentic Broker v2</h3>
+          <p>Authorised to monitor cover, recommend product switches, request MTAs, and challenge renewal quotes. Makes purchases and claims with user approval. Can distribute own-label products. Available everywhere.</p>
+        </div>
       </div>
+
     </div>
   </div>
 </section>
 
 
 <!-- ═══════════════════════════════════════════════════════════
-     06 — Why SMEs
+     06
      ═══════════════════════════════════════════════════════════ -->
 <section id="s6">
   <div class="slide-inner">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:start;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;">
+
+      <!-- Left: chart / photo -->
+      <div class="fi">
+        <div style="border-radius:16px;overflow:hidden;height:360px;position:relative;background:var(--surface2);">
+          <img
+            src="https://images.unsplash.com/photo-1521737711867-e3b97375f902?auto=format&fit=crop&w=700&q=80"
+            alt="UK small business"
+            style="width:100%;height:100%;object-fit:cover;display:block;"
+            onerror="this.style.display='none';"
+          />
+          <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 60%,rgba(255,255,255,0.6));"></div>
+        </div>
+      </div>
+
+      <!-- Right: text -->
       <div>
-        <div class="slide-num fi">06 / Market Focus</div>
+        <div class="slide-num fi">06</div>
         <h2 class="fi">Why <span class="accent-green">SMEs?</span></h2>
         <ul class="why-bullets fi">
           <li>Business insurance is the second-largest category of demand for AI insurance assistance in the UK</li>
@@ -535,25 +717,18 @@
         </ul>
         <p class="footnote fi">Data source: SimilarWeb / Balance</p>
       </div>
-      <div class="fi" style="padding-top:48px;">
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px;text-align:center;">
-          <div style="font-size:0.68rem;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--teal);margin-bottom:12px;">Target customers.</div>
-          <div style="width:100%;height:140px;background:var(--surface2);border-radius:8px;display:flex;align-items:center;justify-content:center;">
-            <span style="font-size:0.75rem;color:var(--dim)">Chart</span>
-          </div>
-        </div>
-      </div>
+
     </div>
   </div>
 </section>
 
 
 <!-- ═══════════════════════════════════════════════════════════
-     07 — MCP-driven Architecture
+     07
      ═══════════════════════════════════════════════════════════ -->
 <section id="s7">
   <div class="slide-inner">
-    <div class="slide-num fi">07 / How It Works</div>
+    <div class="slide-num fi">07</div>
     <h2 class="fi"><span class="accent-blue">MCP-driven</span> Architecture.</h2>
 
     <div class="arch-layout fi">
@@ -630,11 +805,11 @@
 
 
 <!-- ═══════════════════════════════════════════════════════════
-     08 — Compliance
+     08
      ═══════════════════════════════════════════════════════════ -->
 <section id="s8">
   <div class="slide-inner">
-    <div class="slide-num fi">08 / Regulatory</div>
+    <div class="slide-num fi">08</div>
     <h2 class="fi">Compliance<span class="accent-purple">.</span></h2>
 
     <div class="arch-flow fi">
@@ -696,11 +871,11 @@
 
 
 <!-- ═══════════════════════════════════════════════════════════
-     09 — Distribution #1: AEO
+     09
      ═══════════════════════════════════════════════════════════ -->
 <section id="s9">
   <div class="slide-inner">
-    <div class="slide-num fi">09 / Distribution #1</div>
+    <div class="slide-num fi">09</div>
     <h2 class="fi">Distribution #1: <span class="accent-purple">AEO.</span></h2>
     <ul class="aeo-bullets fi">
       <li>ChatGPT is now the second-biggest referrer of traffic to the financial services category, surpassing all comparison sites.</li>
@@ -713,21 +888,158 @@
 
 
 <!-- ═══════════════════════════════════════════════════════════
-     10 — Distribution #2: Embedded
+     10
      ═══════════════════════════════════════════════════════════ -->
 <section id="s10">
   <div class="slide-inner">
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:52px;align-items:center;">
       <div>
-        <div class="slide-num fi">10 / Distribution #2</div>
+        <div class="slide-num fi">10</div>
         <h2 class="fi">Distribution #2: <span class="accent-blue">Embedded.</span></h2>
         <p class="lead fi">MCP-driven architecture also enables embedded distribution through software platforms with established user bases.</p>
         <p class="lead fi">In the US, Next Insurance's integration with QuickBooks shows that embedded solutions that leverage platform data into insurance offers brings new customers into the market*</p>
         <p class="footnote fi">* c.40% of Next Insurance customers have never bought insurance before</p>
       </div>
-      <div class="fi" style="display:flex;flex-direction:column;align-items:center;gap:12px;">
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;width:100%;aspect-ratio:16/10;display:flex;align-items:center;justify-content:center;">
-          <span style="font-size:0.75rem;color:var(--dim)">Screenshot</span>
+      <div class="fi" style="display:flex;flex-direction:column;align-items:center;gap:10px;">
+        <!-- Xero app mockup -->
+        <div style="width:100%;border-radius:10px;overflow:hidden;border:1px solid #e5e7eb;font-family:'Inter',sans-serif;display:flex;flex-direction:row;background:#fff;box-shadow:0 4px 24px rgba(0,0,0,0.10);">
+
+          <!-- Left panel -->
+          <div style="width:52%;background:#fff;border-right:1px solid #e5e7eb;overflow:hidden;">
+
+            <!-- Company header -->
+            <div style="background:#4F46E5;padding:7px 10px;display:flex;justify-content:space-between;align-items:center;">
+              <div>
+                <div style="color:#fff;font-size:8px;font-weight:700;">Demo Company (UK)</div>
+                <div style="color:#c7d2fe;font-size:6px;">Reg: 02181833</div>
+              </div>
+              <div style="background:rgba(255,255,255,0.2);border-radius:12px;padding:3px 7px;color:#fff;font-size:6px;font-weight:600;display:flex;align-items:center;gap:3px;">
+                <div style="width:6px;height:6px;border-radius:50%;background:#0DB8AE;"></div>
+                Disconnect
+              </div>
+            </div>
+
+            <!-- Company stats -->
+            <div style="padding:5px 10px;display:grid;grid-template-columns:repeat(5,1fr);gap:2px;border-bottom:1px solid #f0f0f0;">
+              <div><div style="color:#6b7280;font-size:5px;">Revenue</div><div style="color:#111;font-size:6px;font-weight:600;">£14k</div></div>
+              <div><div style="color:#6b7280;font-size:5px;">Employees</div><div style="color:#111;font-size:6px;font-weight:600;">3</div></div>
+              <div><div style="color:#6b7280;font-size:5px;">Annual Payroll</div><div style="color:#111;font-size:6px;font-weight:600;">£200k</div></div>
+              <div><div style="color:#6b7280;font-size:5px;">Fixed Assets</div><div style="color:#111;font-size:6px;font-weight:600;">£3k</div></div>
+              <div><div style="color:#6b7280;font-size:5px;">Industry</div><div style="color:#111;font-size:6px;font-weight:600;">Technology</div></div>
+            </div>
+
+            <div style="padding:4px 10px 3px;font-size:5.5px;color:#374151;line-height:1.4;border-bottom:1px solid #f0f0f0;">Upload your existing policies and we'll manage them for you. We've listed the cover you should consider — use the chat to get a quote at the click of a button.</div>
+
+            <!-- Policy cards grid -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:#e5e7eb;">
+
+              <!-- Employers Liability - Covered -->
+              <div style="background:#fff;padding:6px 8px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">
+                  <span style="font-size:6px;font-weight:700;color:#111;">Employers' Liability</span>
+                  <span style="font-size:5px;color:#16a34a;font-weight:600;">✓ Covered</span>
+                </div>
+                <div style="font-size:5px;color:#374151;margin-bottom:2px;line-height:1.3;">Covers employee injury or illness claims against the business.</div>
+                <div style="font-size:5px;color:#6b7280;font-style:italic;margin-bottom:4px;line-height:1.3;">Legally required for any business with employees (UK law).</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px;margin-bottom:4px;">
+                  <div><div style="color:#9ca3af;font-size:4.5px;">Premium</div><div style="color:#111;font-size:5px;font-weight:600;">£600/yr</div></div>
+                  <div><div style="color:#9ca3af;font-size:4.5px;">Cover</div><div style="color:#111;font-size:5px;font-weight:600;">£10,000,000</div></div>
+                  <div><div style="color:#9ca3af;font-size:4.5px;">Renews</div><div style="color:#16a34a;font-size:5px;font-weight:600;">01 Apr 2027</div></div>
+                </div>
+                <div style="display:flex;gap:3px;">
+                  <div style="background:#4F46E5;color:#fff;font-size:5px;font-weight:600;padding:2px 6px;border-radius:4px;">Get Quote</div>
+                  <div style="border:1px solid #d1d5db;color:#374151;font-size:5px;font-weight:600;padding:2px 6px;border-radius:4px;">Upload Policy</div>
+                </div>
+              </div>
+
+              <!-- Public Liability -->
+              <div style="background:#fff;padding:6px 8px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">
+                  <span style="font-size:6px;font-weight:700;color:#111;">Public Liability</span>
+                  <span style="font-size:5px;color:#dc2626;font-weight:600;">✗ Not covered</span>
+                </div>
+                <div style="font-size:5px;color:#374151;margin-bottom:2px;line-height:1.3;">Covers third-party injury or property damage claims against the business.</div>
+                <div style="font-size:5px;color:#6b7280;font-style:italic;margin-bottom:8px;line-height:1.3;">Recommended for all client-facing and public-facing businesses.</div>
+                <div style="display:flex;gap:3px;margin-top:auto;">
+                  <div style="background:#4F46E5;color:#fff;font-size:5px;font-weight:600;padding:2px 6px;border-radius:4px;">Get Quote</div>
+                  <div style="border:1px solid #d1d5db;color:#374151;font-size:5px;font-weight:600;padding:2px 6px;border-radius:4px;">Upload Policy</div>
+                </div>
+              </div>
+
+              <!-- Professional Indemnity -->
+              <div style="background:#fff;padding:6px 8px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">
+                  <span style="font-size:6px;font-weight:700;color:#111;">Professional Indemnity</span>
+                  <span style="font-size:5px;color:#dc2626;font-weight:600;">✗ Not covered</span>
+                </div>
+                <div style="font-size:5px;color:#374151;margin-bottom:2px;line-height:1.3;">Covers negligence claims from clients for errors in professional advice or services.</div>
+                <div style="font-size:5px;color:#6b7280;font-style:italic;margin-bottom:4px;line-height:1.3;">Essential for consultants, advisors, and any business selling expertise.</div>
+                <div style="display:flex;gap:3px;">
+                  <div style="background:#4F46E5;color:#fff;font-size:5px;font-weight:600;padding:2px 6px;border-radius:4px;">Get Quote</div>
+                  <div style="border:1px solid #d1d5db;color:#374151;font-size:5px;font-weight:600;padding:2px 6px;border-radius:4px;">Upload Policy</div>
+                </div>
+              </div>
+
+              <!-- Cyber Liability -->
+              <div style="background:#fff;padding:6px 8px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">
+                  <span style="font-size:6px;font-weight:700;color:#111;">Cyber Liability</span>
+                  <span style="font-size:5px;color:#dc2626;font-weight:600;">✗ Not covered</span>
+                </div>
+                <div style="font-size:5px;color:#374151;margin-bottom:2px;line-height:1.3;">Covers data breaches, ransomware, cyber attacks, and IT business interruption.</div>
+                <div style="font-size:5px;color:#6b7280;font-style:italic;margin-bottom:8px;line-height:1.3;">Recommended for any business that holds customer or employee data.</div>
+                <div style="display:flex;gap:3px;">
+                  <div style="background:#4F46E5;color:#fff;font-size:5px;font-weight:600;padding:2px 6px;border-radius:4px;">Get Quote</div>
+                  <div style="border:1px solid #d1d5db;color:#374151;font-size:5px;font-weight:600;padding:2px 6px;border-radius:4px;">Upload Policy</div>
+                </div>
+              </div>
+
+              <!-- Directors & Officers -->
+              <div style="background:#fff;padding:6px 8px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">
+                  <span style="font-size:6px;font-weight:700;color:#111;">Directors &amp; Officers</span>
+                  <span style="font-size:5px;color:#dc2626;font-weight:600;">✗ Not covered</span>
+                </div>
+                <div style="font-size:5px;color:#374151;margin-bottom:2px;line-height:1.3;">Covers personal liability of directors and officers for management decisions.</div>
+                <div style="font-size:5px;color:#6b7280;font-style:italic;margin-bottom:8px;line-height:1.3;">Recommended for any company with a board, investors, or external shareholders.</div>
+                <div style="display:flex;gap:3px;">
+                  <div style="background:#4F46E5;color:#fff;font-size:5px;font-weight:600;padding:2px 6px;border-radius:4px;">Get Quote</div>
+                  <div style="border:1px solid #d1d5db;color:#374151;font-size:5px;font-weight:600;padding:2px 6px;border-radius:4px;">Upload Policy</div>
+                </div>
+              </div>
+
+              <!-- Commercial Property -->
+              <div style="background:#fff;padding:6px 8px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">
+                  <span style="font-size:6px;font-weight:700;color:#111;">Commercial Property</span>
+                  <span style="font-size:5px;color:#dc2626;font-weight:600;">✗ Not covered</span>
+                </div>
+                <div style="font-size:5px;color:#374151;margin-bottom:2px;line-height:1.3;">Covers damage to premises, equipment, and stock. Often includes business interruption.</div>
+                <div style="font-size:5px;color:#6b7280;font-style:italic;margin-bottom:8px;line-height:1.3;">Recommended for businesses with significant physical assets or owned/leased premises.</div>
+                <div style="display:flex;gap:3px;">
+                  <div style="background:#4F46E5;color:#fff;font-size:5px;font-weight:600;padding:2px 6px;border-radius:4px;">Get Quote</div>
+                  <div style="border:1px solid #d1d5db;color:#374151;font-size:5px;font-weight:600;padding:2px 6px;border-radius:4px;">Upload Policy</div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Right panel: chat -->
+          <div style="width:48%;background:#f9fafb;display:flex;flex-direction:column;">
+            <div style="padding:8px 10px;border-bottom:1px solid #e5e7eb;background:#fff;">
+              <div style="font-size:7px;font-weight:700;color:#111;margin-bottom:2px;">Commercial Insurance Broker</div>
+              <div style="font-size:5.5px;color:#6b7280;line-height:1.4;">Ask me anything about your policies — cover details, exclusions, renewals, how to claim, or whether you need additional cover. I can also help you compare quotes and prepare for renewal conversations with your insurer.</div>
+            </div>
+            <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:12px;">
+              <div style="text-align:center;color:#9ca3af;font-size:6px;line-height:1.6;max-width:140px;">Ask me about your company's insurance coverage, gaps, or get indicative quotes for commercial policies.</div>
+            </div>
+            <div style="padding:6px 8px;border-top:1px solid #e5e7eb;background:#fff;display:flex;align-items:center;gap:4px;">
+              <div style="flex:1;background:#f3f4f6;border-radius:6px;padding:4px 7px;font-size:5.5px;color:#9ca3af;">Ask about coverage, gaps, or request a quote...</div>
+              <div style="background:#4F46E5;color:#fff;font-size:5.5px;font-weight:700;padding:3px 8px;border-radius:5px;">Send</div>
+            </div>
+          </div>
+
         </div>
         <span class="xero-tag">Denney Xero App (working prototype)</span>
       </div>
@@ -737,11 +1049,11 @@
 
 
 <!-- ═══════════════════════════════════════════════════════════
-     11 — Team
+     11
      ═══════════════════════════════════════════════════════════ -->
 <section id="s11">
   <div class="slide-inner">
-    <div class="slide-num fi">11 / Team</div>
+    <div class="slide-num fi">11</div>
     <h2 class="fi">We got the <span class="accent-teal">Bought By Many</span> band back together.</h2>
     <div class="team-grid fi">
       <div class="team-card">
@@ -770,51 +1082,74 @@
 
 
 <!-- ═══════════════════════════════════════════════════════════
-     12 — Commercial roadmap
+     12
      ═══════════════════════════════════════════════════════════ -->
 <section id="s12">
   <div class="slide-inner">
-    <div class="slide-num fi">12 / Commercial Model</div>
+    <div class="slide-num fi">12</div>
     <h2 class="fi">Commercial <span class="accent-amber">roadmap.</span></h2>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;" class="fi">
-      <div class="comm-card">
-        <h3>Affiliate Model</h3>
-        <ul>
-          <li>Monetize new business referrals to insurance providers through affiliate platforms (e.g. AWIN)</li>
-          <li>License insurance product and pricing data from specialist third parties (e.g. Defaqto)</li>
-          <li>Build direct insurance relationships needed to establish TOBAs with MGAs and carriers.</li>
-        </ul>
-        <div class="reg">Regulatory status: Introducer Appointed Representative</div>
+
+    <div class="step-grid fi">
+
+      <!-- Affiliate Model -->
+      <div class="step-col">
+        <div class="step-bar" style="background:var(--muted);">
+          <span class="step-bar-label">Affiliate Model</span>
+        </div>
+        <div class="step-body">
+          <h3>Affiliate Model</h3>
+          <ul style="list-style:none;display:flex;flex-direction:column;gap:7px;margin-bottom:12px;">
+            <li style="font-size:0.78rem;color:var(--muted);line-height:1.5;padding-left:14px;position:relative;"><span style="position:absolute;left:2px;color:var(--teal);font-weight:900;font-size:1.1rem;line-height:1.3;">·</span>Monetize new business referrals to insurance providers through affiliate platforms (e.g. AWIN)</li>
+            <li style="font-size:0.78rem;color:var(--muted);line-height:1.5;padding-left:14px;position:relative;"><span style="position:absolute;left:2px;color:var(--teal);font-weight:900;font-size:1.1rem;line-height:1.3;">·</span>License insurance product and pricing data from specialist third parties (e.g. Defaqto)</li>
+            <li style="font-size:0.78rem;color:var(--muted);line-height:1.5;padding-left:14px;position:relative;"><span style="position:absolute;left:2px;color:var(--teal);font-weight:900;font-size:1.1rem;line-height:1.3;">·</span>Build direct insurance relationships needed to establish TOBAs with MGAs and carriers.</li>
+          </ul>
+          <div style="font-size:0.68rem;color:var(--dim);padding-top:10px;border-top:1px solid var(--border);">Regulatory status: Introducer Appointed Representative</div>
+        </div>
       </div>
-      <div class="comm-card">
-        <h3>Broker Model</h3>
-        <ul>
-          <li>Monetize new business and renewals primarily through panel of MGAs and carriers.</li>
-          <li>Replace data licenses with product and pricing data feeds from panel.</li>
-          <li>Develop reputation with carriers by demonstrating profitable portfolio growth near live data feeds</li>
-        </ul>
-        <div class="reg">Regulatory status: Appointed Representative then directly authorised by the FCA</div>
+
+      <!-- Broker Model -->
+      <div class="step-col">
+        <div class="step-bar" style="background:var(--blue);">
+          <span class="step-bar-label">Broker Model</span>
+        </div>
+        <div class="step-body">
+          <h3>Broker Model</h3>
+          <ul style="list-style:none;display:flex;flex-direction:column;gap:7px;margin-bottom:12px;">
+            <li style="font-size:0.78rem;color:var(--muted);line-height:1.5;padding-left:14px;position:relative;"><span style="position:absolute;left:2px;color:var(--teal);font-weight:900;font-size:1.1rem;line-height:1.3;">·</span>Monetize new business and renewals primarily through panel of MGAs and carriers.</li>
+            <li style="font-size:0.78rem;color:var(--muted);line-height:1.5;padding-left:14px;position:relative;"><span style="position:absolute;left:2px;color:var(--teal);font-weight:900;font-size:1.1rem;line-height:1.3;">·</span>Replace data licenses with product and pricing data feeds from panel.</li>
+            <li style="font-size:0.78rem;color:var(--muted);line-height:1.5;padding-left:14px;position:relative;"><span style="position:absolute;left:2px;color:var(--teal);font-weight:900;font-size:1.1rem;line-height:1.3;">·</span>Develop reputation with carriers by demonstrating profitable portfolio growth near live data feeds</li>
+          </ul>
+          <div style="font-size:0.68rem;color:var(--dim);padding-top:10px;border-top:1px solid var(--border);">Regulatory status: Appointed Representative then directly authorised by the FCA</div>
+        </div>
       </div>
-      <div class="comm-card" style="border-color:var(--teal);background:var(--teal-dim)">
-        <h3>Broker-MGA model</h3>
-        <ul>
-          <li>Filter share of new business and renewals to own MGA, insurer panel members, depending on customer's best interest.</li>
-          <li>Leverage insights from MGA claims data to optimize filtering.</li>
-          <li>Use AI-driven opex savings to enable aggressive new business pricing in priority segments.</li>
-        </ul>
-        <div class="reg" style="border-color:rgba(13,184,174,0.2);color:var(--teal);opacity:0.8">Regulatory status: Directly authorised by the FCA</div>
+
+      <!-- Broker-MGA model -->
+      <div class="step-col" style="border-color:var(--teal);">
+        <div class="step-bar" style="background:var(--teal);">
+          <span class="step-bar-label">Broker-MGA model</span>
+        </div>
+        <div class="step-body">
+          <h3>Broker-MGA model</h3>
+          <ul style="list-style:none;display:flex;flex-direction:column;gap:7px;margin-bottom:12px;">
+            <li style="font-size:0.78rem;color:var(--muted);line-height:1.5;padding-left:14px;position:relative;"><span style="position:absolute;left:2px;color:var(--teal);font-weight:900;font-size:1.1rem;line-height:1.3;">·</span>Filter share of new business and renewals to own MGA, insurer panel members, depending on customer's best interest.</li>
+            <li style="font-size:0.78rem;color:var(--muted);line-height:1.5;padding-left:14px;position:relative;"><span style="position:absolute;left:2px;color:var(--teal);font-weight:900;font-size:1.1rem;line-height:1.3;">·</span>Leverage insights from MGA claims data to optimize filtering.</li>
+            <li style="font-size:0.78rem;color:var(--muted);line-height:1.5;padding-left:14px;position:relative;"><span style="position:absolute;left:2px;color:var(--teal);font-weight:900;font-size:1.1rem;line-height:1.3;">·</span>Use AI-driven opex savings to enable aggressive new business pricing in priority segments.</li>
+          </ul>
+          <div style="font-size:0.68rem;color:var(--teal);padding-top:10px;border-top:1px solid rgba(13,148,136,0.2);">Regulatory status: Directly authorised by the FCA</div>
+        </div>
       </div>
+
     </div>
   </div>
 </section>
 
 
 <!-- ═══════════════════════════════════════════════════════════
-     13 — Competitors
+     13
      ═══════════════════════════════════════════════════════════ -->
 <section id="s13">
   <div class="slide-inner">
-    <div class="slide-num fi">13 / Competitive Landscape</div>
+    <div class="slide-num fi">13</div>
     <h2 class="fi">Competitors<span class="accent-rose">?</span></h2>
     <div class="comp-table fi">
       <div class="ch">Competitor type</div>
@@ -831,7 +1166,7 @@
 
       <div class="cc name">Insurance wallets<br><span style="color:var(--muted);font-weight:400">(e.g. Rehuman)</span></div>
       <div class="cc">Early-stage with limited user traction. Focused on storage, not advocacy or autonomous action.</div>
-      <div class="cc edge">An active agent, not a passive wallet - plus the Bought By Many team.</div>
+      <div class="cc edge">An active agent, not a passive wallet — plus the Bought By Many team.</div>
 
       <div class="cc name">AI labs<br><span style="color:var(--muted);font-weight:400">(e.g. OpenAI, Anthropic)</span></div>
       <div class="cc">Insurance is too complicated for generalist agents to handle; labs don't want the regulatory overhead</div>
@@ -842,11 +1177,11 @@
 
 
 <!-- ═══════════════════════════════════════════════════════════
-     14 — The raise
+     14
      ═══════════════════════════════════════════════════════════ -->
 <section id="s14">
   <div class="slide-inner">
-    <div class="slide-num fi" style="text-align:center">14 / The Ask</div>
+    <div class="slide-num fi" style="text-align:center">14</div>
     <h1 class="fi">We are raising <span class="accent-teal">£5m</span> at <span class="accent-teal">£20m</span> pre.</h1>
     <div class="use-grid fi">
       <div class="use-card">
@@ -870,7 +1205,93 @@
 </section>
 
 
+<!-- ═══════════════════════════════════════════════════════════
+     Appendix — Intelligent product comparison
+     ═══════════════════════════════════════════════════════════ -->
+<section id="s-appendix">
+  <div class="slide-inner">
+    <div class="slide-num fi">Appendix</div>
+    <h2 class="fi">Intelligent product comparison: <span class="accent-purple">prototype.</span></h2>
+    <p class="lead fi" style="max-width:600px;">Answer four quick questions to see which commercial insurance products are relevant to your business.</p>
+
+    <div class="quiz-wrap fi">
+
+      <!-- Step 1 -->
+      <div class="quiz-step active" id="q1">
+        <div class="quiz-q">What is your business structure?</div>
+        <div class="quiz-options">
+          <button class="quiz-opt" data-val="limited">Limited Company</button>
+          <button class="quiz-opt" data-val="sole_trader">Sole Trader</button>
+          <button class="quiz-opt" data-val="partnership">Partnership</button>
+          <button class="quiz-opt" data-val="llp">LLP</button>
+        </div>
+        <div class="quiz-nav">
+          <span class="quiz-progress">1 of 4</span>
+          <button class="quiz-btn" id="next1" disabled>Next →</button>
+        </div>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="quiz-step" id="q2">
+        <div class="quiz-q">How many people does your business employ?</div>
+        <div class="quiz-options">
+          <button class="quiz-opt" data-val="0">Just me</button>
+          <button class="quiz-opt" data-val="1_9">1–9</button>
+          <button class="quiz-opt" data-val="10_49">10–49</button>
+          <button class="quiz-opt" data-val="50plus">50+</button>
+        </div>
+        <div class="quiz-nav">
+          <button class="quiz-btn-back" id="back2">← Back</button>
+          <span class="quiz-progress">2 of 4</span>
+          <button class="quiz-btn" id="next2" disabled>Next →</button>
+        </div>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="quiz-step" id="q3">
+        <div class="quiz-q">What best describes your work?</div>
+        <div class="quiz-options">
+          <button class="quiz-opt" data-val="professional">Professional / advisory services</button>
+          <button class="quiz-opt" data-val="retail">Retail / e-commerce</button>
+          <button class="quiz-opt" data-val="trade">Trade / construction</button>
+          <button class="quiz-opt" data-val="tech">Technology / SaaS</button>
+        </div>
+        <div class="quiz-nav">
+          <button class="quiz-btn-back" id="back3">← Back</button>
+          <span class="quiz-progress">3 of 4</span>
+          <button class="quiz-btn" id="next3" disabled>Next →</button>
+        </div>
+      </div>
+
+      <!-- Step 4 -->
+      <div class="quiz-step" id="q4">
+        <div class="quiz-q">Do you work from commercial premises (office, shop, workshop)?</div>
+        <div class="quiz-options">
+          <button class="quiz-opt" data-val="yes">Yes, we have commercial premises</button>
+          <button class="quiz-opt" data-val="no">No, home / remote only</button>
+        </div>
+        <div class="quiz-nav">
+          <button class="quiz-btn-back" id="back4">← Back</button>
+          <span class="quiz-progress">4 of 4</span>
+          <button class="quiz-btn" id="show-results" disabled>See my recommendations →</button>
+        </div>
+      </div>
+
+      <!-- Results -->
+      <div class="quiz-results" id="results">
+        <div style="font-size:1rem;font-weight:700;color:var(--ink);margin-bottom:4px;">Based on your answers</div>
+        <div id="results-summary" style="font-size:0.85rem;color:var(--muted);margin-bottom:0;"></div>
+        <div class="result-grid" id="results-grid"></div>
+        <button class="quiz-restart" id="restart">↩ Start again</button>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
 <script>
+  /* ── Intersection observers ─────────────────────────────── */
   const io = new IntersectionObserver(entries => {
     entries.forEach(e => { if (e.isIntersecting) e.target.classList.add("v"); });
   }, { threshold: 0.12 });
@@ -888,6 +1309,117 @@
     });
   }, { threshold: 0.5 });
   sections.forEach(s => sio.observe(s));
+
+  /* ── Quiz ───────────────────────────────────────────────── */
+  const answers = {};
+
+  function setupStep(stepId, nextBtnId, answerKey) {
+    const step = document.getElementById(stepId);
+    const nextBtn = document.getElementById(nextBtnId);
+    step.querySelectorAll(".quiz-opt").forEach(btn => {
+      btn.addEventListener("click", () => {
+        step.querySelectorAll(".quiz-opt").forEach(b => b.classList.remove("selected"));
+        btn.classList.add("selected");
+        answers[answerKey] = btn.dataset.val;
+        if (nextBtn) nextBtn.disabled = false;
+      });
+    });
+  }
+
+  function goTo(hideId, showId) {
+    document.getElementById(hideId).classList.remove("active");
+    document.getElementById(showId).classList.add("active");
+  }
+
+  setupStep("q1", "next1", "structure");
+  setupStep("q2", "next2", "employees");
+  setupStep("q3", "next3", "sector");
+  setupStep("q4", "show-results", "premises");
+
+  document.getElementById("next1").addEventListener("click", () => goTo("q1","q2"));
+  document.getElementById("next2").addEventListener("click", () => goTo("q2","q3"));
+  document.getElementById("next3").addEventListener("click", () => goTo("q3","q4"));
+  document.getElementById("back2").addEventListener("click", () => goTo("q2","q1"));
+  document.getElementById("back3").addEventListener("click", () => goTo("q3","q2"));
+  document.getElementById("back4").addEventListener("click", () => goTo("q4","q3"));
+
+  document.getElementById("show-results").addEventListener("click", () => {
+    const { structure, employees, sector, premises } = answers;
+    const hasEmployees = employees !== "0";
+    const isProfessional = ["professional","tech"].includes(sector);
+    const isPublicFacing = ["retail","trade"].includes(sector);
+    const hasPremises = premises === "yes";
+    const isLimited = ["limited","llp"].includes(structure);
+
+    const products = [
+      {
+        name: "Employers' Liability",
+        blurb: "Covers employee injury and illness claims against your business.",
+        level: hasEmployees ? "required" : "optional",
+        tag: hasEmployees ? "Required by law" : "Not applicable"
+      },
+      {
+        name: "Public Liability",
+        blurb: "Covers third-party injury or property damage arising from your business activities.",
+        level: isPublicFacing ? "required" : "recommended",
+        tag: isPublicFacing ? "Strongly recommended" : "Recommended"
+      },
+      {
+        name: "Professional Indemnity",
+        blurb: "Covers claims for errors in professional advice or services.",
+        level: isProfessional ? "required" : "optional",
+        tag: isProfessional ? "Strongly recommended" : "Consider if applicable"
+      },
+      {
+        name: "Cyber Liability",
+        blurb: "Covers data breaches, ransomware, and IT business interruption.",
+        level: sector === "tech" ? "required" : "recommended",
+        tag: sector === "tech" ? "Strongly recommended" : "Recommended"
+      },
+      {
+        name: "Directors & Officers",
+        blurb: "Covers personal liability of company directors for management decisions.",
+        level: isLimited ? "recommended" : "optional",
+        tag: isLimited ? "Recommended" : "Not applicable"
+      },
+      {
+        name: "Commercial Property",
+        blurb: "Covers damage to premises, equipment, and stock.",
+        level: hasPremises ? "required" : "optional",
+        tag: hasPremises ? "Strongly recommended" : "Not applicable"
+      }
+    ];
+
+    const sectorLabels = { professional:"professional services", retail:"retail", trade:"trade & construction", tech:"technology" };
+    const employeeLabels = { "0":"no employees", "1_9":"1–9 employees", "10_49":"10–49 employees", "50plus":"50+ employees" };
+
+    document.getElementById("results-summary").textContent =
+      `${structure.replace("_"," ").replace(/\b\w/g,c=>c.toUpperCase())} · ${sectorLabels[sector]} · ${employeeLabels[employees]} · ${hasPremises ? "commercial premises" : "home/remote"}`;
+
+    const grid = document.getElementById("results-grid");
+    grid.innerHTML = products.map(p => {
+      const cls = p.level === "required" ? "required" : p.level === "recommended" ? "recommended" : "";
+      const tagCls = p.level === "required" ? "tag-required" : p.level === "recommended" ? "tag-recommended" : "tag-optional";
+      return `<div class="result-card ${cls}">
+        <span class="result-tag ${tagCls}">${p.tag}</span>
+        <h4>${p.name}</h4>
+        <p>${p.blurb}</p>
+      </div>`;
+    }).join("");
+
+    document.getElementById("q4").classList.remove("active");
+    const resultsEl = document.getElementById("results");
+    resultsEl.classList.add("active");
+  });
+
+  document.getElementById("restart").addEventListener("click", () => {
+    Object.keys(answers).forEach(k => delete answers[k]);
+    document.querySelectorAll(".quiz-opt").forEach(b => b.classList.remove("selected"));
+    document.querySelectorAll(".quiz-btn").forEach(b => { if (b.id !== "restart") b.disabled = true; });
+    document.getElementById("results").classList.remove("active");
+    document.querySelectorAll(".quiz-step").forEach(s => s.classList.remove("active"));
+    document.getElementById("q1").classList.add("active");
+  });
 </script>
 
 </body>
