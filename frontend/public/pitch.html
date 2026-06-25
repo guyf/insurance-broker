@@ -217,7 +217,7 @@
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 2px;
-      align-items: end;
+      align-items: start;
       margin-top: 24px;
     }
     .step-col {
@@ -228,15 +228,16 @@
       border: 1px solid var(--border);
       background: #fff;
     }
+    .step-col:nth-child(1) { margin-top: 80px; }
+    .step-col:nth-child(2) { margin-top: 40px; }
+    .step-col:nth-child(3) { margin-top: 0; }
     .step-bar {
       display: flex;
       flex-direction: column;
       justify-content: flex-end;
       padding: 14px 20px 12px;
+      height: 60px;
     }
-    .step-col:nth-child(1) .step-bar { height: 60px; }
-    .step-col:nth-child(2) .step-bar { height: 110px; }
-    .step-col:nth-child(3) .step-bar { height: 160px; }
     .step-bar-label {
       font-size: 0.65rem;
       font-weight: 800;
@@ -1431,6 +1432,19 @@
   ], "Business Insurance");
 
   /* ── Intersection observers ─────────────────────────────── */
+  /* Equalise step-col heights within each step-grid */
+  function equaliseStepCols() {
+    document.querySelectorAll('.step-grid').forEach(grid => {
+      const cols = grid.querySelectorAll('.step-col');
+      cols.forEach(c => { c.style.height = 'auto'; });
+      let max = 0;
+      cols.forEach(c => { max = Math.max(max, c.offsetHeight); });
+      cols.forEach(c => { c.style.height = max + 'px'; });
+    });
+  }
+  window.addEventListener('load', equaliseStepCols);
+  window.addEventListener('resize', equaliseStepCols);
+
   const io = new IntersectionObserver(entries => {
     entries.forEach(e => { if (e.isIntersecting) e.target.classList.add("v"); });
   }, { threshold: 0.12 });
