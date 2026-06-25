@@ -1294,6 +1294,19 @@
 
 <script>
   /* ── Intersection observers ─────────────────────────────── */
+  /* Equalise step-col heights within each step-grid */
+  function equaliseStepCols() {
+    document.querySelectorAll('.step-grid').forEach(grid => {
+      const cols = grid.querySelectorAll('.step-col');
+      cols.forEach(c => { c.style.height = 'auto'; });
+      let max = 0;
+      cols.forEach(c => { max = Math.max(max, c.offsetHeight); });
+      cols.forEach(c => { c.style.height = max + 'px'; });
+    });
+  }
+  window.addEventListener('load', equaliseStepCols);
+  window.addEventListener('resize', equaliseStepCols);
+
   const io = new IntersectionObserver(entries => {
     entries.forEach(e => { if (e.isIntersecting) e.target.classList.add("v"); });
   }, { threshold: 0.12 });
