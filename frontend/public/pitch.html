@@ -349,9 +349,13 @@
       border-radius: 14px; padding: 28px 16px 22px; text-align: center;
     }
     .team-card .avatar {
-      width: 52px; height: 52px; border-radius: 50%;
-      background: var(--surface2); border: 1.5px solid var(--border);
+      width: 80px; height: 80px; border-radius: 50%;
+      background: var(--surface2); border: 2px solid var(--border);
       margin: 0 auto 16px;
+      overflow: hidden;
+    }
+    .team-card .avatar img {
+      width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block;
     }
     .team-card .person-name { font-size: 0.95rem; font-weight: 700; color: var(--ink); margin-bottom: 4px; }
     .team-card .person-role { font-size: 0.7rem; font-weight: 500; color: var(--teal); text-transform: uppercase; letter-spacing: 0.1em; }
@@ -1054,7 +1058,7 @@
     <h2 class="fi">We got the <span class="accent-teal">Bought By Many</span> band back together.</h2>
     <div class="team-grid fi">
       <div class="team-card">
-        <div class="avatar"></div>
+        <div class="avatar"><img src="images/Steven.jpeg" alt="Steven Mendel" /></div>
         <div class="person-name">Steven Mendel</div>
         <div class="person-role">Executive Chair</div>
       </div>
@@ -1064,12 +1068,12 @@
         <div class="person-role">CEO</div>
       </div>
       <div class="team-card">
-        <div class="avatar"></div>
+        <div class="avatar"><img src="images/Sam.jpeg" alt="Sam Gilbert" /></div>
         <div class="person-name">Sam Gilbert</div>
         <div class="person-role">CMO</div>
       </div>
       <div class="team-card">
-        <div class="avatar"></div>
+        <div class="avatar"><img src="images/Guy.jpeg" alt="Guy Farley" /></div>
         <div class="person-name">Guy Farley</div>
         <div class="person-role">CTO</div>
       </div>
