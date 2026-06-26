@@ -263,7 +263,7 @@
       color: var(--muted);
       line-height: 1.55;
     }
-    /* Now-indicator for slide 2 */
+    /* Now-indicator for slide 5 */
     .now-indicator {
       display: flex;
       align-items: center;
@@ -285,12 +285,12 @@
       50%       { opacity: 0.4; }
     }
 
-    /* ── S3 hero ──────────────────────────────────────────── */
-    #s5 .slide-inner { text-align: center; }
-    #s5 h1 { font-size: clamp(3.5rem, 9vw, 6.5rem); letter-spacing: -0.04em; margin-bottom: 16px; }
-    #s5 p.lead { max-width: 520px; margin: 0 auto; text-align: center; font-size: 1.2rem; }
+    /* ── S6 hero ──────────────────────────────────────────── */
+    #s6 .slide-inner { text-align: center; }
+    #s6 h1 { font-size: clamp(3.5rem, 9vw, 6.5rem); letter-spacing: -0.04em; margin-bottom: 16px; }
+    #s6 p.lead { max-width: 520px; margin: 0 auto; text-align: center; font-size: 1.2rem; }
 
-    /* ── S6 Why SMEs ──────────────────────────────────────── */
+    /* ── S4 Why SMEs ──────────────────────────────────────── */
     .why-bullets { list-style: none; display: flex; flex-direction: column; gap: 14px; margin: 20px 0; }
     .why-bullets li {
       font-size: 1.05rem; font-weight: 500; color: var(--text);
@@ -298,7 +298,7 @@
     }
     .why-bullets li::before { content: "—"; position: absolute; left: 0; color: var(--teal); font-weight: 700; }
 
-    /* ── S7 architecture with right sidebar ───────────────── */
+    /* ── S10 architecture with right sidebar ──────────────── */
     .arch-layout {
       display: grid;
       grid-template-columns: 1fr 180px;
@@ -322,14 +322,14 @@
       text-align: center;
     }
 
-    /* ── S8 compliance ────────────────────────────────────── */
+    /* ── S11 compliance ───────────────────────────────────── */
     .comp-agents {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 10px;
     }
 
-    /* ── S9 AEO bullets ───────────────────────────────────── */
+    /* ── S12 AEO bullets ──────────────────────────────────── */
     .aeo-bullets { list-style: none; display: flex; flex-direction: column; gap: 16px; margin-top: 4px; }
     .aeo-bullets li {
       font-size: 1.05rem; color: var(--text); line-height: 1.6;
@@ -337,14 +337,14 @@
     }
     .aeo-bullets li::before { content: "→"; position: absolute; left: 0; color: var(--teal); font-weight: 700; }
 
-    /* ── S10 Embedded ─────────────────────────────────────── */
+    /* ── S13 Embedded ──────────────────────────────────────── */
     .xero-tag {
       display: inline-block; background: var(--surface); border: 1px solid var(--border);
       border-radius: 8px; padding: 8px 14px; font-size: 0.75rem; font-weight: 600;
       color: var(--teal); margin-top: 16px; letter-spacing: 0.02em;
     }
 
-    /* ── S11 Team ─────────────────────────────────────────── */
+    /* ── S14 Team ──────────────────────────────────────────── */
     .team-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 24px; }
     .team-card {
       background: var(--surface); border: 1px solid var(--border);
@@ -362,7 +362,7 @@
     .team-card .person-name { font-size: 0.95rem; font-weight: 700; color: var(--ink); margin-bottom: 3px; }
     .team-card .person-role { font-size: 0.7rem; font-weight: 500; color: var(--teal); text-transform: uppercase; letter-spacing: 0.1em; }
 
-    /* ── S13 Competitors table ────────────────────────────── */
+    /* ── S15 Competitors table ────────────────────────────── */
     .comp-table {
       width: 100%; border-collapse: separate; border-spacing: 0;
       border-radius: 12px; overflow: hidden; background: var(--border);
@@ -377,7 +377,7 @@
     .comp-table .cc.name  { color: var(--text); font-weight: 500; }
     .comp-table .cc.edge  { color: var(--teal); font-weight: 500; }
 
-    /* ── S14 Raise ────────────────────────────────────────── */
+    /* ── S16 Raise ────────────────────────────────────────── */
     #s16 .slide-inner { text-align: center; }
     #s16 h1 { font-size: clamp(2rem, 5vw, 3.4rem); max-width: 720px; margin: 0 auto 36px; }
     .use-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
@@ -597,8 +597,38 @@
      ═══════════════════════════════════════════════════════════ -->
 <section id="s4">
   <div class="slide-inner">
-    <div class="slide-num fi">04</div>
-    <h2 class="fi">The future of business insurance is <span class="accent-blue">agentic.</span></h2>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;">
+
+      <!-- Left: chart -->
+      <div class="fi">
+        <div style="border-radius:16px;overflow:hidden;padding:24px 20px 12px;position:relative;background:var(--surface2);">
+          <div id="topic-pie-chart"></div>
+          <div style="text-align:center;font-size:0.7rem;color:var(--muted);margin-top:4px;">Topic Share of Insurance ChatGPT Queries (March 2026)</div>
+        </div>
+      </div>
+
+      <!-- Right: text -->
+      <div>
+        <div class="slide-num fi">04</div>
+        <h2 class="fi">SMEs are already turning to <span class="accent-green">AI for help.</span></h2>
+        <ul class="why-bullets fi">
+          <li>Business insurance is one of the largest categories of demand for AI insurance assistance in the UK</li>
+        </ul>
+        <p class="footnote fi">Data source: SimilarWeb / Balance</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     05
+     ═══════════════════════════════════════════════════════════ -->
+<section id="s5">
+  <div class="slide-inner">
+    <div class="slide-num fi">05</div>
+    <h2 class="fi">Over time, <span class="accent-blue">AI agents</span> will transform business insurance.</h2>
 
     <div class="step-grid fi">
 
@@ -642,25 +672,13 @@
 
 
 <!-- ═══════════════════════════════════════════════════════════
-     05
-     ═══════════════════════════════════════════════════════════ -->
-<section id="s5">
-  <div class="slide-inner">
-    <div class="slide-num fi" style="text-align:center">05</div>
-    <h1 class="fi accent-teal">Meet Denney</h1>
-    <p class="lead fi">The agentic insurance broker for businesses.</p>
-  </div>
-</section>
-
-
-<!-- ═══════════════════════════════════════════════════════════
      06
      ═══════════════════════════════════════════════════════════ -->
 <section id="s6">
-  <div class="slide-inner" style="text-align:center;max-width:680px;">
+  <div class="slide-inner">
     <div class="slide-num fi" style="text-align:center">06</div>
-    <h2 class="fi">Denney is on the <span class="accent-teal">customer's side.</span></h2>
-    <p class="lead fi" style="margin:0 auto 24px;">Like a traditional broker, Denney looks at the full picture and makes proactive suggestions about purchases, renewals, switching, MTAs and claims – but without being influenced by commission rates.</p>
+    <h1 class="fi accent-teal">Meet Denney</h1>
+    <p class="lead fi">The agentic insurance broker for businesses.</p>
   </div>
 </section>
 
@@ -669,8 +687,20 @@
      07
      ═══════════════════════════════════════════════════════════ -->
 <section id="s7">
+  <div class="slide-inner" style="text-align:center;max-width:680px;">
+    <div class="slide-num fi" style="text-align:center">07</div>
+    <h2 class="fi">Denney is on the <span class="accent-teal">customer's side.</span></h2>
+    <p class="lead fi" style="margin:0 auto 24px;">Like a traditional broker, Denney looks at the full picture and makes proactive suggestions about purchases, renewals, switching, MTAs and claims – but without being influenced by commission rates.</p>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     08
+     ═══════════════════════════════════════════════════════════ -->
+<section id="s8">
   <div class="slide-inner">
-    <div class="slide-num fi">07</div>
+    <div class="slide-num fi">08</div>
     <h2 class="fi">Denney <span class="accent-amber">product roadmap.</span></h2>
 
     <div class="step-grid fi">
@@ -711,29 +741,58 @@
 
 
 <!-- ═══════════════════════════════════════════════════════════
-     08
+     09
      ═══════════════════════════════════════════════════════════ -->
-<section id="s8">
+<section id="s9">
   <div class="slide-inner">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;">
+    <div class="slide-num fi">09</div>
+    <h2 class="fi">Commercial <span class="accent-amber">roadmap.</span></h2>
 
-      <!-- Left: chart -->
-      <div class="fi">
-        <div style="border-radius:16px;overflow:hidden;padding:24px 20px 12px;position:relative;background:var(--surface2);">
-          <div id="topic-pie-chart"></div>
-          <div style="text-align:center;font-size:0.7rem;color:var(--muted);margin-top:4px;">Topic Share of Insurance ChatGPT Queries (March 2026)</div>
+    <div class="step-grid fi">
+
+      <!-- Affiliate Model -->
+      <div class="step-col">
+        <div class="step-bar" style="background:var(--muted);">
+          <span class="step-bar-label">Affiliate Model</span>
+        </div>
+        <div class="step-body">
+          <ul style="list-style:none;display:flex;flex-direction:column;gap:7px;margin-bottom:12px;">
+            <li style="font-size:0.78rem;color:var(--muted);line-height:1.5;padding-left:14px;position:relative;"><span style="position:absolute;left:2px;color:var(--teal);font-weight:900;font-size:1.1rem;line-height:1.3;">·</span>Monetize new business referrals to insurance providers through affiliate platforms (e.g. AWIN)</li>
+            <li style="font-size:0.78rem;color:var(--muted);line-height:1.5;padding-left:14px;position:relative;"><span style="position:absolute;left:2px;color:var(--teal);font-weight:900;font-size:1.1rem;line-height:1.3;">·</span>License insurance product and pricing data from specialist third parties (e.g. Defaqto)</li>
+            <li style="font-size:0.78rem;color:var(--muted);line-height:1.5;padding-left:14px;position:relative;"><span style="position:absolute;left:2px;color:var(--teal);font-weight:900;font-size:1.1rem;line-height:1.3;">·</span>Build direct insurance relationships needed to establish TOBAs with MGAs and carriers.</li>
+          </ul>
+          <div style="font-size:0.68rem;color:var(--dim);padding-top:10px;border-top:1px solid var(--border);">Regulatory status: Introducer Appointed Representative</div>
         </div>
       </div>
 
-      <!-- Right: text -->
-      <div>
-        <div class="slide-num fi">08</div>
-        <h2 class="fi">Why <span class="accent-green">SMEs?</span></h2>
-        <ul class="why-bullets fi">
-          <li>Business insurance is a significant category of demand for AI insurance assistance in the UK</li>
-          <li>Regulatory requirements are less onerous than with consumers</li>
-        </ul>
-        <p class="footnote fi">Data source: SimilarWeb / Balance</p>
+      <!-- Broker Model -->
+      <div class="step-col">
+        <div class="step-bar" style="background:var(--blue);">
+          <span class="step-bar-label">Broker Model</span>
+        </div>
+        <div class="step-body">
+          <ul style="list-style:none;display:flex;flex-direction:column;gap:7px;margin-bottom:12px;">
+            <li style="font-size:0.78rem;color:var(--muted);line-height:1.5;padding-left:14px;position:relative;"><span style="position:absolute;left:2px;color:var(--teal);font-weight:900;font-size:1.1rem;line-height:1.3;">·</span>Monetize new business and renewals primarily through panel of MGAs and carriers.</li>
+            <li style="font-size:0.78rem;color:var(--muted);line-height:1.5;padding-left:14px;position:relative;"><span style="position:absolute;left:2px;color:var(--teal);font-weight:900;font-size:1.1rem;line-height:1.3;">·</span>Replace data licenses with product and pricing data feeds from panel.</li>
+            <li style="font-size:0.78rem;color:var(--muted);line-height:1.5;padding-left:14px;position:relative;"><span style="position:absolute;left:2px;color:var(--teal);font-weight:900;font-size:1.1rem;line-height:1.3;">·</span>Develop reputation with carriers by demonstrating profitable portfolio growth near live data feeds</li>
+          </ul>
+          <div style="font-size:0.68rem;color:var(--dim);padding-top:10px;border-top:1px solid var(--border);">Regulatory status: Appointed Representative then directly authorised by the FCA</div>
+        </div>
+      </div>
+
+      <!-- Broker-MGA model -->
+      <div class="step-col" style="border-color:var(--teal);">
+        <div class="step-bar" style="background:var(--teal);">
+          <span class="step-bar-label">Broker-MGA model</span>
+        </div>
+        <div class="step-body">
+          <ul style="list-style:none;display:flex;flex-direction:column;gap:7px;margin-bottom:12px;">
+            <li style="font-size:0.78rem;color:var(--muted);line-height:1.5;padding-left:14px;position:relative;"><span style="position:absolute;left:2px;color:var(--teal);font-weight:900;font-size:1.1rem;line-height:1.3;">·</span>Filter share of new business and renewals to own MGA, insurer panel members, depending on customer's best interest.</li>
+            <li style="font-size:0.78rem;color:var(--muted);line-height:1.5;padding-left:14px;position:relative;"><span style="position:absolute;left:2px;color:var(--teal);font-weight:900;font-size:1.1rem;line-height:1.3;">·</span>Leverage insights from MGA claims data to optimize filtering.</li>
+            <li style="font-size:0.78rem;color:var(--muted);line-height:1.5;padding-left:14px;position:relative;"><span style="position:absolute;left:2px;color:var(--teal);font-weight:900;font-size:1.1rem;line-height:1.3;">·</span>Use AI-driven opex savings to enable aggressive new business pricing in priority segments.</li>
+          </ul>
+          <div style="font-size:0.68rem;color:var(--teal);padding-top:10px;border-top:1px solid rgba(13,148,136,0.2);">Regulatory status: Directly authorised by the FCA</div>
+        </div>
       </div>
 
     </div>
@@ -742,11 +801,11 @@
 
 
 <!-- ═══════════════════════════════════════════════════════════
-     09
+     10
      ═══════════════════════════════════════════════════════════ -->
-<section id="s9">
+<section id="s10">
   <div class="slide-inner">
-    <div class="slide-num fi">09</div>
+    <div class="slide-num fi">10</div>
     <h2 class="fi"><span class="accent-blue">MCP-driven</span> Architecture.</h2>
 
     <div class="arch-layout fi">
@@ -827,11 +886,11 @@
 
 
 <!-- ═══════════════════════════════════════════════════════════
-     10
+     11
      ═══════════════════════════════════════════════════════════ -->
-<section id="s10">
+<section id="s11">
   <div class="slide-inner">
-    <div class="slide-num fi">10</div>
+    <div class="slide-num fi">11</div>
     <h2 class="fi">Agentic Compliance<span class="accent-purple">.</span></h2>
 
     <div class="fi" style="margin-top:8px;max-width:780px;">
@@ -889,11 +948,11 @@
 
 
 <!-- ═══════════════════════════════════════════════════════════
-     11
+     12
      ═══════════════════════════════════════════════════════════ -->
-<section id="s11">
+<section id="s12">
   <div class="slide-inner">
-    <div class="slide-num fi">11</div>
+    <div class="slide-num fi">12</div>
     <h2 class="fi">Distribution #1: <span class="accent-purple">AEO.</span></h2>
     <div style="display:grid;grid-template-columns:1.1fr 1fr;gap:48px;align-items:center;margin-top:8px;">
 
@@ -919,13 +978,13 @@
 
 
 <!-- ═══════════════════════════════════════════════════════════
-     12
+     13
      ═══════════════════════════════════════════════════════════ -->
-<section id="s12">
+<section id="s13">
   <div class="slide-inner">
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:52px;align-items:center;">
       <div>
-        <div class="slide-num fi">12</div>
+        <div class="slide-num fi">13</div>
         <h2 class="fi">Distribution #2: <span class="accent-blue">Embedded.</span></h2>
         <p class="lead fi">MCP-driven architecture also enables embedded distribution through software platforms with established user bases.</p>
         <p class="lead fi">In the US, Next Insurance's integration with QuickBooks shows that embedded solutions that leverage platform data into insurance offers brings new customers into the market*</p>
@@ -1080,11 +1139,11 @@
 
 
 <!-- ═══════════════════════════════════════════════════════════
-     13
+     14
      ═══════════════════════════════════════════════════════════ -->
-<section id="s13">
+<section id="s14">
   <div class="slide-inner">
-    <div class="slide-num fi">13</div>
+    <div class="slide-num fi">14</div>
     <h2 class="fi">We got the <span class="accent-teal">Bought By Many</span> band back together.</h2>
     <div class="fi" style="display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-top:20px;align-items:start;">
       <!-- Press image left -->
@@ -1113,66 +1172,6 @@
           <div class="person-role">CTO</div>
         </div>
       </div>
-    </div>
-  </div>
-</section>
-
-
-<!-- ═══════════════════════════════════════════════════════════
-     14
-     ═══════════════════════════════════════════════════════════ -->
-<section id="s14">
-  <div class="slide-inner">
-    <div class="slide-num fi">14</div>
-    <h2 class="fi">Commercial <span class="accent-amber">roadmap.</span></h2>
-
-    <div class="step-grid fi">
-
-      <!-- Affiliate Model -->
-      <div class="step-col">
-        <div class="step-bar" style="background:var(--muted);">
-          <span class="step-bar-label">Affiliate Model</span>
-        </div>
-        <div class="step-body">
-          <ul style="list-style:none;display:flex;flex-direction:column;gap:7px;margin-bottom:12px;">
-            <li style="font-size:0.78rem;color:var(--muted);line-height:1.5;padding-left:14px;position:relative;"><span style="position:absolute;left:2px;color:var(--teal);font-weight:900;font-size:1.1rem;line-height:1.3;">·</span>Monetize new business referrals to insurance providers through affiliate platforms (e.g. AWIN)</li>
-            <li style="font-size:0.78rem;color:var(--muted);line-height:1.5;padding-left:14px;position:relative;"><span style="position:absolute;left:2px;color:var(--teal);font-weight:900;font-size:1.1rem;line-height:1.3;">·</span>License insurance product and pricing data from specialist third parties (e.g. Defaqto)</li>
-            <li style="font-size:0.78rem;color:var(--muted);line-height:1.5;padding-left:14px;position:relative;"><span style="position:absolute;left:2px;color:var(--teal);font-weight:900;font-size:1.1rem;line-height:1.3;">·</span>Build direct insurance relationships needed to establish TOBAs with MGAs and carriers.</li>
-          </ul>
-          <div style="font-size:0.68rem;color:var(--dim);padding-top:10px;border-top:1px solid var(--border);">Regulatory status: Introducer Appointed Representative</div>
-        </div>
-      </div>
-
-      <!-- Broker Model -->
-      <div class="step-col">
-        <div class="step-bar" style="background:var(--blue);">
-          <span class="step-bar-label">Broker Model</span>
-        </div>
-        <div class="step-body">
-          <ul style="list-style:none;display:flex;flex-direction:column;gap:7px;margin-bottom:12px;">
-            <li style="font-size:0.78rem;color:var(--muted);line-height:1.5;padding-left:14px;position:relative;"><span style="position:absolute;left:2px;color:var(--teal);font-weight:900;font-size:1.1rem;line-height:1.3;">·</span>Monetize new business and renewals primarily through panel of MGAs and carriers.</li>
-            <li style="font-size:0.78rem;color:var(--muted);line-height:1.5;padding-left:14px;position:relative;"><span style="position:absolute;left:2px;color:var(--teal);font-weight:900;font-size:1.1rem;line-height:1.3;">·</span>Replace data licenses with product and pricing data feeds from panel.</li>
-            <li style="font-size:0.78rem;color:var(--muted);line-height:1.5;padding-left:14px;position:relative;"><span style="position:absolute;left:2px;color:var(--teal);font-weight:900;font-size:1.1rem;line-height:1.3;">·</span>Develop reputation with carriers by demonstrating profitable portfolio growth near live data feeds</li>
-          </ul>
-          <div style="font-size:0.68rem;color:var(--dim);padding-top:10px;border-top:1px solid var(--border);">Regulatory status: Appointed Representative then directly authorised by the FCA</div>
-        </div>
-      </div>
-
-      <!-- Broker-MGA model -->
-      <div class="step-col" style="border-color:var(--teal);">
-        <div class="step-bar" style="background:var(--teal);">
-          <span class="step-bar-label">Broker-MGA model</span>
-        </div>
-        <div class="step-body">
-          <ul style="list-style:none;display:flex;flex-direction:column;gap:7px;margin-bottom:12px;">
-            <li style="font-size:0.78rem;color:var(--muted);line-height:1.5;padding-left:14px;position:relative;"><span style="position:absolute;left:2px;color:var(--teal);font-weight:900;font-size:1.1rem;line-height:1.3;">·</span>Filter share of new business and renewals to own MGA, insurer panel members, depending on customer's best interest.</li>
-            <li style="font-size:0.78rem;color:var(--muted);line-height:1.5;padding-left:14px;position:relative;"><span style="position:absolute;left:2px;color:var(--teal);font-weight:900;font-size:1.1rem;line-height:1.3;">·</span>Leverage insights from MGA claims data to optimize filtering.</li>
-            <li style="font-size:0.78rem;color:var(--muted);line-height:1.5;padding-left:14px;position:relative;"><span style="position:absolute;left:2px;color:var(--teal);font-weight:900;font-size:1.1rem;line-height:1.3;">·</span>Use AI-driven opex savings to enable aggressive new business pricing in priority segments.</li>
-          </ul>
-          <div style="font-size:0.68rem;color:var(--teal);padding-top:10px;border-top:1px solid rgba(13,148,136,0.2);">Regulatory status: Directly authorised by the FCA</div>
-        </div>
-      </div>
-
     </div>
   </div>
 </section>
