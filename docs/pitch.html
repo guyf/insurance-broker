@@ -1250,7 +1250,7 @@
   function drawBarChart(targetId, data, highlightLabel) {
     const el = document.getElementById(targetId);
     if (!el) return;
-    const w = 420, h = 280, padL = 36, padR = 16, padT = 30, padB = 56;
+    const w = 470, h = 322, padL = 86, padR = 16, padT = 30, padB = 98;
     const plotW = w - padL - padR, plotH = h - padT - padB;
     const max = Math.max(...data.map(d => d.value));
     const barGap = 18;
