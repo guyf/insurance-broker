@@ -176,19 +176,21 @@
 
     /* ── Section backgrounds ──────────────────────────────── */
     #s1  { background: linear-gradient(135deg, rgba(225,29,72,0.05) 0%, #fff 70%); }
-    #s2  { background: linear-gradient(135deg, rgba(37,99,235,0.05) 0%, #fff 70%); }
-    #s3  { background: linear-gradient(135deg, rgba(13,148,136,0.07) 0%, #fff 70%); }
-    #s4  { background: linear-gradient(135deg, rgba(13,148,136,0.05) 0%, #fff 70%); }
-    #s5  { background: linear-gradient(135deg, rgba(217,119,6,0.05) 0%, #fff 70%); }
-    #s6  { background: linear-gradient(135deg, rgba(5,150,105,0.05) 0%, #fff 70%); }
-    #s7  { background: linear-gradient(135deg, rgba(37,99,235,0.04) 0%, #fff 70%); }
-    #s8  { background: linear-gradient(135deg, rgba(124,58,237,0.05) 0%, #fff 70%); }
-    #s9  { background: linear-gradient(135deg, rgba(124,58,237,0.04) 0%, #fff 70%); }
-    #s10 { background: linear-gradient(135deg, rgba(37,99,235,0.04) 0%, #fff 70%); }
-    #s11 { background: linear-gradient(135deg, rgba(13,148,136,0.04) 0%, #fff 70%); }
-    #s12 { background: linear-gradient(135deg, rgba(217,119,6,0.04) 0%, #fff 70%); }
-    #s13 { background: linear-gradient(135deg, rgba(225,29,72,0.04) 0%, #fff 70%); }
-    #s14 { background: linear-gradient(135deg, rgba(13,148,136,0.07) 0%, #fff 70%); }
+    #s2  { background: linear-gradient(135deg, rgba(217,119,6,0.05) 0%, #fff 70%); }
+    #s3  { background: linear-gradient(135deg, rgba(225,29,72,0.06) 0%, #fff 70%); }
+    #s4  { background: linear-gradient(135deg, rgba(37,99,235,0.05) 0%, #fff 70%); }
+    #s5  { background: linear-gradient(135deg, rgba(13,148,136,0.07) 0%, #fff 70%); }
+    #s6  { background: linear-gradient(135deg, rgba(13,148,136,0.05) 0%, #fff 70%); }
+    #s7  { background: linear-gradient(135deg, rgba(217,119,6,0.05) 0%, #fff 70%); }
+    #s8  { background: linear-gradient(135deg, rgba(5,150,105,0.05) 0%, #fff 70%); }
+    #s9  { background: linear-gradient(135deg, rgba(37,99,235,0.04) 0%, #fff 70%); }
+    #s10  { background: linear-gradient(135deg, rgba(124,58,237,0.05) 0%, #fff 70%); }
+    #s11  { background: linear-gradient(135deg, rgba(124,58,237,0.04) 0%, #fff 70%); }
+    #s12 { background: linear-gradient(135deg, rgba(37,99,235,0.04) 0%, #fff 70%); }
+    #s13 { background: linear-gradient(135deg, rgba(13,148,136,0.04) 0%, #fff 70%); }
+    #s14 { background: linear-gradient(135deg, rgba(217,119,6,0.04) 0%, #fff 70%); }
+    #s15 { background: linear-gradient(135deg, rgba(225,29,72,0.04) 0%, #fff 70%); }
+    #s16 { background: linear-gradient(135deg, rgba(13,148,136,0.07) 0%, #fff 70%); }
 
     /* ── Fade-in ──────────────────────────────────────────── */
     .fi { opacity: 0; transform: translateY(22px); transition: opacity 0.65s ease, transform 0.65s ease; }
@@ -284,9 +286,9 @@
     }
 
     /* ── S3 hero ──────────────────────────────────────────── */
-    #s3 .slide-inner { text-align: center; }
-    #s3 h1 { font-size: clamp(3.5rem, 9vw, 6.5rem); letter-spacing: -0.04em; margin-bottom: 16px; }
-    #s3 p.lead { max-width: 520px; margin: 0 auto; text-align: center; font-size: 1.2rem; }
+    #s5 .slide-inner { text-align: center; }
+    #s5 h1 { font-size: clamp(3.5rem, 9vw, 6.5rem); letter-spacing: -0.04em; margin-bottom: 16px; }
+    #s5 p.lead { max-width: 520px; margin: 0 auto; text-align: center; font-size: 1.2rem; }
 
     /* ── S6 Why SMEs ──────────────────────────────────────── */
     .why-bullets { list-style: none; display: flex; flex-direction: column; gap: 14px; margin: 20px 0; }
@@ -376,12 +378,56 @@
     .comp-table .cc.edge  { color: var(--teal); font-weight: 500; }
 
     /* ── S14 Raise ────────────────────────────────────────── */
-    #s14 .slide-inner { text-align: center; }
-    #s14 h1 { font-size: clamp(2rem, 5vw, 3.4rem); max-width: 720px; margin: 0 auto 36px; }
+    #s16 .slide-inner { text-align: center; }
+    #s16 h1 { font-size: clamp(2rem, 5vw, 3.4rem); max-width: 720px; margin: 0 auto 36px; }
     .use-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
     .use-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px 16px; }
     .use-card .use-label { font-size: 0.75rem; font-weight: 700; color: var(--teal); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; }
     .use-card p { font-size: 0.8rem; color: var(--muted); line-height: 1.5; text-align: left; }
+
+    /* ── S2 stat cards ────────────────────────────────────── */
+    .stat-group-label {
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      margin-bottom: 12px;
+    }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px 20px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: baseline;
+      gap: 16px;
+    }
+    .stat-number {
+      font-size: 2.2rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      flex-shrink: 0;
+      line-height: 1;
+    }
+    .stat-card p {
+      font-size: 0.82rem;
+      color: var(--muted);
+      line-height: 1.4;
+      text-align: left;
+      margin: 0;
+    }
+
+    /* ── S3 protection gap charts ─────────────────────────── */
+    .gap-chart-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 24px; }
+    .gap-chart-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px 16px 8px;
+      text-align: center;
+    }
+    .gap-chart-title { font-size: 0.78rem; font-weight: 700; color: var(--ink); margin-bottom: 10px; }
 
     /* ── S1 photo layout ──────────────────────────────────── */
     .hero-layout {
@@ -423,11 +469,13 @@
   <a href="#s7"  title="07"></a>
   <a href="#s8"  title="08"></a>
   <a href="#s9"  title="09"></a>
-  <a href="#s10" title="10"></a>
-  <a href="#s11" title="11"></a>
+  <a href="#s10"  title="10"></a>
+  <a href="#s11"  title="11"></a>
   <a href="#s12" title="12"></a>
   <a href="#s13" title="13"></a>
   <a href="#s14" title="14"></a>
+  <a href="#s15" title="15"></a>
+  <a href="#s16" title="16"></a>
 </nav>
 
 
@@ -465,6 +513,83 @@
 <section id="s2">
   <div class="slide-inner">
     <div class="slide-num fi">02</div>
+    <h2 class="fi">SMEs are <span class="accent-rose">drowning</span> in complexity.</h2>
+
+    <div class="fi" style="display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:28px;">
+      <div>
+        <div class="stat-group-label" style="color:var(--rose)">Customer experience</div>
+        <div class="stat-card">
+          <div class="stat-number" style="color:var(--rose)">84</div>
+          <p>questions on average needed to complete an SME insurance journey</p>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" style="color:var(--rose)">30%</div>
+          <p>of SMEs find it "extremely challenging" to identify the right cover for their needs</p>
+        </div>
+      </div>
+      <div>
+        <div class="stat-group-label" style="color:var(--amber)">Product knowledge</div>
+        <div class="stat-card">
+          <div class="stat-number" style="color:var(--amber)">77%</div>
+          <p>can't accurately describe cyber insurance</p>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" style="color:var(--amber)">80%</div>
+          <p>can't accurately describe professional indemnity insurance</p>
+        </div>
+      </div>
+    </div>
+
+    <p class="footnote fi">Sources: PwC, McKinsey, Hiscox Global Protection Gap Report</p>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     03
+     ═══════════════════════════════════════════════════════════ -->
+<section id="s3">
+  <div class="slide-inner">
+    <div class="slide-num fi">03</div>
+    <h2 class="fi">And dangerously <span class="accent-rose">under-insured.</span></h2>
+
+    <div class="fi" style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:8px;">
+      <div class="stat-card" style="margin-bottom:0;">
+        <div class="stat-number" style="color:var(--rose)">55%</div>
+        <p>of SMEs have a protection gap</p>
+      </div>
+      <div class="stat-card" style="margin-bottom:0;">
+        <div class="stat-number" style="color:var(--rose)">74%</div>
+        <p>of SMEs are under-insured</p>
+      </div>
+    </div>
+    <p class="footnote fi" style="margin-bottom:0;">Source: Hiscox Global Protection Gap Report</p>
+
+    <div class="gap-chart-grid fi">
+      <div class="gap-chart-card">
+        <div class="gap-chart-title">Business Interruption</div>
+        <div id="gap-chart-bi"></div>
+      </div>
+      <div class="gap-chart-card">
+        <div class="gap-chart-title">Commercial Contents</div>
+        <div id="gap-chart-contents"></div>
+      </div>
+      <div class="gap-chart-card">
+        <div class="gap-chart-title">Cyber</div>
+        <div id="gap-chart-cyber"></div>
+      </div>
+    </div>
+    <p class="footnote fi" style="text-align:center;">Source: ABI</p>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     04
+     ═══════════════════════════════════════════════════════════ -->
+<section id="s4">
+  <div class="slide-inner">
+    <div class="slide-num fi">04</div>
     <h2 class="fi">The future of business insurance is <span class="accent-blue">agentic.</span></h2>
 
     <div class="step-grid fi">
@@ -509,11 +634,11 @@
 
 
 <!-- ═══════════════════════════════════════════════════════════
-     03
+     05
      ═══════════════════════════════════════════════════════════ -->
-<section id="s3">
+<section id="s5">
   <div class="slide-inner">
-    <div class="slide-num fi" style="text-align:center">03</div>
+    <div class="slide-num fi" style="text-align:center">05</div>
     <h1 class="fi accent-teal">Meet Denney</h1>
     <p class="lead fi">The agentic insurance broker for businesses.</p>
   </div>
@@ -521,11 +646,11 @@
 
 
 <!-- ═══════════════════════════════════════════════════════════
-     04
+     06
      ═══════════════════════════════════════════════════════════ -->
-<section id="s4">
+<section id="s6">
   <div class="slide-inner" style="text-align:center;max-width:680px;">
-    <div class="slide-num fi" style="text-align:center">04</div>
+    <div class="slide-num fi" style="text-align:center">06</div>
     <h2 class="fi">Denney is on the <span class="accent-teal">customer's side.</span></h2>
     <p class="lead fi" style="margin:0 auto 24px;">Like a traditional broker, Denney looks at the full picture and makes proactive suggestions about purchases, renewals, switching, MTAs and claims – but without being influenced by commission rates.</p>
   </div>
@@ -533,11 +658,11 @@
 
 
 <!-- ═══════════════════════════════════════════════════════════
-     05
+     07
      ═══════════════════════════════════════════════════════════ -->
-<section id="s5">
+<section id="s7">
   <div class="slide-inner">
-    <div class="slide-num fi">05</div>
+    <div class="slide-num fi">07</div>
     <h2 class="fi">Denney <span class="accent-amber">product roadmap.</span></h2>
 
     <div class="step-grid fi">
@@ -578,9 +703,9 @@
 
 
 <!-- ═══════════════════════════════════════════════════════════
-     06
+     08
      ═══════════════════════════════════════════════════════════ -->
-<section id="s6">
+<section id="s8">
   <div class="slide-inner">
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;">
 
@@ -594,7 +719,7 @@
 
       <!-- Right: text -->
       <div>
-        <div class="slide-num fi">06</div>
+        <div class="slide-num fi">08</div>
         <h2 class="fi">Why <span class="accent-green">SMEs?</span></h2>
         <ul class="why-bullets fi">
           <li>Business insurance is a significant category of demand for AI insurance assistance in the UK</li>
@@ -609,11 +734,11 @@
 
 
 <!-- ═══════════════════════════════════════════════════════════
-     07
+     09
      ═══════════════════════════════════════════════════════════ -->
-<section id="s7">
+<section id="s9">
   <div class="slide-inner">
-    <div class="slide-num fi">07</div>
+    <div class="slide-num fi">09</div>
     <h2 class="fi"><span class="accent-blue">MCP-driven</span> Architecture.</h2>
 
     <div class="arch-layout fi">
@@ -690,11 +815,11 @@
 
 
 <!-- ═══════════════════════════════════════════════════════════
-     08
+     10
      ═══════════════════════════════════════════════════════════ -->
-<section id="s8">
+<section id="s10">
   <div class="slide-inner">
-    <div class="slide-num fi">08</div>
+    <div class="slide-num fi">10</div>
     <h2 class="fi">Compliance<span class="accent-purple">.</span></h2>
 
     <div class="fi" style="margin-top:8px;max-width:780px;">
@@ -753,11 +878,11 @@
 
 
 <!-- ═══════════════════════════════════════════════════════════
-     09
+     11
      ═══════════════════════════════════════════════════════════ -->
-<section id="s9">
+<section id="s11">
   <div class="slide-inner">
-    <div class="slide-num fi">09</div>
+    <div class="slide-num fi">11</div>
     <h2 class="fi">Distribution #1: <span class="accent-purple">AEO.</span></h2>
     <div style="display:grid;grid-template-columns:1.1fr 1fr;gap:48px;align-items:center;margin-top:8px;">
 
@@ -783,13 +908,13 @@
 
 
 <!-- ═══════════════════════════════════════════════════════════
-     10
+     12
      ═══════════════════════════════════════════════════════════ -->
-<section id="s10">
+<section id="s12">
   <div class="slide-inner">
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:52px;align-items:center;">
       <div>
-        <div class="slide-num fi">10</div>
+        <div class="slide-num fi">12</div>
         <h2 class="fi">Distribution #2: <span class="accent-blue">Embedded.</span></h2>
         <p class="lead fi">MCP-driven architecture also enables embedded distribution through software platforms with established user bases.</p>
         <p class="lead fi">In the US, Next Insurance's integration with QuickBooks shows that embedded solutions that leverage platform data into insurance offers brings new customers into the market*</p>
@@ -944,11 +1069,11 @@
 
 
 <!-- ═══════════════════════════════════════════════════════════
-     11
+     13
      ═══════════════════════════════════════════════════════════ -->
-<section id="s11">
+<section id="s13">
   <div class="slide-inner">
-    <div class="slide-num fi">11</div>
+    <div class="slide-num fi">13</div>
     <h2 class="fi">We got the <span class="accent-teal">Bought By Many</span> band back together.</h2>
     <div class="fi" style="display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-top:20px;align-items:start;">
       <!-- Press image left -->
@@ -983,11 +1108,11 @@
 
 
 <!-- ═══════════════════════════════════════════════════════════
-     12
+     14
      ═══════════════════════════════════════════════════════════ -->
-<section id="s12">
+<section id="s14">
   <div class="slide-inner">
-    <div class="slide-num fi">12</div>
+    <div class="slide-num fi">14</div>
     <h2 class="fi">Commercial <span class="accent-amber">roadmap.</span></h2>
 
     <div class="step-grid fi">
@@ -1043,11 +1168,11 @@
 
 
 <!-- ═══════════════════════════════════════════════════════════
-     13
+     15
      ═══════════════════════════════════════════════════════════ -->
-<section id="s13">
+<section id="s15">
   <div class="slide-inner">
-    <div class="slide-num fi">13</div>
+    <div class="slide-num fi">15</div>
     <h2 class="fi">Competitors<span class="accent-rose">?</span></h2>
     <div class="comp-table fi">
       <div class="ch">Competitor type</div>
@@ -1075,11 +1200,11 @@
 
 
 <!-- ═══════════════════════════════════════════════════════════
-     14
+     16
      ═══════════════════════════════════════════════════════════ -->
-<section id="s14">
+<section id="s16">
   <div class="slide-inner">
-    <div class="slide-num fi" style="text-align:center">14</div>
+    <div class="slide-num fi" style="text-align:center">16</div>
     <h1 class="fi">We are raising <span class="accent-teal">£5m</span> at <span class="accent-teal">£20m</span> pre.</h1>
     <div class="use-grid fi">
       <div class="use-card">
@@ -1214,6 +1339,52 @@
 
     el.appendChild(svg);
   }
+
+  function drawGapChart(targetId, needValue, haveValue) {
+    const el = document.getElementById(targetId);
+    if (!el) return;
+    const w = 220, h = 180, padL = 28, padR = 10, padT = 26, padB = 30;
+    const plotW = w - padL - padR, plotH = h - padT - padB;
+    const maxVal = Math.max(needValue, haveValue);
+    const barW = 56, gap = 36;
+    const startX = padL + (plotW - (barW * 2 + gap)) / 2;
+
+    const svg = svgEl("svg", { viewBox: `0 0 ${w} ${h}`, width: "100%", height: "auto" });
+    svg.appendChild(svgEl("line", {
+      x1: padL, y1: padT + plotH, x2: padL + plotW, y2: padT + plotH,
+      stroke: "var(--border)", "stroke-width": 1
+    }));
+
+    [
+      { label: "Exposed", value: needValue, color: "var(--rose)" },
+      { label: "Insured", value: haveValue, color: "var(--dim)" }
+    ].forEach((b, i) => {
+      const barH = (b.value / maxVal) * plotH;
+      const x = startX + i * (barW + gap);
+      const y = padT + plotH - barH;
+      svg.appendChild(svgEl("rect", { x, y, width: barW, height: barH, rx: 4, fill: b.color }));
+
+      const valLabel = svgEl("text", {
+        x: x + barW / 2, y: y - 8, "text-anchor": "middle",
+        "font-size": "13", "font-weight": "800", fill: b.color
+      });
+      valLabel.textContent = `${Math.round(b.value * 100)}%`;
+      svg.appendChild(valLabel);
+
+      const lbl = svgEl("text", {
+        x: x + barW / 2, y: padT + plotH + 16, "text-anchor": "middle",
+        "font-size": "10", "font-weight": "600", fill: "var(--muted)"
+      });
+      lbl.textContent = b.label;
+      svg.appendChild(lbl);
+    });
+
+    el.appendChild(svg);
+  }
+
+  drawGapChart("gap-chart-bi", 0.48, 0.23);
+  drawGapChart("gap-chart-contents", 0.57, 0.31);
+  drawGapChart("gap-chart-cyber", 0.57, 0.29);
 
   drawBarChart("referral-bar-chart", [
     { label: "MoneySavingExpert", value: 3.1 },
