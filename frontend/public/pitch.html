@@ -456,6 +456,37 @@
       font-size: 0.6rem;
       color: rgba(255,255,255,0.5);
     }
+
+    /* ── Print: one slide per A4 landscape page ──────────── */
+    @page { size: A4 landscape; margin: 0; }
+    @media print {
+      html, body {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      nav.dots, .scroll-hint { display: none !important; }
+      section {
+        min-height: 0;
+        height: 208mm; /* just under the 210mm page height so rounding never spills onto a blank page */
+        padding: 40px 56px;
+        overflow: hidden;
+        break-after: page;
+        page-break-after: always;
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+      section:last-of-type {
+        break-after: auto;
+        page-break-after: auto;
+      }
+      /* Fade-in elements never receive the .v class without scrolling — force them visible */
+      .fi {
+        opacity: 1 !important;
+        transform: none !important;
+        transition: none !important;
+      }
+      * { animation: none !important; }
+    }
   </style>
 </head>
 <body>
