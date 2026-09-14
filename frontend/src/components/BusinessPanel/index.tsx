@@ -190,12 +190,19 @@ function BusinessCard({
             <p className="text-sm text-slate-400 capitalize">via {f.source}</p>
           )}
         </div>
-        <button
-          onClick={onLogout}
-          className="text-sm text-slate-400 hover:text-white transition-colors flex-shrink-0 ml-2"
-        >
-          Log out
-        </button>
+        <div className="flex items-center gap-2 flex-shrink-0 ml-2">
+          {business.user.email && (
+            <span className="text-sm text-slate-400 truncate max-w-[140px]" title={business.user.email}>
+              {business.user.email}
+            </span>
+          )}
+          <button
+            onClick={onLogout}
+            className="text-sm text-slate-400 hover:text-white transition-colors flex-shrink-0"
+          >
+            Log out
+          </button>
+        </div>
       </div>
       <div className="px-3 py-2.5 grid grid-cols-4 gap-x-3 gap-y-2">
         {items.map(({ label, value }) => (
