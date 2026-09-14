@@ -12,8 +12,7 @@ import { requireBusiness } from "../../auth/require";
 import { bridgeEmailToSession } from "../../auth/bridge";
 import { getOrCreateBusinessForUser } from "../../auth/business";
 import { supabaseAdmin } from "../../lib/supabase";
-import { quickbooksExchangeCode } from "../../auth/oauth-quickbooks";
-import { decodeIdTokenEmail } from "../../auth/jwt";
+import { quickbooksExchangeCode, quickbooksFetchEmail } from "../../auth/oauth-quickbooks";
 import { fetchQuickBooksFinancials } from "../../auth/quickbooks-data";
 
 const STATE_COOKIE = "quickbooks_oauth_state";
@@ -49,7 +48,7 @@ export async function handleQuickbooksCallback(request: Request, env: Env): Prom
       businessId = existingAuth.businessId;
       sessionCookie = existingAuth.refreshedCookie;
     } else {
-      const email = decodeIdTokenEmail(tokens.id_token ?? "");
+      const email = await quickbooksFetchEmail(env.QUICKBOOKS_ACCOUNTS_BASE, tokens.access_token);
       if (!email) return errorRedirect(url.origin, "quickbooks_no_email");
 
       const bridged = await bridgeEmailToSession(env, email);

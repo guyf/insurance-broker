@@ -1,10 +1,12 @@
 /**
- * QuickBooks (Intuit) OAuth 2.0 — same shape as oauth-xero.ts. One notable
- * difference: Xero requires a separate /connections call to learn which
+ * QuickBooks (Intuit) OAuth 2.0 — same shape as oauth-xero.ts. Two notable
+ * differences: Xero requires a separate /connections call to learn which
  * organisation was authorized; QuickBooks instead returns the company id
  * (`realmId`) directly as a query param on the callback redirect, so there's
- * no getTenantId() equivalent here — the callback route reads it straight
- * off the URL.
+ * no getTenantId() equivalent here. And unlike Xero's id_token, Intuit's
+ * doesn't reliably carry an `email` claim — the email has to come from a
+ * separate UserInfo endpoint call (quickbooksFetchEmail below), not from
+ * decoding the token like decodeIdTokenEmail() does for Xero.
  */
 import type { Env } from "../index";
 
@@ -69,4 +71,14 @@ export async function quickbooksRefreshTokens(env: Env, refreshToken: string): P
   });
   if (!resp.ok) throw new Error(`QuickBooks token refresh failed: ${resp.status} ${await resp.text()}`);
   return resp.json();
+}
+
+/** accountsBase: env.QUICKBOOKS_ACCOUNTS_BASE — sandbox and production UserInfo live on different hosts. */
+export async function quickbooksFetchEmail(accountsBase: string, accessToken: string): Promise<string | null> {
+  const resp = await fetch(`${accountsBase}/v1/openid_connect/userinfo`, {
+    headers: { Authorization: `Bearer ${accessToken}`, Accept: "application/json" },
+  });
+  if (!resp.ok) return null;
+  const data = (await resp.json()) as { email?: string };
+  return data.email ?? null;
 }

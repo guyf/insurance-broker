@@ -33,6 +33,7 @@ export interface Env {
   INTUIT_CLIENT_ID: string;
   INTUIT_CLIENT_SECRET: string;
   QUICKBOOKS_API_BASE: string;
+  QUICKBOOKS_ACCOUNTS_BASE: string;
   ASSETS: Fetcher;
 }
 
