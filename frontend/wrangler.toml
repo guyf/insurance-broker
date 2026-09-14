@@ -1,3 +1,14 @@
 name = "insurance-broker"
+main = "worker/src/index.ts"
 compatibility_date = "2024-11-05"
-pages_build_output_dir = "dist"
+
+# Static SPA output – produced by `npm run build` (tsc + vite), served via
+# env.ASSETS.fetch() in worker/src/index.ts for any path not matched by an
+# /api/* route.
+[assets]
+directory = "./dist"
+binding = "ASSETS"
+
+# Runs on every git-connected deploy (Cloudflare Workers Builds).
+[build]
+command = "npm run build"

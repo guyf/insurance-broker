@@ -7,9 +7,9 @@
 const UPDATE_URL =
   "https://insurance-broker-production-85e3.up.railway.app/update-policy";
 
-export const onRequestPatch: PagesFunction = async (context) => {
+export async function handleUpdatePolicy(request: Request): Promise<Response> {
   try {
-    const body = await context.request.json();
+    const body = await request.json();
     const resp = await fetch(UPDATE_URL, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -26,4 +26,4 @@ export const onRequestPatch: PagesFunction = async (context) => {
       { status: 500, headers: { "Content-Type": "application/json" } }
     );
   }
-};
+}

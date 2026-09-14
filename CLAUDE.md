@@ -25,7 +25,8 @@ WEB FRONTEND (primary interface)
 Browser
        │  React SPA
        ▼
-Cloudflare Pages             ← static frontend + serverless Functions
+Cloudflare Worker            ← broker.denney.insure — static SPA assets + /api/* routes
+                                (git-connected via Cloudflare Workers Builds)
        │
        ├─ /api/policies ──────────────────────────────────────────────┐
        │                                                               │
@@ -60,6 +61,13 @@ supergateway (local npx)     ← stdio↔streamable-http bridge
 ```
 insurance-broker/
 ├── SKILL.md                          # Claude's broker instructions (also at ~/.claude/skills/)
+├── frontend/                         # React SPA + Cloudflare Worker, deployed to broker.denney.insure
+│   ├── src/                          # React SPA source
+│   ├── worker/src/
+│   │   ├── index.ts                  # Worker entry point: routes /api/*, else serves dist/ via ASSETS
+│   │   ├── mcp-client.ts             # Shared stateless MCP (streamable-http) client
+│   │   └── routes/                   # chat, policies, requote, upload, delete-policy, update-policy
+│   └── wrangler.toml                 # main + [assets] + [build] — deployed via Cloudflare Workers Builds
 ├── supabase/
 │   └── migrations/
 │       └── 001_create_documents.sql  # vector table, HNSW index, RLS, RPCs

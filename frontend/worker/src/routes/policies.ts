@@ -4,6 +4,8 @@
  * merges the results, and returns a structured Policy[] JSON array.
  */
 
+import { callMCPTool } from "../mcp-client";
+
 const BROKER_MCP_URL =
   "https://insurance-broker-production-85e3.up.railway.app/mcp";
 
@@ -19,86 +21,6 @@ interface Policy {
   underwriter: string | null;
   asset_name: string | null;
   asset_value: string | null;
-}
-
-// ---------------------------------------------------------------------------
-// Minimal MCP client
-// ---------------------------------------------------------------------------
-
-function parseSSEContent(text: string): string {
-  try {
-    const msg = JSON.parse(text) as {
-      result?: { content?: Array<{ type: string; text?: string }> };
-    };
-    if (msg.result?.content) {
-      return msg.result.content
-        .filter((c) => c.type === "text" && c.text)
-        .map((c) => c.text!)
-        .join("\n");
-    }
-  } catch {
-    // try SSE
-  }
-  for (const line of text.split("\n")) {
-    const trimmed = line.trim();
-    if (!trimmed.startsWith("data: ")) continue;
-    const data = trimmed.slice(6);
-    if (!data || data === "[DONE]") continue;
-    try {
-      const msg = JSON.parse(data) as {
-        result?: { content?: Array<{ type: string; text?: string }> };
-      };
-      if (msg.result?.content) {
-        return msg.result.content
-          .filter((c) => c.type === "text" && c.text)
-          .map((c) => c.text!)
-          .join("\n");
-      }
-    } catch {
-      // ignore parse errors
-    }
-  }
-  return text;
-}
-
-async function callBrokerTool(toolName: string): Promise<string> {
-  const initResp = await fetch(BROKER_MCP_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Accept: "application/json, text/event-stream",
-    },
-    body: JSON.stringify({
-      jsonrpc: "2.0",
-      method: "initialize",
-      params: {
-        protocolVersion: "2024-11-05",
-        capabilities: {},
-        clientInfo: { name: "broker-web", version: "1.0" },
-      },
-      id: 0,
-    }),
-  });
-  const sessionId = initResp.headers.get("mcp-session-id");
-  await initResp.text();
-
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-    Accept: "application/json, text/event-stream",
-  };
-  if (sessionId) headers["mcp-session-id"] = sessionId;
-
-  const resp = await fetch(BROKER_MCP_URL, {
-    method: "POST",
-    headers,
-    body: JSON.stringify({
-      jsonrpc: "2.0",
-      method: "tools/call",
-      params: { name: toolName, arguments: {} },
-      id: 1,
-    }),
-  });
-  return parseSSEContent(await resp.text());
 }
 
 // ---------------------------------------------------------------------------
@@ -180,11 +102,11 @@ function parseRenewalCalendar(
 // Handler
 // ---------------------------------------------------------------------------
 
-export const onRequestGet: PagesFunction = async () => {
+export async function handlePolicies(): Promise<Response> {
   try {
     const [policiesText, renewalText] = await Promise.all([
-      callBrokerTool("list_policies"),
-      callBrokerTool("get_renewal_calendar"),
+      callMCPTool(BROKER_MCP_URL, "list_policies", {}),
+      callMCPTool(BROKER_MCP_URL, "get_renewal_calendar", {}),
     ]);
 
     const policies = parsePolicies(policiesText);
@@ -203,10 +125,10 @@ export const onRequestGet: PagesFunction = async () => {
       headers: { "Content-Type": "application/json" },
     });
   } catch (err) {
-    console.error("Policies function error:", err);
+    console.error("Policies route error:", err);
     return new Response(
       JSON.stringify({ error: err instanceof Error ? err.message : "Internal error" }),
       { status: 500, headers: { "Content-Type": "application/json" } }
     );
   }
-};
+}

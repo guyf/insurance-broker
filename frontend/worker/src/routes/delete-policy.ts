@@ -7,9 +7,9 @@
 const DELETE_URL =
   "https://insurance-broker-production-85e3.up.railway.app/delete-policy";
 
-export const onRequestDelete: PagesFunction = async (context) => {
+export async function handleDeletePolicy(request: Request): Promise<Response> {
   try {
-    const body = await context.request.json();
+    const body = await request.json();
     const resp = await fetch(DELETE_URL, {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
@@ -26,4 +26,4 @@ export const onRequestDelete: PagesFunction = async (context) => {
       { status: 500, headers: { "Content-Type": "application/json" } }
     );
   }
-};
+}

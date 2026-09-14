@@ -7,10 +7,10 @@
 const UPLOAD_URL =
   "https://insurance-broker-production-85e3.up.railway.app/upload";
 
-export const onRequestPost: PagesFunction = async (context) => {
+export async function handleUpload(request: Request): Promise<Response> {
   try {
-    const contentType = context.request.headers.get("content-type") ?? "";
-    const body = await context.request.arrayBuffer();
+    const contentType = request.headers.get("content-type") ?? "";
+    const body = await request.arrayBuffer();
 
     const resp = await fetch(UPLOAD_URL, {
       method: "POST",
@@ -29,4 +29,4 @@ export const onRequestPost: PagesFunction = async (context) => {
       { status: 500, headers: { "Content-Type": "application/json" } }
     );
   }
-};
+}
