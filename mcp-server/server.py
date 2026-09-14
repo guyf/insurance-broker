@@ -388,15 +388,19 @@ async def update_policy(request: Request) -> JSONResponse:
 
 async def list_policies_http(request: Request) -> JSONResponse:
     """Return all policy documents for a business (or legacy tenant) as structured JSON."""
-    tenant_id = request.query_params.get("tenant_id") or None
-    business_id = request.query_params.get("business_id") or None
-    rpc_args: dict = {}
-    if tenant_id:
-        rpc_args["p_tenant_id"] = tenant_id
-    if business_id:
-        rpc_args["p_business_id"] = business_id
-    resp = _supabase().rpc("list_policies", rpc_args).execute()
-    return JSONResponse(resp.data or [])
+    try:
+        tenant_id = request.query_params.get("tenant_id") or None
+        business_id = request.query_params.get("business_id") or None
+        rpc_args: dict = {}
+        if tenant_id:
+            rpc_args["p_tenant_id"] = tenant_id
+        if business_id:
+            rpc_args["p_business_id"] = business_id
+        resp = _supabase().rpc("list_policies", rpc_args).execute()
+        return JSONResponse(resp.data or [])
+    except Exception as exc:
+        logger.exception("list-policies failed")
+        return JSONResponse({"error": str(exc)}, status_code=500)
 
 
 async def search_docs_http(request: Request) -> JSONResponse:

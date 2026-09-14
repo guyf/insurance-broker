@@ -80,12 +80,18 @@ export async function identifyPolicy(filename: string): Promise<IdentifyResult> 
 
 export async function getCoverageAnalysis(): Promise<CoverageAnalysis> {
   const res = await fetch("/api/coverage-analysis");
-  if (!res.ok) throw new Error("Failed to fetch coverage analysis");
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({})) as { error?: string };
+    throw new Error(body.error ?? "Failed to fetch coverage analysis");
+  }
   return res.json();
 }
 
 export async function refreshCoverageAnalysis(): Promise<CoverageAnalysis> {
   const res = await fetch("/api/analyse-policies", { method: "POST" });
-  if (!res.ok) throw new Error("Failed to analyse policies");
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({})) as { error?: string };
+    throw new Error(body.error ?? "Failed to analyse policies");
+  }
   return res.json();
 }

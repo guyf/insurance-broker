@@ -457,8 +457,8 @@ export default function BusinessPanel({ business, policies, onUpload, onSendMess
         onAnalysisComplete?.(buildAnalysisSummary(result));
       }
       setCoverageAnalysis(result);
-    } catch {
-      setAnalyseError("Analysis failed — please try again.");
+    } catch (err) {
+      setAnalyseError(err instanceof Error ? err.message : "Analysis failed — please try again.");
     } finally {
       setIsAnalysing(false);
     }
