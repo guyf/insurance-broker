@@ -284,9 +284,14 @@
           <td class="detail">robots.txt disallow-all, noindex/nofollow meta tag, and an X-Robots-Tag header on every Worker response (including /api/* JSON).</td>
         </tr>
         <tr>
+          <td class="item">/admin hub page</td>
+          <td><span class="status status-live">Live</span></td>
+          <td class="detail">Landing page at /admin linking to Architecture and the Market Policy Registry. The registry tool (formerly served at /admin itself) moved to /admin/market-policies.html.</td>
+        </tr>
+        <tr>
           <td class="item">/admin/* gated by Cloudflare Access</td>
           <td><span class="status status-live">Live</span></td>
-          <td class="detail">Zero Trust → Access → Applications, self-hosted app scoped to broker.denney.insure/admin*, email one-time-PIN login. This page (/admin/architecture.html) and the ingestion-status admin.html both sit behind it. Account-level config, not in this repo — same setup mirrored on denney.insure/admin* in the denney-site repo.</td>
+          <td class="detail">Zero Trust → Access → Applications, self-hosted app scoped to broker.denney.insure/admin*, email one-time-PIN login. The /admin hub, this page (/admin/architecture.html), and the Market Policy Registry ingestion tool (/admin/market-policies.html) all sit behind it. Account-level config, not in this repo — same setup mirrored on denney.insure/admin* in the denney-site repo.</td>
         </tr>
         <tr class="section-header"><td colspan="3">Auth</td></tr>
         <tr>

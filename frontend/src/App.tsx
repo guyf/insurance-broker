@@ -15,7 +15,7 @@ export default function App() {
     {
       role: "assistant",
       content:
-        "Hello! I'm your commercial insurance broker. I can check what your business already has covered, spot gaps against the risks SMEs typically face, and get you illustrative quotes for liability, property, or cyber cover.\n\nHow can I help you today?",
+        "Hello! I'm Denney your AI commercial insurance broker. I can check what your business already has covered, spot gaps against the risks SMEs typically face, and get you illustrative quotes to fill any gaps. I can even tell if you're over insured or paying too much.\n\nHow can I help you today?",
     },
   ]);
   const [thinking, setThinking] = useState(false);

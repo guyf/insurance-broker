@@ -100,7 +100,9 @@ insurance-broker/
 │   │       ├── auth/                 # otp-request, otp-verify, logout
 │   │       ├── business.ts           # GET current business + connections + financials
 │   │       └── ...                   # chat, policies, requote, upload, delete-policy, update-policy
+│   ├── public/admin/index.html       # Admin hub — links to Architecture + Market Policy Registry
 │   ├── public/admin/architecture.html # Full architecture reference (copied from docs/ at build time)
+│   ├── public/admin/market-policies.html # Market Policy Registry ingestion tool (formerly served at /admin itself)
 │   └── wrangler.toml                 # main + [assets] + [build] + [vars] — deployed via Cloudflare Workers Builds
 ├── supabase/
 │   └── migrations/
@@ -272,7 +274,7 @@ derives `business_id` from the session, never from client input). Real per-row R
 
 `insured_entity` can also be set freely via the web UI card editor (e.g. "BMW i3") and is persisted back to Supabase via `PATCH /api/update-policy`.
 
-Market policy paths (`market/…`) aren't shown in the current business dashboard UI (`BusinessPanel`, née `FilingCabinet`) — they live in the DB for comparison queries only. Ingestion status is visible at `/admin`, which is gated by **Cloudflare Access** (Zero Trust — dashboard → Zero Trust → Access → Applications, scoped to `broker.denney.insure/admin*`, email one-time-PIN login). Account-level config, not anything in this repo; `/admin/architecture.html` sits behind the same gate.
+Market policy paths (`market/…`) aren't shown in the current business dashboard UI (`BusinessPanel`, née `FilingCabinet`) — they live in the DB for comparison queries only. Ingestion status is visible at `/admin/market-policies.html`, linked from the `/admin` hub page alongside Architecture. The whole `/admin*` surface is gated by **Cloudflare Access** (Zero Trust — dashboard → Zero Trust → Access → Applications, scoped to `broker.denney.insure/admin*`, email one-time-PIN login). Account-level config, not anything in this repo.
 
 ## Quote MCP Server (Railway)
 
