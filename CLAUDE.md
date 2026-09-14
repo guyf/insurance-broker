@@ -2,15 +2,25 @@
 
 ## What This Project Is
 
-A RAG pipeline that embeds personal insurance policy PDFs into a Supabase vector store,
-then exposes them to Claude via an MCP server. Claude acts as a personal insurance broker,
-answering coverage questions, flagging renewal dates, and identifying gaps.
+**Mid-pivot.** Originally a RAG pipeline for one person's own insurance policies (personal
+home/car/pet/travel/phone cover). Being rebuilt into **Denney Insurance's SME/commercial
+insurance broker product**: businesses register or log in (email OTP, or "Continue with Xero" /
+"Continue with QuickBooks"), and if they connect an accounting system, their financial data
+(revenue, employees, assets) is pulled automatically to drive coverage analysis and quotes for
+four UK commercial lines (public liability, employers' liability, professional indemnity,
+cyber). Personal-insurance use is being dropped from the product surface going forward — see
+`/admin/architecture.html` (Build Status section) for exactly what's live vs. still being built.
+
+A sibling project, `xero-insurance` (`../xero-insurance`), prototyped the Xero-login + commercial
+broker idea separately. That work is being **merged into this repo and the sibling retired** —
+its Xero OAuth flow and coverage-checklist UI are being ported in here rather than maintained as
+a second codebase.
 
 ## Architecture
 
 ```
-INGESTION (one-off, run locally)
-────────────────────────────────
+INGESTION (one-off, run locally — personal use only, out of scope for SME product)
+────────────────────────────────────────────────────────────────────────────────
 Google Drive PDFs
        │
        ▼
@@ -28,15 +38,22 @@ Browser
 Cloudflare Worker            ← broker.denney.insure — static SPA assets + /api/* routes
                                 (git-connected via Cloudflare Workers Builds)
        │
-       ├─ /api/policies ──────────────────────────────────────────────┐
-       │                                                               │
-       ├─ /api/upload ────────────────────────────────────────────────┤
-       │                                                               ▼
-       │                                                    Broker MCP Server (Railway)
-       │                                                    mcp-server/server.py
-       │                                                               │
-       │                                                               ▼
-       │                                                    Supabase (vector DB)
+       ├─ /api/auth/otp-request, /otp-verify, /logout ──► Supabase Auth ──► Resend (SMTP)
+       │                                                        │
+       │                                                        ▼
+       │                                             businesses row created on first login
+       │                                             (getOrCreateBusinessForUser)
+       │
+       ├─ /api/business ──► Supabase (businesses / business_connections / business_financials)
+       │
+       ├─ /api/policies, /api/upload, /api/update-policy, /api/delete-policy ──────┐
+       │                                                                            │
+       │                                                                            ▼
+       │                                                         Broker MCP Server (Railway)
+       │                                                         mcp-server/server.py
+       │                                                                            │
+       │                                                                            ▼
+       │                                                         Supabase (vector DB + business data)
        │
        └─ /api/chat ──► Anthropic API (claude-sonnet-4-6)
                               │  agentic tool-use loop
@@ -44,9 +61,12 @@ Cloudflare Worker            ← broker.denney.insure — static SPA assets + /a
                               └─► Quote MCP Server (Railway)  ──► OpenAI (GPT-4o-mini, photo analysis)
                                   mcp-quote/server.py
 
+  NOTE: existing routes (chat/policies/upload/etc.) are not yet session-gated and don't derive
+  business_id from the session — see /admin/architecture.html Build Status for what's wired up.
 
-CLAUDE DESKTOP (alternative interface)
-───────────────────────────────────────
+
+CLAUDE DESKTOP (legacy — personal-broker interface, being phased out with the SME pivot)
+──────────────────────────────────────────────────────────────────────────────────────
 Claude Desktop
        │
        ▼
@@ -56,22 +76,37 @@ supergateway (local npx)     ← stdio↔streamable-http bridge
        └─► Quote MCP Server (Railway)  ──► OpenAI
 ```
 
+**Full architecture detail (live vs. in-progress vs. planned, every service/table/route):
+see `/admin/architecture.html`** — kept up to date as this pivot progresses; this file stays a
+concise guide, that one is the exhaustive reference.
+
 ## Repository Layout
 
 ```
 insurance-broker/
-├── SKILL.md                          # Claude's broker instructions (also at ~/.claude/skills/)
+├── SKILL.md                          # Claude's broker instructions (also at ~/.claude/skills/) — personal-broker era, being superseded
 ├── frontend/                         # React SPA + Cloudflare Worker, deployed to broker.denney.insure
-│   ├── src/                          # React SPA source
+│   ├── src/
+│   │   ├── components/LoginGate/     # Email-OTP login screen (Xero/QuickBooks buttons present, disabled)
+│   │   └── lib/auth.ts               # requestOtp / verifyOtp / logout / getCurrentBusiness
 │   ├── worker/src/
 │   │   ├── index.ts                  # Worker entry point: routes /api/*, else serves dist/ via ASSETS
 │   │   ├── mcp-client.ts             # Shared stateless MCP (streamable-http) client
-│   │   └── routes/                   # chat, policies, requote, upload, delete-policy, update-policy
-│   └── wrangler.toml                 # main + [assets] + [build] — deployed via Cloudflare Workers Builds
+│   │   ├── lib/supabase.ts           # Service-role Supabase client (auth + table access)
+│   │   ├── auth/session.ts           # httpOnly session cookie: read/issue/clear, auto-refresh
+│   │   ├── auth/business.ts          # getOrCreateBusinessForUser — one business per user, created on first login
+│   │   └── routes/
+│   │       ├── auth/                 # otp-request, otp-verify, logout
+│   │       ├── business.ts           # GET current business + connections + financials
+│   │       └── ...                   # chat, policies, requote, upload, delete-policy, update-policy
+│   ├── public/admin/architecture.html # Full architecture reference (copied from docs/ at build time)
+│   └── wrangler.toml                 # main + [assets] + [build] + [vars] — deployed via Cloudflare Workers Builds
 ├── supabase/
 │   └── migrations/
-│       └── 001_create_documents.sql  # vector table, HNSW index, RLS, RPCs
-├── ingestion/
+│       ├── 001_create_documents.sql  # vector table, HNSW index, RLS, RPCs
+│       └── 011_business_accounts.sql # businesses / business_connections / business_financials, documents.business_id,
+│                                      # coverage_analysis.business_id, p_business_id on RPCs, policy-documents Storage bucket
+├── ingestion/                        # personal-use only; out of scope for the SME product
 │   ├── ingest.py                     # CLI entry point
 │   ├── chunk.py                      # PDF extraction + chunking (pdfplumber + tiktoken)
 │   ├── embed.py                      # OpenAI embeddings, batched
@@ -81,30 +116,56 @@ insurance-broker/
 ├── mcp-server/
 │   ├── server.py                     # FastMCP streamable-http server, 4 MCP tools + 3 HTTP endpoints
 │   ├── market_policies.py            # Curated registry of UK insurer policy booklet URLs
-│   ├── requirements.txt
+│   ├── requirements.txt              # mcp<2.0.0 pinned — v2 renamed FastMCP, see git history
 │   ├── Procfile                      # Railway start command
 │   ├── railway.toml
 │   └── .env.example
 ├── docs/
-│   └── architecture.html             # Architecture diagrams (source; copied to frontend/public/)
+│   └── architecture.html             # Source of truth for the architecture doc; copied to frontend/public/admin/
 └── mcp-quote/
-    ├── server.py                     # FastMCP streamable-http, 4 tools
-    ├── pricer.py                     # Deterministic home/motor/pet pricing
+    ├── server.py                     # FastMCP streamable-http, 8 tools (4 personal + 4 commercial)
+    ├── pricer.py                     # Deterministic pricing (home/motor/pet + commercial lines)
     ├── photo_analyzer.py             # GPT-4o-mini vision → asset details
-    ├── requirements.txt
+    ├── requirements.txt              # mcp<2.0.0 pinned
     ├── Procfile
     ├── railway.toml
     └── .env.example
 ```
 
+## Auth
+
+**Email OTP (passwordless) via Supabase Auth — no passwords anywhere in this system.**
+`signInWithOtp` sends a 6-digit code, `verifyOtp` redeems it. Xero/QuickBooks login (planned,
+not built) will bridge into the same Supabase Auth identity store via the Admin API, so every
+login method ends in the same kind of session regardless of how someone signed up.
+
+- **Session**: httpOnly, Secure cookie (`ib_session`) wrapping the Supabase access + refresh
+  tokens. Verified via `supabase.auth.getUser()` on each request; transparently refreshed via
+  `refreshSession()` when expired (`frontend/worker/src/auth/session.ts`).
+- **First login**: `getOrCreateBusinessForUser` creates a `businesses` row for the user if one
+  doesn't exist yet — every authenticated user has exactly one business (v1; no team members /
+  multiple businesses per user yet).
+- **Mail delivery**: Resend, SMTP relay (`smtp.resend.com`), sending domain `auth.denney.insure`
+  (DKIM/SPF/MX verified). Supabase's default built-in mailer is demo-only (~2 emails/hour,
+  delivers only to project-team addresses) — don't rely on it past initial local testing.
+- **Worker holds `SUPABASE_SERVICE_ROLE_KEY`** (new — previously only `mcp-server` had it) for
+  both the Auth admin calls and direct table reads/writes (`businesses`, `business_connections`,
+  `business_financials`). `SUPABASE_URL` is a plain (non-secret) `[vars]` entry in `wrangler.toml`.
+- **Authorization model (v1)**: the Worker derives `business_id` from the verified session only —
+  never trusts a client-supplied id. No per-row Postgres RLS beyond service-role-only yet (that's
+  a deliberate deferral, not an oversight — see `/admin/architecture.html`).
+
 ## MCP Server (Railway)
 
 **URL:** `https://insurance-broker-production-85e3.up.railway.app/sse`
 
-**Four MCP tools:**
-- `search_insurance_docs(query, policy_type?, limit?)` — semantic search across all docs (personal + market)
-- `list_policies()` — inventory of all ingested documents
-- `get_renewal_calendar()` — renewal dates, flags within 60 days
+**Four MCP tools** (all accept an optional `tenant_id` — legacy free-text scoping from the
+`xero-insurance` prototype — and the underlying Supabase RPCs now also accept `business_id`;
+`mcp-server`'s Python code hasn't been updated to pass `business_id` yet, so it's still
+`tenant_id`-only in practice):
+- `search_insurance_docs(query, policy_type?, limit?, tenant_id?)` — semantic search across all docs (personal + market)
+- `list_policies(tenant_id?)` — inventory of all ingested documents
+- `get_renewal_calendar(tenant_id?)` — renewal dates, flags within 60 days
 - `ingest_market_policies(policy_type, provider?)` — download & ingest public policy booklets from major UK insurers; `policy_type`: car/home/pet; `provider` optional (e.g. "Admiral")
 
 **Three HTTP endpoints (non-MCP):**
@@ -159,13 +220,35 @@ Table: `public.documents`
   `filename`, `source_path`, `page_num`, `chunk_index`, `renewal_date`, `premium`,
   `provider`, `underwriter`, `asset_name`, `asset_value`
 - `chunk_hash` — unique dedup key
-- `user_id` — null in Phase 1, ready for Phase 2 multiuser
+- `user_id` — null (unused — see `business_id` below, the FK that's actually being used going forward)
+- `business_id` — `uuid` → `businesses.id` (migration 011). New writes should set this; legacy
+  rows only have `metadata->>'tenant_id'`, which RPCs still accept for backward compat.
+
+Table: `public.businesses` — `id`, `owner_user_id` (→ `auth.users`, one business per user in v1), `name`.
+
+Table: `public.business_connections` — one row per linked accounting provider (`xero` |
+`quickbooks`), `external_tenant_id`, `access_token`/`refresh_token`/`token_expires_at`, unique
+per `(business_id, provider)`. No rows written yet — nothing calls this until the Xero/QuickBooks
+OAuth bridges are built.
+
+Table: `public.business_financials` — one **upserted** row per business (not a history table —
+refreshed on each accounting-provider login): `revenue`, `employees`, `fixed_assets`, `payroll`,
+`industry`, `raw` (full captured payload). No rows written yet, same reason as above.
+
+Table: `public.coverage_analysis` — `tenant_id` (legacy PK) and `business_id` (new, nullable
+unique), `analysis` jsonb — populated by the (not-yet-ported) Analyse Policies feature.
+
+Storage bucket: `policy-documents` (private) — for uploaded policy PDF originals, so the
+rebuilt UI can show users what they uploaded. Created in migration 011; nothing uploads to it
+yet (`/api/upload` still only forwards to `mcp-server` for chunking, originals aren't retained).
 
 `doc_type` values: `policy` (insurance policies, warranties), `invoice` (purchase receipts), `other` (manuals, correspondence — not shown in UI cards).
 
-Migrations: 001 create, 002 add provider, 003 rename property→insured_entity + add update_policy_metadata RPC, 004 add doc_type/asset_name/asset_value, 005 add premium/renewal_date, 006 fix list_policies DISTINCT ON source_path, 007 add delete_documents_by_source_path RPC, 008 add tenant_id filtering to list_policies/get_renewal_calendar, 009 add coverage_analysis table, 010 add policy_types array to list_policies.
+Migrations: 001 create, 002 add provider, 003 rename property→insured_entity + add update_policy_metadata RPC, 004 add doc_type/asset_name/asset_value, 005 add premium/renewal_date, 006 fix list_policies DISTINCT ON source_path, 007 add delete_documents_by_source_path RPC, 008 add tenant_id filtering to list_policies/get_renewal_calendar, 009 add coverage_analysis table, 010 add policy_types array to list_policies, 011 add businesses/business_connections/business_financials, business_id on documents/coverage_analysis, p_business_id on RPCs, policy-documents Storage bucket.
 
-RLS is enabled from day one. Phase 1 allows service role only.
+RLS is enabled from day one, service-role only throughout (app-layer authorization — the Worker
+derives `business_id` from the session, never from client input). Real per-row RLS keyed to
+`auth.uid()` is a deliberate near-term follow-up, not yet done.
 
 ## Metadata Conventions
 
@@ -192,11 +275,16 @@ Market policy paths (`market/…`) are filtered out of the Filing Cabinet UI —
 
 **URL:** `https://alluring-prosperity-production-5644.up.railway.app/mcp`
 
-**Four tools:**
+**Eight tools — four personal (wired into the web chat today), four commercial (built, but
+not yet in `chat.ts`'s `TOOLS[]` array — Claude can't call them from the web app yet):**
 - `get_home_quote(...)` — illustrative home/buildings/contents quote (3 insurers)
 - `get_motor_quote(...)` — illustrative motor insurance quote (3 insurers)
 - `get_pet_quote(...)` — illustrative pet insurance quote (3 insurers)
 - `analyze_photo(image_url, asset_type)` — GPT-4o-mini vision → asset details JSON
+- `get_public_liability_quote(revenue, employees, industry, postcode?, cover_limit?)`
+- `get_employers_liability_quote(employees, annual_payroll, industry)`
+- `get_professional_indemnity_quote(revenue, profession, cover_limit?)`
+- `get_cyber_quote(revenue, employees, industry, data_records_held?)`
 
 **No Supabase needed** — purely stateless, only requires `OPENAI_API_KEY`.
 
@@ -215,9 +303,28 @@ Market policy paths (`market/…`) are filtered out of the Filing Cabinet UI —
 
 ---
 
-## Phase 2 (Future)
+## SME Rebuild — What's Next
 
-- Add per-user RLS policies to `documents` table
-- Swap `SUPABASE_ANON_KEY` for user JWT in MCP server
-- Web frontend calling Supabase RPCs directly via Anthropic API
-- `user_id` column and RLS scaffolding already in place
+In rough order (see `/admin/architecture.html` Build Status for the live/in-progress/planned
+state of each):
+
+1. Session-gate the existing routes (`chat`, `policies`, `upload`, `update-policy`,
+   `delete-policy`, `requote`) and have them derive `business_id` from the session instead of
+   running unauthenticated.
+2. Xero OAuth bridge — port `xero-insurance/backend/xero_auth.py`'s flow into the Worker,
+   generalized so QuickBooks can reuse the same shape.
+3. QuickBooks OAuth bridge — blocked on registering an Intuit Developer app (manual step).
+4. `mcp-server` Python code: start passing `business_id` (the RPCs already accept it), retire
+   `tenant_id` once nothing depends on it.
+5. Coverage-checklist UI (port `xero-insurance`'s `CompanyPanel.tsx` + `analyse_tenant_policies`
+   / `identify_uploaded_policy`) replacing the personal-use `FilingCabinet`.
+6. Full restyle to `denney.insure`'s "Navy Teal Coral" design system.
+7. Decommission `xero-insurance` (Railway backend + Cloudflare Pages frontend) once the above is
+   verified working end-to-end.
+
+## Future Hardening (not urgent, flagged for later)
+
+- Real per-row Postgres RLS keyed to `auth.uid()`, replacing the current service-role-only /
+  app-layer-authorization model
+- Passkey/WebAuthn as an optional faster-login upgrade once a user has an OTP-created account
+  (Supabase Auth's passkey support is experimental/beta as of writing — not for v1)
