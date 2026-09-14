@@ -19,8 +19,7 @@ export async function handleOtpVerify(request: Request, env: Env): Promise<Respo
       });
     }
 
-    const supabase = supabaseAdmin(env);
-    const { data, error } = await supabase.auth.verifyOtp({ email, token, type: "email" });
+    const { data, error } = await supabaseAdmin(env).auth.verifyOtp({ email, token, type: "email" });
     if (error || !data.session || !data.user) {
       return new Response(
         JSON.stringify({ error: error?.message ?? "Invalid or expired code" }),
@@ -28,7 +27,12 @@ export async function handleOtpVerify(request: Request, env: Env): Promise<Respo
       );
     }
 
-    const businessId = await getOrCreateBusinessForUser(supabase, data.user.id);
+    // Fresh client, deliberately not the one verifyOtp() ran on — calling .auth.verifyOtp()
+    // swaps that client's effective Authorization header to the now-signed-in user's session
+    // for every subsequent request, including .from() table calls, which then hit the
+    // service_role_all RLS policy as an ordinary user and get rejected. A brand new client
+    // still carries the service-role apikey untouched.
+    const businessId = await getOrCreateBusinessForUser(supabaseAdmin(env), data.user.id);
 
     return new Response(JSON.stringify({ business_id: businessId }), {
       headers: {
