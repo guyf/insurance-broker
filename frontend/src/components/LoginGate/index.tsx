@@ -78,7 +78,7 @@ export default function LoginGate({ onAuthenticated }: Props) {
               inputMode="numeric"
               required
               autoFocus
-              placeholder="6-digit code"
+              placeholder="Code from email"
               value={code}
               onChange={(e) => setCode(e.target.value)}
               className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm tracking-widest text-center focus:outline-none focus:ring-2 focus:ring-blue-400"
