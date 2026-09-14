@@ -18,3 +18,10 @@ command = "npm run build"
 # and must be set via `wrangler secret put SUPABASE_SERVICE_ROLE_KEY`.
 [vars]
 SUPABASE_URL = "https://qsnruquxukjkrbhyzsia.supabase.co"
+
+# QuickBooks report/company API host — sandbox and production use different
+# hosts (auth/token endpoints are shared, so this is the only environment
+# switch needed). Currently testing against sandbox; flip to
+# https://quickbooks.api.intuit.com when INTUIT_CLIENT_ID/SECRET are swapped
+# back to production keys.
+QUICKBOOKS_API_BASE = "https://sandbox-quickbooks.api.intuit.com"

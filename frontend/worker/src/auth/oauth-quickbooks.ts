@@ -11,11 +11,6 @@ import type { Env } from "../index";
 const QUICKBOOKS_AUTH_URL = "https://appcenter.intuit.com/connect/oauth2";
 const QUICKBOOKS_TOKEN_URL = "https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer";
 
-// Production API host. Intuit sandbox companies are served from
-// sandbox-quickbooks.api.intuit.com instead — swap this if testing against
-// a sandbox company rather than a real connected one.
-export const QUICKBOOKS_API_BASE = "https://quickbooks.api.intuit.com";
-
 const SCOPES = ["com.intuit.quickbooks.accounting", "openid", "email", "profile"].join(" ");
 
 export interface QuickBooksTokenSet {

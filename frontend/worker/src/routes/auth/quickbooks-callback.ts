@@ -74,7 +74,7 @@ export async function handleQuickbooksCallback(request: Request, env: Env): Prom
       .from("business_connections")
       .upsert(connectionRow, { onConflict: "business_id,provider" });
 
-    const financials = await fetchQuickBooksFinancials(tokens.access_token, realmId);
+    const financials = await fetchQuickBooksFinancials(env.QUICKBOOKS_API_BASE, tokens.access_token, realmId);
     await supabaseAdmin(env)
       .from("business_financials")
       .upsert(

@@ -32,6 +32,7 @@ export interface Env {
   XERO_CLIENT_SECRET: string;
   INTUIT_CLIENT_ID: string;
   INTUIT_CLIENT_SECRET: string;
+  QUICKBOOKS_API_BASE: string;
   ASSETS: Fetcher;
 }
 

@@ -6,8 +6,6 @@
  * "FixedAssets") and their running total sits in that row's own `Summary`,
  * not a child row like Xero's SummaryRow.
  */
-import { QUICKBOOKS_API_BASE } from "./oauth-quickbooks";
-
 export interface QuickBooksFinancials {
   name: string;
   registrationNumber: string | null;
@@ -35,8 +33,8 @@ function headers(accessToken: string): HeadersInit {
   };
 }
 
-async function getCompanyInfo(accessToken: string, realmId: string): Promise<Record<string, unknown>> {
-  const resp = await fetch(`${QUICKBOOKS_API_BASE}/v3/company/${realmId}/companyinfo/${realmId}?minorversion=65`, {
+async function getCompanyInfo(apiBase: string, accessToken: string, realmId: string): Promise<Record<string, unknown>> {
+  const resp = await fetch(`${apiBase}/v3/company/${realmId}/companyinfo/${realmId}?minorversion=65`, {
     headers: headers(accessToken),
   });
   if (!resp.ok) return {};
@@ -62,13 +60,14 @@ function findGroupTotal(rows: QBRow[], group: string): number | null {
 }
 
 async function getReportTotal(
+  apiBase: string,
   accessToken: string,
   realmId: string,
   report: "ProfitAndLoss" | "BalanceSheet",
   group: string
 ): Promise<number | null> {
   try {
-    const resp = await fetch(`${QUICKBOOKS_API_BASE}/v3/company/${realmId}/reports/${report}?minorversion=65`, {
+    const resp = await fetch(`${apiBase}/v3/company/${realmId}/reports/${report}?minorversion=65`, {
       headers: headers(accessToken),
     });
     if (!resp.ok) return null;
@@ -81,13 +80,14 @@ async function getReportTotal(
 }
 
 export async function fetchQuickBooksFinancials(
+  apiBase: string,
   accessToken: string,
   realmId: string
 ): Promise<QuickBooksFinancials> {
   const [info, revenue, fixedAssets] = await Promise.all([
-    getCompanyInfo(accessToken, realmId),
-    getReportTotal(accessToken, realmId, "ProfitAndLoss", "Income"),
-    getReportTotal(accessToken, realmId, "BalanceSheet", "FixedAssets"),
+    getCompanyInfo(apiBase, accessToken, realmId),
+    getReportTotal(apiBase, accessToken, realmId, "ProfitAndLoss", "Income"),
+    getReportTotal(apiBase, accessToken, realmId, "BalanceSheet", "FixedAssets"),
   ]);
 
   const address = info.Country as string | undefined;
