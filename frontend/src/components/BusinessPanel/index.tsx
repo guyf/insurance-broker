@@ -99,16 +99,16 @@ function BusinessCard({ business, onLogout }: { business: BusinessInfo; onLogout
     <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
       <div className="px-3 py-2.5 bg-slate-900 flex items-center justify-between">
         <div className="min-w-0">
-          <h1 className="text-sm font-semibold font-display text-white truncate">
+          <h1 className="text-base font-semibold font-display text-white truncate">
             {business.business?.name || business.user.email || "Your business"}
           </h1>
           {f?.source && (
-            <p className="text-xs text-slate-400 capitalize">via {f.source}</p>
+            <p className="text-sm text-slate-400 capitalize">via {f.source}</p>
           )}
         </div>
         <button
           onClick={onLogout}
-          className="text-xs text-slate-400 hover:text-white transition-colors flex-shrink-0 ml-2"
+          className="text-sm text-slate-400 hover:text-white transition-colors flex-shrink-0 ml-2"
         >
           Log out
         </button>
@@ -117,7 +117,7 @@ function BusinessCard({ business, onLogout }: { business: BusinessInfo; onLogout
         {items.map(({ label, value }) => (
           <div key={label}>
             <div className="text-xs text-slate-400">{label}</div>
-            <div className="text-xs font-medium text-slate-800 truncate">{value}</div>
+            <div className="text-sm font-medium text-slate-800 truncate">{value}</div>
           </div>
         ))}
       </div>
@@ -125,7 +125,7 @@ function BusinessCard({ business, onLogout }: { business: BusinessInfo; onLogout
         {["xero", "quickbooks"].map((provider) => (
           <span
             key={provider}
-            className={`text-[10px] font-medium uppercase tracking-wide rounded px-1.5 py-0.5 ${
+            className={`text-xs font-medium uppercase tracking-wide rounded px-1.5 py-0.5 ${
               connectedProviders.has(provider)
                 ? "bg-accent-tint text-accent"
                 : "bg-slate-100 text-slate-400"
@@ -153,15 +153,15 @@ function PolicyDocCard({ policy, onSendMessage }: { policy: Policy; onSendMessag
       <div className="flex-1 min-w-0">
         <button
           onClick={() => onSendMessage?.(`Tell me about my ${policy.filename}`)}
-          className="text-xs font-medium text-accent hover:text-accent/80 underline truncate block text-left w-full"
+          className="text-sm font-medium text-accent hover:text-accent/80 underline truncate block text-left w-full"
           title={policy.filename}
         >
           {policy.filename}
         </button>
         <div className="flex flex-wrap items-center gap-1.5 mt-1">
-          {policy.provider && <span className="text-xs text-slate-500">{policy.provider}</span>}
-          {policy.premium && <span className="text-xs text-slate-400">· {policy.premium}</span>}
-          {policy.renewal_date && <span className="text-xs text-slate-400">· Renews {policy.renewal_date}</span>}
+          {policy.provider && <span className="text-sm text-slate-500">{policy.provider}</span>}
+          {policy.premium && <span className="text-sm text-slate-400">· {policy.premium}</span>}
+          {policy.renewal_date && <span className="text-sm text-slate-400">· Renews {policy.renewal_date}</span>}
         </div>
         {riskIds.length > 0 && (
           <div className="flex flex-wrap gap-1 mt-1">
@@ -224,14 +224,14 @@ function RiskBox({
     <div className={`bg-white rounded-lg border overflow-hidden ${isCovered ? "border-accent/40" : "border-slate-200"}`}>
       <div className={`px-3 py-2 border-b ${isCovered ? "bg-accent-tint border-accent/20" : "bg-slate-50 border-slate-200"}`}>
         <div className="flex items-center justify-between">
-          <h3 className="text-xs font-semibold text-slate-900 leading-snug">{risk.name}</h3>
+          <h3 className="text-sm font-semibold text-slate-900 leading-snug">{risk.name}</h3>
           {isCovered ? (
-            <span className={`text-xs font-medium flex items-center gap-0.5 flex-shrink-0 ml-1 ${isDuplicate ? "text-amber-600" : "text-accent"}`}>
+            <span className={`text-sm font-medium flex items-center gap-0.5 flex-shrink-0 ml-1 ${isDuplicate ? "text-amber-600" : "text-accent"}`}>
               <CheckIcon className="w-3 h-3" />
               {isDuplicate ? "Duplicate" : "Covered"}
             </span>
           ) : (
-            <span className="text-xs font-medium text-primary flex items-center gap-0.5 flex-shrink-0 ml-1">
+            <span className="text-sm font-medium text-primary flex items-center gap-0.5 flex-shrink-0 ml-1">
               <CrossIcon className="w-3 h-3" />
               Not covered
             </span>
@@ -239,7 +239,7 @@ function RiskBox({
         </div>
       </div>
 
-      <div className="px-3 py-2 text-xs space-y-1.5">
+      <div className="px-3 py-2 text-sm space-y-1.5">
         {isCovered ? (
           <>
             {analysisData ? (
@@ -293,7 +293,7 @@ function RiskBox({
             {risk.legalNote && <p className="text-amber-600 font-medium">⚠ {risk.legalNote}</p>}
             <button
               onClick={() => onSendMessage?.(quoteMessage())}
-              className="w-full text-xs bg-primary text-white rounded-full py-1.5 hover:bg-primary/90 transition-colors font-medium mt-1"
+              className="w-full text-sm bg-primary text-white rounded-full py-2 hover:bg-primary/90 transition-colors font-medium mt-1"
             >
               Get Quote
             </button>
@@ -380,7 +380,7 @@ export default function BusinessPanel({ business, policies, onUpload, onSendMess
             <button
               onClick={() => fileInputRef.current?.click()}
               disabled={!!uploadStatus}
-              className="text-xs bg-white border border-primary/30 text-primary rounded-full px-3 py-1 hover:bg-primary-tint transition-colors font-medium disabled:opacity-60"
+              className="text-sm bg-white border border-primary/30 text-primary rounded-full px-4 py-1.5 hover:bg-primary-tint transition-colors font-medium disabled:opacity-60"
             >
               {uploadStatus ?? "Upload Policy"}
             </button>
@@ -388,7 +388,7 @@ export default function BusinessPanel({ business, policies, onUpload, onSendMess
           </div>
 
           {pendingAnalysis && (
-            <div className="bg-primary-tint border border-primary/20 rounded-lg px-3 py-2.5 text-xs mb-2">
+            <div className="bg-primary-tint border border-primary/20 rounded-lg px-3 py-2.5 text-sm mb-2">
               <p className="text-slate-800 font-medium mb-1.5">
                 Identified: {pendingAnalysis.typeNames.join(" + ") || "Unknown type"}
               </p>
@@ -402,7 +402,7 @@ export default function BusinessPanel({ business, policies, onUpload, onSendMess
           )}
 
           {policies.length === 0 ? (
-            <p className="text-xs text-slate-400 italic px-0.5">No policies uploaded yet.</p>
+            <p className="text-sm text-slate-400 italic px-0.5">No policies uploaded yet.</p>
           ) : (
             <div className="space-y-2">
               {policies.map((p) => (
@@ -418,12 +418,12 @@ export default function BusinessPanel({ business, policies, onUpload, onSendMess
             <button
               onClick={handleAnalyse}
               disabled={isAnalysing || policies.length === 0}
-              className="text-xs bg-white border border-primary/30 text-primary rounded-full px-3 py-1 hover:bg-primary-tint transition-colors font-medium disabled:opacity-60"
+              className="text-sm bg-white border border-primary/30 text-primary rounded-full px-4 py-1.5 hover:bg-primary-tint transition-colors font-medium disabled:opacity-60"
             >
               {isAnalysing ? "Analysing…" : "Analyse Policies"}
             </button>
           </div>
-          {analyseError && <p className="text-xs text-primary mb-2">{analyseError}</p>}
+          {analyseError && <p className="text-sm text-primary mb-2">{analyseError}</p>}
           <div className="space-y-3">
             {categories.map((category) => {
               const categoryRisks = RISKS.filter((r) => r.category === category);

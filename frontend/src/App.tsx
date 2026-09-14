@@ -25,27 +25,7 @@ export default function App() {
   const [requoting, setRequoting] = useState(false);
   const [toast, setToast] = useState<{ text: string; ok: boolean } | null>(null);
   const [prefillInput, setPrefillInput] = useState("");
-  const [leftWidth, setLeftWidth] = useState(480);
   const toastTimer = useRef<ReturnType<typeof setTimeout>>();
-
-  const onDragStart = (e: React.MouseEvent) => {
-    e.preventDefault();
-    const startX = e.clientX;
-    const startWidth = leftWidth;
-    document.body.style.cursor = "col-resize";
-    document.body.style.userSelect = "none";
-    const onMove = (ev: MouseEvent) => {
-      setLeftWidth(Math.max(220, Math.min(520, startWidth + ev.clientX - startX)));
-    };
-    const onUp = () => {
-      document.body.style.cursor = "";
-      document.body.style.userSelect = "";
-      document.removeEventListener("mousemove", onMove);
-      document.removeEventListener("mouseup", onUp);
-    };
-    document.addEventListener("mousemove", onMove);
-    document.addEventListener("mouseup", onUp);
-  };
 
   // Auto-open panel when a quote arrives
   useEffect(() => {
@@ -137,8 +117,8 @@ export default function App() {
 
   return (
     <div className="h-full flex overflow-hidden bg-slate-50">
-      {/* Left — Business Panel (draggable width) */}
-      <aside style={{ width: leftWidth }} className="flex-shrink-0 flex flex-col">
+      {/* Left — Business Panel (50%) */}
+      <aside className="w-1/2 flex-shrink-0 flex flex-col">
         <BusinessPanel
           business={business}
           policies={policies}
@@ -148,13 +128,7 @@ export default function App() {
         />
       </aside>
 
-      {/* Drag handle */}
-      <div
-        onMouseDown={onDragStart}
-        className="w-1 flex-shrink-0 cursor-col-resize bg-slate-200 hover:bg-accent transition-colors"
-      />
-
-      {/* Middle — Broker Chat */}
+      {/* Right — Broker Chat (50%) */}
       <main className="flex-1 flex flex-col bg-white min-w-0 relative">
         <Broker
           messages={messages}

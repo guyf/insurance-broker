@@ -41,7 +41,7 @@ function InsurerCard({ insurer, rank }: { insurer: InsurerQuote; rank: number })
       {/* Features */}
       <ul className="px-4 py-3 space-y-1.5">
         {insurer.features.map((f, i) => (
-          <li key={i} className="flex items-center gap-2 text-xs">
+          <li key={i} className="flex items-center gap-2 text-sm">
             <span
               className={`flex-shrink-0 ${
                 f.included ? "text-emerald-500" : "text-slate-300"
