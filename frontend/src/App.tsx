@@ -2,10 +2,14 @@ import { useEffect, useRef, useState } from "react";
 import { FilingCabinet } from "./components/FilingCabinet";
 import { Broker } from "./components/Broker";
 import { QuotePanel } from "./components/QuotePanel";
+import LoginGate from "./components/LoginGate";
 import { deletePolicy, fetchPolicies, requote, sendMessage, uploadPolicy } from "./lib/api";
+import { getCurrentBusiness, logout } from "./lib/auth";
 import type { ChatMessage, Policy, QuoteResult } from "./lib/types";
 
 export default function App() {
+  const [authChecked, setAuthChecked] = useState(false);
+  const [authenticated, setAuthenticated] = useState(false);
   const [policies, setPolicies] = useState<Policy[]>([]);
   const [policiesLoading, setPoliciesLoading] = useState(true);
   const [messages, setMessages] = useState<ChatMessage[]>([
@@ -62,9 +66,21 @@ export default function App() {
   };
 
   useEffect(() => {
-    loadPolicies();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    getCurrentBusiness()
+      .then((business) => setAuthenticated(business !== null))
+      .catch(() => setAuthenticated(false))
+      .finally(() => setAuthChecked(true));
   }, []);
+
+  useEffect(() => {
+    if (authenticated) loadPolicies();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authenticated]);
+
+  const handleLogout = async () => {
+    await logout();
+    setAuthenticated(false);
+  };
 
   const showToast = (text: string, ok = true) => {
     setToast({ text, ok });
@@ -134,8 +150,18 @@ export default function App() {
     setPrefillInput(`Tell me about my ${policy.filename}`);
   };
 
+  if (!authChecked) return <div className="h-full bg-sidebar" />;
+  if (!authenticated) return <LoginGate onAuthenticated={() => setAuthenticated(true)} />;
+
   return (
-    <div className="h-full flex overflow-hidden bg-sidebar">
+    <div className="h-full flex overflow-hidden bg-sidebar relative">
+      <button
+        onClick={handleLogout}
+        className="absolute top-3 right-3 z-20 text-xs text-gray-400 hover:text-white transition-colors bg-black/20 hover:bg-black/40 rounded px-2 py-1"
+      >
+        Log out
+      </button>
+
       {/* Left — Filing Cabinet (dark sidebar, draggable width) */}
       <aside style={{ width: leftWidth }} className="flex-shrink-0 flex flex-col">
         <FilingCabinet

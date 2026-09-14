@@ -11,9 +11,15 @@ import { handleRequote } from "./routes/requote";
 import { handleUpload } from "./routes/upload";
 import { handleDeletePolicy } from "./routes/delete-policy";
 import { handleUpdatePolicy } from "./routes/update-policy";
+import { handleOtpRequest } from "./routes/auth/otp-request";
+import { handleOtpVerify } from "./routes/auth/otp-verify";
+import { handleLogout } from "./routes/auth/logout";
+import { handleGetBusiness } from "./routes/business";
 
 export interface Env {
   ANTHROPIC_API_KEY: string;
+  SUPABASE_URL: string;
+  SUPABASE_SERVICE_ROLE_KEY: string;
   ASSETS: Fetcher;
 }
 
@@ -22,6 +28,11 @@ export default {
     const url = new URL(request.url);
     const { pathname } = url;
     const { method } = request;
+
+    if (pathname === "/api/auth/otp-request" && method === "POST") return handleOtpRequest(request, env);
+    if (pathname === "/api/auth/otp-verify" && method === "POST") return handleOtpVerify(request, env);
+    if (pathname === "/api/auth/logout" && method === "POST") return handleLogout();
+    if (pathname === "/api/business" && method === "GET") return handleGetBusiness(request, env);
 
     if (pathname === "/api/chat" && method === "POST") return handleChat(request, env);
     if (pathname === "/api/policies" && method === "GET") return handlePolicies();

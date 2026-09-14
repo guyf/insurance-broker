@@ -12,3 +12,9 @@ binding = "ASSETS"
 # Runs on every git-connected deploy (Cloudflare Workers Builds).
 [build]
 command = "npm run build"
+
+# Not secret — safe to commit (matches CLAUDE.md's existing note on
+# SUPABASE_URL/SUPABASE_ANON_KEY). SUPABASE_SERVICE_ROLE_KEY is sensitive
+# and must be set via `wrangler secret put SUPABASE_SERVICE_ROLE_KEY`.
+[vars]
+SUPABASE_URL = "https://qsnruquxukjkrbhyzsia.supabase.co"
