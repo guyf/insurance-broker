@@ -84,7 +84,7 @@ export default function LoginGate({ onAuthenticated }: Props) {
             <button
               type="submit"
               disabled={busy}
-              className="w-full rounded-md bg-primary text-white text-sm font-medium py-2 hover:bg-primary/90 transition-colors disabled:opacity-60"
+              className="w-full rounded-full bg-primary text-white text-sm font-medium py-2 hover:bg-primary/90 transition-colors disabled:opacity-60"
             >
               {busy ? "Sending…" : "Send code"}
             </button>
@@ -104,7 +104,7 @@ export default function LoginGate({ onAuthenticated }: Props) {
             <button
               type="submit"
               disabled={busy}
-              className="w-full rounded-md bg-primary text-white text-sm font-medium py-2 hover:bg-primary/90 transition-colors disabled:opacity-60"
+              className="w-full rounded-full bg-primary text-white text-sm font-medium py-2 hover:bg-primary/90 transition-colors disabled:opacity-60"
             >
               {busy ? "Verifying…" : "Verify"}
             </button>
@@ -123,7 +123,7 @@ export default function LoginGate({ onAuthenticated }: Props) {
         <div className="mt-6 pt-6 border-t border-slate-100 space-y-2">
           <a
             href="/api/auth/xero-start"
-            className="block w-full text-center rounded-md border border-slate-300 text-slate-700 text-sm font-medium py-2 hover:bg-slate-50 transition-colors"
+            className="block w-full text-center rounded-full border border-slate-300 text-slate-700 text-sm font-medium py-2 hover:bg-slate-50 transition-colors"
           >
             Continue with Xero
           </a>
@@ -131,7 +131,7 @@ export default function LoginGate({ onAuthenticated }: Props) {
             type="button"
             disabled
             title="Coming soon"
-            className="w-full rounded-md border border-slate-200 text-slate-400 text-sm font-medium py-2 cursor-not-allowed"
+            className="w-full rounded-full border border-slate-200 text-slate-400 text-sm font-medium py-2 cursor-not-allowed"
           >
             Continue with QuickBooks
           </button>

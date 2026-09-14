@@ -24,7 +24,7 @@ export function QuotePanel({ quote, onClose, onRequote, requoting }: QuotePanelP
         </span>
         <button
           onClick={onClose}
-          className="w-6 h-6 rounded-md flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+          className="w-6 h-6 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
           title="Hide panel"
         >
           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

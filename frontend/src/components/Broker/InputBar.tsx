@@ -59,7 +59,7 @@ export function InputBar({ onSend, disabled, prefill, onPrefillConsumed }: Props
           <button
             onClick={handleSubmit}
             disabled={!canSend}
-            className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
+            className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
               canSend
                 ? "bg-primary text-white hover:bg-primary/90"
                 : "bg-slate-100 text-slate-400 cursor-not-allowed"

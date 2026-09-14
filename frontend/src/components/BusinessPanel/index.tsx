@@ -293,7 +293,7 @@ function RiskBox({
             {risk.legalNote && <p className="text-amber-600 font-medium">⚠ {risk.legalNote}</p>}
             <button
               onClick={() => onSendMessage?.(quoteMessage())}
-              className="w-full text-xs bg-primary text-white rounded py-1.5 hover:bg-primary/90 transition-colors font-medium mt-1"
+              className="w-full text-xs bg-primary text-white rounded-full py-1.5 hover:bg-primary/90 transition-colors font-medium mt-1"
             >
               Get Quote
             </button>
@@ -380,7 +380,7 @@ export default function BusinessPanel({ business, policies, onUpload, onSendMess
             <button
               onClick={() => fileInputRef.current?.click()}
               disabled={!!uploadStatus}
-              className="text-xs bg-white border border-primary/30 text-primary rounded-lg px-3 py-1 hover:bg-primary-tint transition-colors font-medium disabled:opacity-60"
+              className="text-xs bg-white border border-primary/30 text-primary rounded-full px-3 py-1 hover:bg-primary-tint transition-colors font-medium disabled:opacity-60"
             >
               {uploadStatus ?? "Upload Policy"}
             </button>
@@ -394,7 +394,7 @@ export default function BusinessPanel({ business, policies, onUpload, onSendMess
               </p>
               <button
                 onClick={() => setPendingAnalysis(null)}
-                className="bg-primary text-white rounded px-3 py-1 hover:bg-primary/90 transition-colors font-medium"
+                className="bg-primary text-white rounded-full px-3 py-1 hover:bg-primary/90 transition-colors font-medium"
               >
                 Dismiss
               </button>
@@ -418,7 +418,7 @@ export default function BusinessPanel({ business, policies, onUpload, onSendMess
             <button
               onClick={handleAnalyse}
               disabled={isAnalysing || policies.length === 0}
-              className="text-xs bg-white border border-primary/30 text-primary rounded-lg px-3 py-1 hover:bg-primary-tint transition-colors font-medium disabled:opacity-60"
+              className="text-xs bg-white border border-primary/30 text-primary rounded-full px-3 py-1 hover:bg-primary-tint transition-colors font-medium disabled:opacity-60"
             >
               {isAnalysing ? "Analysing…" : "Analyse Policies"}
             </button>
