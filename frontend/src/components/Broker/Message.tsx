@@ -2,6 +2,18 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import type { ChatMessage } from "../../lib/types";
 
+/** The denney.insure "D." mark — same SVG as /favicon.svg, inlined so the
+ * chat avatar renders crisply at any size with no extra request. */
+function DenneyMark({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+      <rect width="64" height="64" rx="14" fill="#16213D" />
+      <text x="22" y="46" fontFamily="Arial, Helvetica, sans-serif" fontWeight="800" fontSize="38" fill="#F6F7FB" textAnchor="middle">D</text>
+      <circle cx="49" cy="46" r="5.5" fill="#EF2A5C" />
+    </svg>
+  );
+}
+
 export function Message({ message }: { message: ChatMessage }) {
   if (message.role === "user") {
     return (
@@ -16,13 +28,7 @@ export function Message({ message }: { message: ChatMessage }) {
   return (
     <div className="flex gap-3 px-6 py-1.5">
       {/* Avatar */}
-      <div className="w-7 h-7 rounded-full bg-slate-900 flex-shrink-0 flex items-center justify-center mt-0.5">
-        <svg className="w-3.5 h-3.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-          />
-        </svg>
-      </div>
+      <DenneyMark className="w-7 h-7 flex-shrink-0 mt-0.5" />
 
       <div className="flex-1 min-w-0 text-sm text-slate-700 leading-relaxed">
         <ReactMarkdown
@@ -73,13 +79,7 @@ export function Message({ message }: { message: ChatMessage }) {
 export function ThinkingIndicator() {
   return (
     <div className="flex gap-3 px-6 py-1.5">
-      <div className="w-7 h-7 rounded-full bg-slate-900 flex-shrink-0 flex items-center justify-center">
-        <svg className="w-3.5 h-3.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-          />
-        </svg>
-      </div>
+      <DenneyMark className="w-7 h-7 flex-shrink-0" />
       <div className="flex items-center gap-1 py-2">
         {[0, 1, 2].map((i) => (
           <span
