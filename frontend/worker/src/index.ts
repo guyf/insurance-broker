@@ -13,6 +13,7 @@ import { handleDeletePolicy } from "./routes/delete-policy";
 import { handleUpdatePolicy } from "./routes/update-policy";
 import { handleOtpRequest } from "./routes/auth/otp-request";
 import { handleOtpVerify } from "./routes/auth/otp-verify";
+import { handleLinkVerify } from "./routes/auth/link-verify";
 import { handleLogout } from "./routes/auth/logout";
 import { handleGetBusiness } from "./routes/business";
 
@@ -31,6 +32,7 @@ export default {
 
     if (pathname === "/api/auth/otp-request" && method === "POST") return handleOtpRequest(request, env);
     if (pathname === "/api/auth/otp-verify" && method === "POST") return handleOtpVerify(request, env);
+    if (pathname === "/api/auth/link-verify" && method === "GET") return handleLinkVerify(request, env);
     if (pathname === "/api/auth/logout" && method === "POST") return handleLogout();
     if (pathname === "/api/business" && method === "GET") return handleGetBusiness(request, env);
 
