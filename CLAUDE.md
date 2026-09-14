@@ -328,8 +328,12 @@ state of each):
    bridge a new login or just link the connection to the current business. **Needs**: a Xero Developer app
    (`XERO_CLIENT_ID`/`XERO_CLIENT_SECRET` Worker secrets) with `https://broker.denney.insure/api/auth/xero-callback`
    registered as an allowed redirect URI — not yet done.
-3. QuickBooks OAuth bridge — blocked on registering an Intuit Developer app (manual step). Should follow the same
-   provider-agnostic shape as Xero above once built.
+3. ~~QuickBooks OAuth bridge~~ **Built, not yet credentialed/tested live** — `worker/src/auth/{oauth-quickbooks,quickbooks-data}.ts` +
+   `routes/auth/{quickbooks-start,quickbooks-callback}.ts`, same shape as Xero above (shares `bridgeEmailToSession()` and
+   the JWT email-claim decoder, now factored out to `auth/jwt.ts`). One structural difference from Xero: QuickBooks
+   returns the company id (`realmId`) directly as a callback query param, so there's no separate "connections" lookup
+   call. **Needs**: the redirect URI `https://broker.denney.insure/api/auth/quickbooks-callback` registered on the
+   Intuit Developer app — Worker secrets `INTUIT_CLIENT_ID`/`INTUIT_CLIENT_SECRET` are set.
 4. ~~Coverage-checklist UI~~ **Done** — `frontend/src/components/BusinessPanel/` replaces the personal-use
    `FilingCabinet`, ported from `xero-insurance`'s `CompanyPanel.tsx`: the 10-risk grid grouped by
    Liability/Property/Cyber/People, "Analyse Policies" (`POST /api/analyse-policies`, ports

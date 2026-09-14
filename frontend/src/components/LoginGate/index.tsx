@@ -12,6 +12,10 @@ const AUTH_ERROR_MESSAGES: Record<string, string> = {
   xero_no_code: "Xero didn't return an authorization code — please try again.",
   xero_no_email: "Couldn't read an email address from your Xero account.",
   xero_callback_failed: "Xero sign-in failed — please try again.",
+  quickbooks_state_mismatch: "QuickBooks sign-in expired or was tampered with — please try again.",
+  quickbooks_no_realm: "QuickBooks didn't return a company to connect — please try again.",
+  quickbooks_no_email: "Couldn't read an email address from your QuickBooks account.",
+  quickbooks_callback_failed: "QuickBooks sign-in failed — please try again.",
   missing_token: "That link is missing its verification token.",
   invalid_or_expired: "That link is invalid or has expired — request a new one.",
 };
@@ -127,14 +131,12 @@ export default function LoginGate({ onAuthenticated }: Props) {
           >
             Continue with Xero
           </a>
-          <button
-            type="button"
-            disabled
-            title="Coming soon"
-            className="w-full rounded-full border border-slate-200 text-slate-400 text-sm font-medium py-2 cursor-not-allowed"
+          <a
+            href="/api/auth/quickbooks-start"
+            className="block w-full text-center rounded-full border border-slate-300 text-slate-700 text-sm font-medium py-2 hover:bg-slate-50 transition-colors"
           >
             Continue with QuickBooks
-          </button>
+          </a>
         </div>
       </div>
     </div>

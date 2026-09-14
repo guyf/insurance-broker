@@ -17,6 +17,8 @@ import { handleLinkVerify } from "./routes/auth/link-verify";
 import { handleLogout } from "./routes/auth/logout";
 import { handleXeroStart } from "./routes/auth/xero-start";
 import { handleXeroCallback } from "./routes/auth/xero-callback";
+import { handleQuickbooksStart } from "./routes/auth/quickbooks-start";
+import { handleQuickbooksCallback } from "./routes/auth/quickbooks-callback";
 import { handleGetBusiness, handleUpdateBusiness } from "./routes/business";
 import { handleGetCoverageAnalysis } from "./routes/coverage-analysis";
 import { handleAnalysePolicies } from "./routes/analyse-policies";
@@ -28,6 +30,8 @@ export interface Env {
   SUPABASE_SERVICE_ROLE_KEY: string;
   XERO_CLIENT_ID: string;
   XERO_CLIENT_SECRET: string;
+  INTUIT_CLIENT_ID: string;
+  INTUIT_CLIENT_SECRET: string;
   ASSETS: Fetcher;
 }
 
@@ -41,6 +45,8 @@ async function route(request: Request, env: Env): Promise<Response> {
   if (pathname === "/api/auth/link-verify" && method === "GET") return handleLinkVerify(request, env);
   if (pathname === "/api/auth/xero-start" && method === "GET") return handleXeroStart(request, env);
   if (pathname === "/api/auth/xero-callback" && method === "GET") return handleXeroCallback(request, env);
+  if (pathname === "/api/auth/quickbooks-start" && method === "GET") return handleQuickbooksStart(request, env);
+  if (pathname === "/api/auth/quickbooks-callback" && method === "GET") return handleQuickbooksCallback(request, env);
   if (pathname === "/api/auth/logout" && method === "POST") return handleLogout();
   if (pathname === "/api/business" && method === "GET") return handleGetBusiness(request, env);
   if (pathname === "/api/business" && method === "PATCH") return handleUpdateBusiness(request, env);

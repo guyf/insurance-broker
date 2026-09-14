@@ -1,10 +1,11 @@
 /**
  * Xero OAuth 2.0 — ported from xero-insurance/backend/xero_auth.py, kept
  * provider-agnostic in shape (authUrl / exchangeCode / getTenantId /
- * refreshTokens / decode the OIDC id_token for email) so QuickBooks can
- * follow the same pattern later.
+ * refreshTokens / decode the OIDC id_token for email) so QuickBooks
+ * (see oauth-quickbooks.ts) follows the same pattern.
  */
 import type { Env } from "../index";
+import { decodeIdTokenEmail } from "./jwt";
 
 const XERO_AUTH_URL = "https://login.xero.com/identity/connect/authorize";
 const XERO_TOKEN_URL = "https://identity.xero.com/connect/token";
@@ -82,16 +83,4 @@ export async function xeroGetTenantId(accessToken: string): Promise<string> {
   return connections[0].tenantId;
 }
 
-/** Decodes the OIDC id_token's `email` claim. No signature check needed — it
- * came straight back from Xero's own token endpoint over a call we just made
- * directly (client-secret authenticated), not from anything client-supplied. */
-export function decodeXeroIdTokenEmail(idToken: string): string | null {
-  try {
-    const payload = idToken.split(".")[1];
-    const padded = payload.replace(/-/g, "+").replace(/_/g, "/").padEnd(payload.length + ((4 - (payload.length % 4)) % 4), "=");
-    const claims = JSON.parse(atob(padded)) as { email?: string };
-    return claims.email ?? null;
-  } catch {
-    return null;
-  }
-}
+export const decodeXeroIdTokenEmail = decodeIdTokenEmail;

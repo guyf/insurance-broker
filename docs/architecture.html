@@ -316,8 +316,8 @@
         </tr>
         <tr>
           <td class="item">QuickBooks OAuth login</td>
-          <td><span class="status status-planned">Planned</span></td>
-          <td class="detail">Blocked on registering an Intuit Developer app (Client ID/Secret) — manual dashboard step, not started.</td>
+          <td><span class="status status-progress">In progress</span></td>
+          <td class="detail">Code built and enabled in the UI (worker/src/auth/oauth-quickbooks.ts, quickbooks-data.ts, routes/auth/quickbooks-start.ts + quickbooks-callback.ts), same shape as Xero — shares bridgeEmailToSession() and the JWT email-claim decoder (now factored out to auth/jwt.ts). realmId (the company id) comes back directly as a callback query param, unlike Xero's separate connections lookup. INTUIT_CLIENT_ID/SECRET Worker secrets are set; still needs broker.denney.insure/api/auth/quickbooks-callback registered as the redirect URI on the Intuit Developer app, and a live end-to-end test.</td>
         </tr>
         <tr>
           <td class="item">Existing routes (chat/policies/upload/…) session-gated</td>
@@ -328,7 +328,7 @@
         <tr>
           <td class="item">businesses / business_connections / business_financials</td>
           <td><span class="status status-live">Live</span></td>
-          <td class="detail">Migration 011, applied. Xero callback writes business_connections/business_financials now, but is uncredentialed — no real rows yet in practice. QuickBooks bridge still has no writer.</td>
+          <td class="detail">Migration 011, applied. Xero and QuickBooks callbacks both write business_connections/business_financials now, but both are uncredentialed — no real rows yet in practice.</td>
         </tr>
         <tr>
           <td class="item">documents.business_id, coverage_analysis.business_id</td>
@@ -403,7 +403,7 @@
           <div class="flow-label">No session → gate</div>
           <div class="comp-box">
             <div class="comp-title">LoginGate.tsx</div>
-            <div class="comp-detail">Email → 6-digit code, or<br/>Xero <span style="color:#fbbf24;">(built, uncredentialed)</span> / QuickBooks <span style="color:var(--muted);">(disabled — planned)</span></div>
+            <div class="comp-detail">Email → 6-digit code, or<br/>Xero / QuickBooks <span style="color:#fbbf24;">(both built, uncredentialed)</span></div>
           </div>
         </div>
         <div class="flow-divider"></div>
