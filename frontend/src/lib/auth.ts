@@ -49,3 +49,15 @@ export async function getCurrentBusiness(): Promise<BusinessInfo | null> {
   if (!res.ok) throw new Error("Failed to load business info");
   return res.json();
 }
+
+export async function updateBusinessName(name: string): Promise<void> {
+  const res = await fetch("/api/business", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name }),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({})) as { error?: string };
+    throw new Error(body.error ?? "Failed to update business name");
+  }
+}

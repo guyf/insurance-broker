@@ -62,6 +62,14 @@ export default function App() {
     setBusiness(null);
   };
 
+  const handleBusinessNameUpdate = (name: string) => {
+    setBusiness((prev) => (prev ? { ...prev, business: prev.business ? { ...prev.business, name } : prev.business } : prev));
+  };
+
+  const handleAnalysisComplete = (summary: string) => {
+    setMessages((prev) => [...prev, { role: "assistant", content: summary }]);
+  };
+
   const showToast = (text: string, ok = true) => {
     setToast({ text, ok });
     clearTimeout(toastTimer.current);
@@ -125,6 +133,8 @@ export default function App() {
           onUpload={handleUpload}
           onSendMessage={(prompt) => setPrefillInput(prompt)}
           onLogout={handleLogout}
+          onBusinessNameUpdate={handleBusinessNameUpdate}
+          onAnalysisComplete={handleAnalysisComplete}
         />
       </aside>
 

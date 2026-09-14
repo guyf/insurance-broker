@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { getCoverageAnalysis, identifyPolicy, refreshCoverageAnalysis } from "../../lib/api";
-import type { BusinessInfo } from "../../lib/auth";
+import { updateBusinessName, type BusinessInfo } from "../../lib/auth";
 import type { CoverageAnalysis, Policy, RiskAnalysis } from "../../lib/types";
 
 // ---------------------------------------------------------------------------
@@ -49,6 +49,29 @@ const POLICY_TYPE_TO_RISK: Record<string, string> = {
 
 const RISK_NAMES: Record<string, string> = Object.fromEntries(RISKS.map((r) => [r.id, r.name]));
 
+/** Turns a fresh coverage-analysis result into a readable chat message, so
+ * "Analyse Policies" surfaces what it found without a separate Claude call —
+ * the analysis already ran server-side, this just formats what came back. */
+function buildAnalysisSummary(analysis: CoverageAnalysis): string {
+  const covered = Object.entries(analysis);
+  const lines = [
+    `**Coverage analysis complete** — found ${covered.length} risk${covered.length === 1 ? "" : "s"} covered in your uploaded policies:`,
+    "",
+  ];
+  for (const [riskId, data] of covered) {
+    lines.push(`- **${RISK_NAMES[riskId] ?? riskId}**: ${data.summary}`);
+    if (data.exclusions.length > 0) lines.push(`  Exclusions: ${data.exclusions.join(", ")}`);
+    if (data.concerns.length > 0) lines.push(`  ⚠ ${data.concerns.join("; ")}`);
+  }
+
+  const gaps = RISKS.filter((r) => !analysis[r.id]);
+  if (gaps.length > 0) {
+    lines.push("", `No coverage found for: ${gaps.map((r) => r.name).join(", ")}.`);
+  }
+
+  return lines.join("\n");
+}
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -85,7 +108,15 @@ function CrossIcon({ className }: { className?: string }) {
 // BusinessCard
 // ---------------------------------------------------------------------------
 
-function BusinessCard({ business, onLogout }: { business: BusinessInfo; onLogout: () => void }) {
+function BusinessCard({
+  business,
+  onLogout,
+  onNameUpdate,
+}: {
+  business: BusinessInfo;
+  onLogout: () => void;
+  onNameUpdate: (name: string) => void;
+}) {
   const f = business.financials;
   const items = [
     { label: "Revenue", value: fmt(f?.revenue) },
@@ -95,13 +126,66 @@ function BusinessCard({ business, onLogout }: { business: BusinessInfo; onLogout
   ];
   const connectedProviders = new Set(business.connections.map((c) => c.provider));
 
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [nameInput, setNameInput] = useState(business.business?.name ?? "");
+  const [savingName, setSavingName] = useState(false);
+  const nameInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (isEditingName) nameInputRef.current?.focus();
+  }, [isEditingName]);
+
+  async function saveName() {
+    const trimmed = nameInput.trim();
+    if (!trimmed || trimmed === business.business?.name) {
+      setIsEditingName(false);
+      setNameInput(business.business?.name ?? "");
+      return;
+    }
+    setSavingName(true);
+    try {
+      await updateBusinessName(trimmed);
+      onNameUpdate(trimmed);
+    } catch {
+      setNameInput(business.business?.name ?? "");
+    } finally {
+      setSavingName(false);
+      setIsEditingName(false);
+    }
+  }
+
   return (
     <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
       <div className="px-3 py-2.5 bg-slate-900 flex items-center justify-between">
-        <div className="min-w-0">
-          <h1 className="text-base font-semibold font-display text-white truncate">
-            {business.business?.name || business.user.email || "Your business"}
-          </h1>
+        <div className="min-w-0 flex-1">
+          {isEditingName ? (
+            <input
+              ref={nameInputRef}
+              value={nameInput}
+              disabled={savingName}
+              onChange={(e) => setNameInput(e.target.value)}
+              onBlur={saveName}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") saveName();
+                if (e.key === "Escape") {
+                  setNameInput(business.business?.name ?? "");
+                  setIsEditingName(false);
+                }
+              }}
+              className="w-full bg-slate-800 text-white text-base font-semibold font-display rounded px-1.5 py-0.5 -mx-1.5 focus:outline-none focus:ring-1 focus:ring-white/40"
+              placeholder="Company name"
+            />
+          ) : (
+            <button
+              onClick={() => setIsEditingName(true)}
+              className="text-left w-full group"
+              title="Click to edit company name"
+            >
+              <h1 className="text-base font-semibold font-display text-white truncate group-hover:underline decoration-white/40">
+                {business.business?.name || "+ Add company name"}
+              </h1>
+            </button>
+          )}
           {f?.source && (
             <p className="text-sm text-slate-400 capitalize">via {f.source}</p>
           )}
@@ -314,9 +398,11 @@ interface Props {
   onUpload: (file: File) => Promise<void>;
   onSendMessage?: (msg: string) => void;
   onLogout: () => void;
+  onBusinessNameUpdate: (name: string) => void;
+  onAnalysisComplete?: (summary: string) => void;
 }
 
-export default function BusinessPanel({ business, policies, onUpload, onSendMessage, onLogout }: Props) {
+export default function BusinessPanel({ business, policies, onUpload, onSendMessage, onLogout, onBusinessNameUpdate, onAnalysisComplete }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadStatus, setUploadStatus] = useState<string | null>(null);
   const [pendingAnalysis, setPendingAnalysis] = useState<{ filename: string; typeNames: string[] } | null>(null);
@@ -357,6 +443,8 @@ export default function BusinessPanel({ business, policies, onUpload, onSendMess
       const result = await refreshCoverageAnalysis();
       if (Object.keys(result).length === 0) {
         setAnalyseError("No coverage data found — check policies are uploaded and try again.");
+      } else {
+        onAnalysisComplete?.(buildAnalysisSummary(result));
       }
       setCoverageAnalysis(result);
     } catch {
@@ -372,7 +460,7 @@ export default function BusinessPanel({ business, policies, onUpload, onSendMess
   return (
     <div className="h-full w-full border-r border-slate-200 bg-slate-50 flex flex-col">
       <div className="flex-1 overflow-y-auto panel-scroll px-3 py-3 space-y-4">
-        <BusinessCard business={business} onLogout={onLogout} />
+        <BusinessCard business={business} onLogout={onLogout} onNameUpdate={onBusinessNameUpdate} />
 
         <section>
           <div className="flex items-center justify-between mb-2">

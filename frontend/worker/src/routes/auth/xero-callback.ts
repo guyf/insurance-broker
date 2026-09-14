@@ -91,6 +91,16 @@ export async function handleXeroCallback(request: Request, env: Env): Promise<Re
         { onConflict: "business_id" }
       );
 
+    // Only fills in a name if one isn't already set — never overwrites a
+    // name the user entered themselves (e.g. on the business card).
+    if (financials.name && financials.name !== "Unknown Organisation") {
+      await supabaseAdmin(env)
+        .from("businesses")
+        .update({ name: financials.name, updated_at: new Date().toISOString() })
+        .eq("id", businessId)
+        .is("name", null);
+    }
+
     // Two Set-Cookie headers needed (clear the state cookie, set the session one) —
     // Headers.append lets both coexist, which a plain object literal couldn't.
     const responseHeaders = new Headers({ Location: "/" });
