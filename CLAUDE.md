@@ -87,7 +87,8 @@ insurance-broker/
 ├── SKILL.md                          # Claude's broker instructions (also at ~/.claude/skills/) — personal-broker era, being superseded
 ├── frontend/                         # React SPA + Cloudflare Worker, deployed to broker.denney.insure
 │   ├── src/
-│   │   ├── components/LoginGate/     # Email-OTP login screen (Xero/QuickBooks buttons present, disabled)
+│   │   ├── components/LoginGate/     # Email-OTP + "Continue with Xero" (live) / QuickBooks (disabled)
+│   │   ├── components/BusinessPanel/ # SME dashboard: coverage checklist, policy uploads — replaces FilingCabinet
 │   │   └── lib/auth.ts               # requestOtp / verifyOtp / logout / getCurrentBusiness
 │   ├── worker/src/
 │   │   ├── index.ts                  # Worker entry point: routes /api/*, else serves dist/ via ASSETS
@@ -327,11 +328,24 @@ state of each):
    registered as an allowed redirect URI — not yet done.
 3. QuickBooks OAuth bridge — blocked on registering an Intuit Developer app (manual step). Should follow the same
    provider-agnostic shape as Xero above once built.
-4. Coverage-checklist UI (port `xero-insurance`'s `CompanyPanel.tsx` + `analyse_tenant_policies`
-   / `identify_uploaded_policy`) replacing the personal-use `FilingCabinet`.
-5. Full restyle to `denney.insure`'s "Navy Teal Coral" design system.
-6. Decommission `xero-insurance` (Railway backend + Cloudflare Pages frontend) once the above is
-   verified working end-to-end.
+4. ~~Coverage-checklist UI~~ **Done** — `frontend/src/components/BusinessPanel/` replaces the personal-use
+   `FilingCabinet`, ported from `xero-insurance`'s `CompanyPanel.tsx`: the 10-risk grid grouped by
+   Liability/Property/Cyber/People, "Analyse Policies" (`POST /api/analyse-policies`, ports
+   `analyse_tenant_policies`), and upload-time type detection (`POST /api/identify-policy`, ports
+   `identify_uploaded_policy`) — both as new Worker routes calling Claude directly (same pattern as
+   `chat.ts`), not mcp-server tools. `GET /api/policies` was also rewritten to proxy mcp-server's
+   `/list-policies` HTTP endpoint directly instead of the old MCP-tool-text-then-regex round trip,
+   which couldn't surface the `policy_types` array the risk grid needs. mcp-server's
+   `/coverage-analysis`, `/list-policies`, `/search-docs` endpoints all gained `business_id` support
+   alongside legacy `tenant_id`.
+5. ~~Full restyle to `denney.insure`'s design system~~ **Done** — `tailwind.config.ts` carries denney's
+   exact slate/primary(rose)/accent(teal) palette and `0.85rem`/`1.1rem` radii, Inter + Outfit fonts
+   (the unused Cormorant Garamond link is gone). Every component (`LoginGate`, `BusinessPanel`,
+   `Broker`, `QuotePanel`) restyled to match. Also fixed in passing: `QuoteTable`'s "Buy Policy" button
+   linked to a hardcoded moneysupermarket.com URL that had nothing to do with the illustrative quotes
+   this app generates — replaced with a plain "illustrative only, speak to a broker" notice.
+6. Decommission `xero-insurance` (Railway backend + Cloudflare Pages frontend) once Xero login above is
+   credentialed and verified working end-to-end.
 
 ## Future Hardening (not urgent, flagged for later)
 

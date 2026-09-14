@@ -387,9 +387,14 @@ async def update_policy(request: Request) -> JSONResponse:
 
 
 async def list_policies_http(request: Request) -> JSONResponse:
-    """Return all policy documents for a tenant as structured JSON."""
+    """Return all policy documents for a business (or legacy tenant) as structured JSON."""
     tenant_id = request.query_params.get("tenant_id") or None
-    rpc_args = {"p_tenant_id": tenant_id} if tenant_id else {}
+    business_id = request.query_params.get("business_id") or None
+    rpc_args: dict = {}
+    if tenant_id:
+        rpc_args["p_tenant_id"] = tenant_id
+    if business_id:
+        rpc_args["p_business_id"] = business_id
     resp = _supabase().rpc("list_policies", rpc_args).execute()
     return JSONResponse(resp.data or [])
 
@@ -400,6 +405,7 @@ async def search_docs_http(request: Request) -> JSONResponse:
         body = await request.json()
         query = body.get("query", "")
         tenant_id = body.get("tenant_id") or None
+        business_id = body.get("business_id") or None
         policy_type = body.get("policy_type") or None
         limit = int(body.get("limit", 5))
 
@@ -414,7 +420,8 @@ async def search_docs_http(request: Request) -> JSONResponse:
 
         resp = _supabase().rpc(
             "search_documents",
-            {"query_embedding": embedding, "match_count": limit, "filter_metadata": filter_meta},
+            {"query_embedding": embedding, "match_count": limit, "filter_metadata": filter_meta,
+             "p_business_id": business_id},
         ).execute()
         return JSONResponse(resp.data or [])
     except Exception as exc:
@@ -423,28 +430,54 @@ async def search_docs_http(request: Request) -> JSONResponse:
 
 
 async def get_coverage_analysis(request: Request) -> JSONResponse:
-    """Return stored coverage analysis JSON for a tenant, or {} if none exists."""
+    """Return stored coverage analysis JSON for a business (or legacy tenant), or {} if none exists."""
+    business_id = request.query_params.get("business_id") or None
     tenant_id = request.query_params.get("tenant_id") or None
-    if not tenant_id:
+    if not business_id and not tenant_id:
         return JSONResponse({})
-    resp = _supabase_service().table("coverage_analysis").select("analysis").eq("tenant_id", tenant_id).execute()
+
+    q = _supabase_service().table("coverage_analysis").select("analysis")
+    q = q.eq("business_id", business_id) if business_id else q.eq("tenant_id", tenant_id)
+    resp = q.execute()
     if resp.data:
         return JSONResponse(resp.data[0]["analysis"])
     return JSONResponse({})
 
 
 async def store_coverage_analysis(request: Request) -> JSONResponse:
-    """Upsert coverage analysis JSON for a tenant."""
+    """Upsert coverage analysis JSON for a business (or legacy tenant)."""
     try:
+        business_id = request.query_params.get("business_id") or None
         tenant_id = request.query_params.get("tenant_id") or None
-        if not tenant_id:
-            return JSONResponse({"error": "tenant_id is required"}, status_code=400)
+        if not business_id and not tenant_id:
+            return JSONResponse({"error": "business_id or tenant_id is required"}, status_code=400)
+
         body = await request.json()
         analysis = body.get("analysis", {})
-        _supabase_service().table("coverage_analysis").upsert(
-            {"tenant_id": tenant_id, "analysis": analysis, "updated_at": datetime.now(timezone.utc).isoformat()},
-            on_conflict="tenant_id",
-        ).execute()
+        now = datetime.now(timezone.utc).isoformat()
+        sb = _supabase_service()
+
+        if business_id:
+            # tenant_id is coverage_analysis's primary key (NOT NULL) — business_id is
+            # only a nullable unique column (migration 011), so a plain upsert can't
+            # target it via ON CONFLICT against a partial index. Select-then-branch
+            # instead, synthesizing a tenant_id placeholder for business-only rows.
+            existing = sb.table("coverage_analysis").select("tenant_id").eq("business_id", business_id).execute()
+            if existing.data:
+                sb.table("coverage_analysis").update(
+                    {"analysis": analysis, "updated_at": now}
+                ).eq("business_id", business_id).execute()
+            else:
+                sb.table("coverage_analysis").insert(
+                    {"tenant_id": f"business:{business_id}", "business_id": business_id,
+                     "analysis": analysis, "updated_at": now}
+                ).execute()
+        else:
+            sb.table("coverage_analysis").upsert(
+                {"tenant_id": tenant_id, "analysis": analysis, "updated_at": now},
+                on_conflict="tenant_id",
+            ).execute()
+
         return JSONResponse({"status": "ok"})
     except Exception as exc:
         logger.exception("Store coverage analysis failed")

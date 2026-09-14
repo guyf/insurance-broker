@@ -1,6 +1,7 @@
 export interface Policy {
   doc_type: string | null;
   policy_type: string;
+  policy_types: string[] | null;
   insured_entity: string | null;
   filename: string;
   source_path: string;
@@ -13,6 +14,23 @@ export interface Policy {
 }
 
 export type RenewalStatus = "current" | "expiring" | "overdue";
+
+export interface RiskAnalysis {
+  summary: string;
+  exclusions: string[];
+  concerns: string[];
+}
+
+export type CoverageAnalysis = Record<string, RiskAnalysis>;
+
+export interface IdentifyResult {
+  types: string[];
+  insurer?: string;
+  premium?: string;
+  cover_limit?: string;
+  renewal_date?: string;
+  notes?: string;
+}
 
 export interface ChatMessage {
   role: "user" | "assistant";

@@ -1,22 +1,21 @@
 import { useEffect, useRef, useState } from "react";
-import { FilingCabinet } from "./components/FilingCabinet";
+import BusinessPanel from "./components/BusinessPanel";
 import { Broker } from "./components/Broker";
 import { QuotePanel } from "./components/QuotePanel";
 import LoginGate from "./components/LoginGate";
-import { deletePolicy, fetchPolicies, requote, sendMessage, uploadPolicy } from "./lib/api";
-import { getCurrentBusiness, logout } from "./lib/auth";
+import { fetchPolicies, requote, sendMessage, uploadPolicy } from "./lib/api";
+import { getCurrentBusiness, logout, type BusinessInfo } from "./lib/auth";
 import type { ChatMessage, Policy, QuoteResult } from "./lib/types";
 
 export default function App() {
   const [authChecked, setAuthChecked] = useState(false);
-  const [authenticated, setAuthenticated] = useState(false);
+  const [business, setBusiness] = useState<BusinessInfo | null>(null);
   const [policies, setPolicies] = useState<Policy[]>([]);
-  const [policiesLoading, setPoliciesLoading] = useState(true);
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       role: "assistant",
       content:
-        "Hello! I'm your personal insurance broker. I can search your policy documents, check renewal dates, identify coverage gaps, and generate illustrative quotes for home, motor, or pet insurance.\n\nHow can I help you today?",
+        "Hello! I'm your commercial insurance broker. I can check what your business already has covered, spot gaps against the risks SMEs typically face, and get you illustrative quotes for liability, property, or cyber cover.\n\nHow can I help you today?",
     },
   ]);
   const [thinking, setThinking] = useState(false);
@@ -54,32 +53,33 @@ export default function App() {
   }, [quote]);
 
   const loadPolicies = async () => {
-    setPoliciesLoading(true);
     try {
       const data = await fetchPolicies();
       setPolicies(data);
     } catch {
       /* show empty state */
-    } finally {
-      setPoliciesLoading(false);
     }
   };
 
   useEffect(() => {
     getCurrentBusiness()
-      .then((business) => setAuthenticated(business !== null))
-      .catch(() => setAuthenticated(false))
+      .then(setBusiness)
+      .catch(() => setBusiness(null))
       .finally(() => setAuthChecked(true));
   }, []);
 
   useEffect(() => {
-    if (authenticated) loadPolicies();
+    if (business) loadPolicies();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authenticated]);
+  }, [business]);
+
+  const handleAuthenticated = () => {
+    getCurrentBusiness().then(setBusiness);
+  };
 
   const handleLogout = async () => {
     await logout();
-    setAuthenticated(false);
+    setBusiness(null);
   };
 
   const showToast = (text: string, ok = true) => {
@@ -126,58 +126,32 @@ export default function App() {
     }
   };
 
-  const handleUpload = async (file: File, sourceFolder?: string) => {
-    try {
-      const result = await uploadPolicy(file, sourceFolder);
-      showToast(`${result.filename} uploaded — ${result.chunks} chunks stored`);
-      loadPolicies();
-    } catch (err) {
-      showToast(err instanceof Error ? err.message : "Upload failed", false);
-    }
+  const handleUpload = async (file: File) => {
+    const result = await uploadPolicy(file);
+    showToast(`${result.filename} uploaded — ${result.chunks} chunks stored`);
+    await loadPolicies();
   };
 
-  const handleDelete = async (sourcePaths: string[], title: string) => {
-    try {
-      await deletePolicy(sourcePaths);
-      showToast(`"${title}" deleted`);
-      loadPolicies();
-    } catch (err) {
-      showToast(err instanceof Error ? err.message : "Delete failed", false);
-    }
-  };
-
-  const handlePolicyClick = (policy: Policy) => {
-    setPrefillInput(`Tell me about my ${policy.filename}`);
-  };
-
-  if (!authChecked) return <div className="h-full bg-sidebar" />;
-  if (!authenticated) return <LoginGate onAuthenticated={() => setAuthenticated(true)} />;
+  if (!authChecked) return <div className="h-full bg-slate-50" />;
+  if (!business) return <LoginGate onAuthenticated={handleAuthenticated} />;
 
   return (
-    <div className="h-full flex overflow-hidden bg-sidebar relative">
-      <button
-        onClick={handleLogout}
-        className="absolute top-3 right-3 z-20 text-xs text-gray-400 hover:text-white transition-colors bg-black/20 hover:bg-black/40 rounded px-2 py-1"
-      >
-        Log out
-      </button>
-
-      {/* Left — Filing Cabinet (dark sidebar, draggable width) */}
+    <div className="h-full flex overflow-hidden bg-slate-50">
+      {/* Left — Business Panel (draggable width) */}
       <aside style={{ width: leftWidth }} className="flex-shrink-0 flex flex-col">
-        <FilingCabinet
+        <BusinessPanel
+          business={business}
           policies={policies}
-          loading={policiesLoading}
-          onPolicyClick={handlePolicyClick}
           onUpload={handleUpload}
-          onDelete={handleDelete}
-          onRequote={(prompt) => setPrefillInput(prompt)}
+          onSendMessage={(prompt) => setPrefillInput(prompt)}
+          onLogout={handleLogout}
         />
       </aside>
 
       {/* Drag handle */}
       <div
         onMouseDown={onDragStart}
-        className="w-1 flex-shrink-0 cursor-col-resize bg-sidebar-border hover:bg-blue-400 transition-colors"
+        className="w-1 flex-shrink-0 cursor-col-resize bg-slate-200 hover:bg-accent transition-colors"
       />
 
       {/* Middle — Broker Chat */}
@@ -194,11 +168,11 @@ export default function App() {
         {!quotePanelOpen && quote && (
           <button
             onClick={() => setQuotePanelOpen(true)}
-            className="absolute right-0 top-1/2 -translate-y-1/2 bg-white border border-gray-200 border-r-0 rounded-l-lg px-1.5 py-3 shadow-sm hover:bg-gray-50 transition-colors z-10"
+            className="absolute right-0 top-1/2 -translate-y-1/2 bg-white border border-slate-200 border-r-0 rounded-l-lg px-1.5 py-3 shadow-sm hover:bg-slate-50 transition-colors z-10"
             title="Show quotes"
           >
             <span
-              className="text-[11px] font-medium text-gray-500 select-none"
+              className="text-[11px] font-medium text-slate-500 select-none"
               style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}
             >
               Quotes
@@ -209,8 +183,8 @@ export default function App() {
 
       {/* Right — Quote Panel (slides in from right like Preview thumbnails) */}
       <aside
-        className={`flex-shrink-0 flex flex-col bg-gray-50 transition-[width,border] duration-300 ease-in-out overflow-hidden ${
-          quotePanelOpen ? "w-80 border-l border-gray-200" : "w-0 border-l-0"
+        className={`flex-shrink-0 flex flex-col bg-slate-50 transition-[width,border] duration-300 ease-in-out overflow-hidden ${
+          quotePanelOpen ? "w-80 border-l border-slate-200" : "w-0 border-l-0"
         }`}
       >
         <QuotePanel
@@ -225,13 +199,11 @@ export default function App() {
       {toast && (
         <div
           className={`fixed bottom-5 left-1/2 -translate-x-1/2 text-sm px-4 py-2.5 rounded-lg shadow-lg z-50 flex items-center gap-2 ${
-            toast.ok
-              ? "bg-gray-900 text-white"
-              : "bg-red-600 text-white"
+            toast.ok ? "bg-slate-900 text-white" : "bg-primary text-white"
           }`}
         >
           {toast.ok ? (
-            <svg className="w-4 h-4 text-green-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-4 h-4 text-accent flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           ) : (

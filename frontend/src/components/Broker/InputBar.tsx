@@ -44,7 +44,7 @@ export function InputBar({ onSend, disabled, prefill, onPrefillConsumed }: Props
 
   return (
     <div className="flex-shrink-0 p-4">
-      <div className="relative flex items-end rounded-2xl border border-gray-200 bg-white shadow-sm focus-within:border-gray-400 focus-within:shadow-md transition-all">
+      <div className="relative flex items-end rounded-2xl border border-slate-200 bg-white shadow-sm focus-within:border-slate-400 focus-within:shadow-md transition-all">
         <textarea
           ref={textareaRef}
           rows={1}
@@ -53,7 +53,7 @@ export function InputBar({ onSend, disabled, prefill, onPrefillConsumed }: Props
           onKeyDown={handleKeyDown}
           disabled={disabled}
           placeholder="Ask about your coverage, renewals, or request a quote…"
-          className="flex-1 resize-none bg-transparent px-4 py-3 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none disabled:opacity-50 leading-relaxed"
+          className="flex-1 resize-none bg-transparent px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none disabled:opacity-50 leading-relaxed"
         />
         <div className="flex-shrink-0 pr-2 pb-2">
           <button
@@ -61,8 +61,8 @@ export function InputBar({ onSend, disabled, prefill, onPrefillConsumed }: Props
             disabled={!canSend}
             className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
               canSend
-                ? "bg-gray-900 text-white hover:bg-gray-700"
-                : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                ? "bg-primary text-white hover:bg-primary/90"
+                : "bg-slate-100 text-slate-400 cursor-not-allowed"
             }`}
           >
             <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -71,7 +71,7 @@ export function InputBar({ onSend, disabled, prefill, onPrefillConsumed }: Props
           </button>
         </div>
       </div>
-      <p className="mt-1.5 text-center text-[10px] text-gray-400">
+      <p className="mt-1.5 text-center text-[10px] text-slate-400">
         Shift+Enter for new line
       </p>
     </div>

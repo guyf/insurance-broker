@@ -61,10 +61,10 @@ export default function LoginGate({ onAuthenticated }: Props) {
   };
 
   return (
-    <div className="h-full flex items-center justify-center bg-gray-50">
-      <div className="w-full max-w-sm bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-        <h1 className="text-lg font-semibold text-gray-900 mb-1">Sign in</h1>
-        <p className="text-sm text-gray-500 mb-6">
+    <div className="h-full flex items-center justify-center bg-gradient-to-br from-primary-tint via-white to-accent-tint px-4">
+      <div className="w-full max-w-sm bg-white rounded-lg border border-slate-200 shadow-sm p-6">
+        <h1 className="text-lg font-semibold font-display text-slate-900 mb-1">Sign in</h1>
+        <p className="text-sm text-slate-500 mb-6">
           {stage === "email"
             ? "Enter your email to get a sign-in code."
             : `Enter the code we sent to ${email}.`}
@@ -79,12 +79,12 @@ export default function LoginGate({ onAuthenticated }: Props) {
               placeholder="you@company.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent/40"
             />
             <button
               type="submit"
               disabled={busy}
-              className="w-full rounded-lg bg-gray-900 text-white text-sm font-medium py-2 hover:bg-gray-800 transition-colors disabled:opacity-60"
+              className="w-full rounded-md bg-primary text-white text-sm font-medium py-2 hover:bg-primary/90 transition-colors disabled:opacity-60"
             >
               {busy ? "Sending…" : "Send code"}
             </button>
@@ -99,31 +99,31 @@ export default function LoginGate({ onAuthenticated }: Props) {
               placeholder="Code from email"
               value={code}
               onChange={(e) => setCode(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm tracking-widest text-center focus:outline-none focus:ring-2 focus:ring-blue-400"
+              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm tracking-widest text-center focus:outline-none focus:ring-2 focus:ring-accent/40"
             />
             <button
               type="submit"
               disabled={busy}
-              className="w-full rounded-lg bg-gray-900 text-white text-sm font-medium py-2 hover:bg-gray-800 transition-colors disabled:opacity-60"
+              className="w-full rounded-md bg-primary text-white text-sm font-medium py-2 hover:bg-primary/90 transition-colors disabled:opacity-60"
             >
               {busy ? "Verifying…" : "Verify"}
             </button>
             <button
               type="button"
               onClick={() => { setStage("email"); setCode(""); setError(null); }}
-              className="w-full text-xs text-gray-400 hover:text-gray-600 transition-colors"
+              className="w-full text-xs text-slate-400 hover:text-slate-600 transition-colors"
             >
               Use a different email
             </button>
           </form>
         )}
 
-        {error && <p className="mt-3 text-xs text-red-600">{error}</p>}
+        {error && <p className="mt-3 text-xs text-primary">{error}</p>}
 
-        <div className="mt-6 pt-6 border-t border-gray-100 space-y-2">
+        <div className="mt-6 pt-6 border-t border-slate-100 space-y-2">
           <a
             href="/api/auth/xero-start"
-            className="block w-full text-center rounded-lg border border-gray-300 text-gray-700 text-sm font-medium py-2 hover:bg-gray-50 transition-colors"
+            className="block w-full text-center rounded-md border border-slate-300 text-slate-700 text-sm font-medium py-2 hover:bg-slate-50 transition-colors"
           >
             Continue with Xero
           </a>
@@ -131,7 +131,7 @@ export default function LoginGate({ onAuthenticated }: Props) {
             type="button"
             disabled
             title="Coming soon"
-            className="w-full rounded-lg border border-gray-200 text-gray-400 text-sm font-medium py-2 cursor-not-allowed"
+            className="w-full rounded-md border border-slate-200 text-slate-400 text-sm font-medium py-2 cursor-not-allowed"
           >
             Continue with QuickBooks
           </button>

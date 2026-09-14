@@ -11,28 +11,28 @@ function InsurerCard({ insurer, rank }: { insurer: InsurerQuote; rank: number })
   return (
     <div
       className={`rounded-xl border bg-white mb-3 overflow-hidden ${
-        isTop ? "border-gray-300 shadow-sm" : "border-gray-200"
+        isTop ? "border-slate-300 shadow-sm" : "border-slate-200"
       }`}
     >
       {/* Name + price */}
-      <div className="px-4 pt-3.5 pb-3 border-b border-gray-100">
+      <div className="px-4 pt-3.5 pb-3 border-b border-slate-100">
         <div className="flex items-start justify-between gap-2">
-          <span className="text-sm font-semibold text-gray-900">{insurer.name}</span>
+          <span className="text-sm font-semibold text-slate-900">{insurer.name}</span>
           {isTop && (
-            <span className="text-[10px] font-medium bg-gray-900 text-white px-2 py-0.5 rounded-full">
+            <span className="text-[10px] font-medium bg-slate-900 text-white px-2 py-0.5 rounded-full">
               Best price
             </span>
           )}
         </div>
         <div className="flex items-baseline gap-3 mt-1.5">
-          <span className="text-xl font-bold text-gray-900 tracking-tight">
+          <span className="text-xl font-bold text-slate-900 tracking-tight">
             £{insurer.annual.toLocaleString()}
-            <span className="text-xs font-normal text-gray-400 ml-1">/yr</span>
+            <span className="text-xs font-normal text-slate-400 ml-1">/yr</span>
           </span>
-          <span className="text-sm text-gray-500">
+          <span className="text-sm text-slate-500">
             £{insurer.monthly}/mo
           </span>
-          <span className="ml-auto text-xs text-gray-400">
+          <span className="ml-auto text-xs text-slate-400">
             £{insurer.excess} excess
           </span>
         </div>
@@ -44,7 +44,7 @@ function InsurerCard({ insurer, rank }: { insurer: InsurerQuote; rank: number })
           <li key={i} className="flex items-center gap-2 text-xs">
             <span
               className={`flex-shrink-0 ${
-                f.included ? "text-emerald-500" : "text-gray-300"
+                f.included ? "text-emerald-500" : "text-slate-300"
               }`}
             >
               {f.included ? (
@@ -57,23 +57,19 @@ function InsurerCard({ insurer, rank }: { insurer: InsurerQuote; rank: number })
                 </svg>
               )}
             </span>
-            <span className={f.included ? "text-gray-700" : "text-gray-400"}>
+            <span className={f.included ? "text-slate-600" : "text-slate-400"}>
               {f.text}
             </span>
           </li>
         ))}
       </ul>
 
-      {/* Buy Policy */}
+      {/* Illustrative-only notice — these are Claude's own indicative calculations, not
+          real quotes from an insurer, so there's no live "buy" link to send anyone to. */}
       <div className="px-4 pb-3.5">
-        <a
-          href={`https://www.moneysupermarket.com/`}
-          target="_blank"
-          rel="noreferrer"
-          className="block w-full text-center text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 rounded-lg py-2 transition-colors"
-        >
-          Buy Policy →
-        </a>
+        <p className="text-center text-[11px] text-slate-400 leading-snug">
+          Illustrative only — speak to an FCA-authorised broker for actual cover.
+        </p>
       </div>
     </div>
   );
@@ -91,16 +87,16 @@ export function QuoteTable({
   return (
     <div>
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-semibold text-gray-900">{TYPE_LABELS[quote.type]}</h3>
+        <h3 className="text-sm font-semibold text-slate-900">{TYPE_LABELS[quote.type]}</h3>
         <div className="flex items-center gap-2">
           {quote.ref && (
-            <span className="text-[10px] text-gray-400 font-mono">{quote.ref}</span>
+            <span className="text-[10px] text-slate-400 font-mono">{quote.ref}</span>
           )}
           {onRequote && (
             <button
               onClick={onRequote}
               disabled={requoting}
-              className="flex items-center gap-1 text-[10px] font-medium text-gray-500 hover:text-gray-900 disabled:opacity-40 transition-colors"
+              className="flex items-center gap-1 text-[10px] font-medium text-slate-500 hover:text-slate-900 disabled:opacity-40 transition-colors"
               title="Refresh quote"
             >
               <svg
@@ -126,7 +122,7 @@ export function QuoteTable({
         <InsurerCard key={insurer.name} insurer={insurer} rank={i} />
       ))}
 
-      <p className="text-[10px] text-gray-400 leading-relaxed text-center mt-2">
+      <p className="text-[10px] text-slate-400 leading-relaxed text-center mt-2">
         Illustrative quotes only. Speak to an FCA-authorised broker for actual cover.
       </p>
     </div>

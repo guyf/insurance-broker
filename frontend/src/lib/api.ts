@@ -1,4 +1,4 @@
-import type { ChatMessage, ChatResponse, Policy, QuoteResult } from "./types";
+import type { ChatMessage, ChatResponse, CoverageAnalysis, IdentifyResult, Policy, QuoteResult } from "./types";
 
 export async function sendMessage(messages: ChatMessage[]): Promise<ChatResponse> {
   const res = await fetch("/api/chat", {
@@ -65,5 +65,27 @@ export async function uploadPolicy(
     const err = await res.text().catch(() => "Upload failed");
     throw new Error(err);
   }
+  return res.json();
+}
+
+export async function identifyPolicy(filename: string): Promise<IdentifyResult> {
+  const res = await fetch("/api/identify-policy", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ filename }),
+  });
+  if (!res.ok) throw new Error("Failed to identify policy");
+  return res.json();
+}
+
+export async function getCoverageAnalysis(): Promise<CoverageAnalysis> {
+  const res = await fetch("/api/coverage-analysis");
+  if (!res.ok) throw new Error("Failed to fetch coverage analysis");
+  return res.json();
+}
+
+export async function refreshCoverageAnalysis(): Promise<CoverageAnalysis> {
+  const res = await fetch("/api/analyse-policies", { method: "POST" });
+  if (!res.ok) throw new Error("Failed to analyse policies");
   return res.json();
 }

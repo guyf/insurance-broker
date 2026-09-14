@@ -275,8 +275,8 @@
         </tr>
         <tr>
           <td class="item">denney.insure visual restyle</td>
-          <td><span class="status status-planned">Planned</span></td>
-          <td class="detail">Still the old dark zinc chat-app theme. Target: slate/rose/teal palette, Inter + Outfit fonts, matching denney-site's "Navy Teal Coral" system.</td>
+          <td><span class="status status-live">Live</span></td>
+          <td class="detail">tailwind.config.ts carries denney's exact slate/primary(rose)/accent(teal) palette + 0.85rem/1.1rem radii, Inter + Outfit fonts. Every component restyled (LoginGate, BusinessPanel, Broker, QuotePanel).</td>
         </tr>
         <tr class="section-header"><td colspan="3">Auth</td></tr>
         <tr>
@@ -307,7 +307,7 @@
         <tr>
           <td class="item">Existing routes (chat/policies/upload/…) session-gated</td>
           <td><span class="status status-live">Live</span></td>
-          <td class="detail">requireBusiness() in worker/src/auth/require.ts — all six routes 401 without a valid session, and derive business_id from it server-side (never client input).</td>
+          <td class="detail">requireBusiness() in worker/src/auth/require.ts — all nine app routes (chat, policies, upload, update-policy, delete-policy, requote, coverage-analysis, analyse-policies, identify-policy) 401 without a valid session, and derive business_id from it server-side (never client input).</td>
         </tr>
         <tr class="section-header"><td colspan="3">Data model</td></tr>
         <tr>
@@ -333,8 +333,8 @@
         </tr>
         <tr>
           <td class="item">Coverage checklist UI + Analyse Policies</td>
-          <td><span class="status status-planned">Planned</span></td>
-          <td class="detail">Porting xero-insurance's CompanyPanel.tsx (risk-by-category grid) and chat.py's analyse_tenant_policies / identify_uploaded_policy — replaces the current generic FilingCabinet.</td>
+          <td><span class="status status-live">Live</span></td>
+          <td class="detail">BusinessPanel replaces FilingCabinet — risk-by-category grid, POST /api/analyse-policies (ports analyse_tenant_policies) and POST /api/identify-policy (ports identify_uploaded_policy) as new Worker routes calling Claude directly. GET /api/policies rewritten to proxy mcp-server's /list-policies JSON directly instead of MCP-tool-text-then-regex.</td>
         </tr>
         <tr class="section-header"><td colspan="3">xero-insurance (sibling project)</td></tr>
         <tr>

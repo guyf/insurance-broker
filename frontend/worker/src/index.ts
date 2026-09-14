@@ -18,6 +18,9 @@ import { handleLogout } from "./routes/auth/logout";
 import { handleXeroStart } from "./routes/auth/xero-start";
 import { handleXeroCallback } from "./routes/auth/xero-callback";
 import { handleGetBusiness } from "./routes/business";
+import { handleGetCoverageAnalysis } from "./routes/coverage-analysis";
+import { handleAnalysePolicies } from "./routes/analyse-policies";
+import { handleIdentifyPolicy } from "./routes/identify-policy";
 
 export interface Env {
   ANTHROPIC_API_KEY: string;
@@ -48,6 +51,9 @@ export default {
     if (pathname === "/api/upload" && method === "POST") return handleUpload(request, env);
     if (pathname === "/api/delete-policy" && method === "DELETE") return handleDeletePolicy(request, env);
     if (pathname === "/api/update-policy" && method === "PATCH") return handleUpdatePolicy(request, env);
+    if (pathname === "/api/coverage-analysis" && method === "GET") return handleGetCoverageAnalysis(request, env);
+    if (pathname === "/api/analyse-policies" && method === "POST") return handleAnalysePolicies(request, env);
+    if (pathname === "/api/identify-policy" && method === "POST") return handleIdentifyPolicy(request, env);
 
     return env.ASSETS.fetch(request);
   },
