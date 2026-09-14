@@ -306,8 +306,8 @@
         </tr>
         <tr>
           <td class="item">Existing routes (chat/policies/upload/…) session-gated</td>
-          <td><span class="status status-planned">Planned</span></td>
-          <td class="detail">Not yet — these routes still run unauthenticated and don't derive business_id from the session. Next slice of work.</td>
+          <td><span class="status status-live">Live</span></td>
+          <td class="detail">requireBusiness() in worker/src/auth/require.ts — all six routes 401 without a valid session, and derive business_id from it server-side (never client input).</td>
         </tr>
         <tr class="section-header"><td colspan="3">Data model</td></tr>
         <tr>
@@ -318,7 +318,7 @@
         <tr>
           <td class="item">documents.business_id, coverage_analysis.business_id</td>
           <td><span class="status status-live">Live</span></td>
-          <td class="detail">Columns exist; RPCs (list_policies, get_renewal_calendar, search_documents) accept p_business_id. mcp-server's Python code hasn't been updated to pass it yet — still calls with p_tenant_id only.</td>
+          <td class="detail">mcp-server's three MCP tools + /upload now pass business_id through (migration 011's p_business_id RPC params). Migration 012 also added real ownership enforcement to update_policy_metadata / delete_documents_by_source_path, which previously had none.</td>
         </tr>
         <tr>
           <td class="item">policy-documents Storage bucket</td>
@@ -467,12 +467,12 @@
           <div class="comp-title">insurance-broker-mcp</div>
           <div class="comp-detail">FastMCP · streamable-http · Railway<br/><span style="color:#fbbf24;">Also embeds search queries via OpenAI at query time</span></div>
           <ul class="tool-list">
-            <li>search_insurance_docs(query, policy_type?, limit?, tenant_id?)</li>
-            <li>list_policies(tenant_id?)</li>
-            <li>get_renewal_calendar(tenant_id?)</li>
+            <li>search_insurance_docs(query, policy_type?, limit?, tenant_id?, business_id?)</li>
+            <li>list_policies(tenant_id?, business_id?)</li>
+            <li>get_renewal_calendar(tenant_id?, business_id?)</li>
             <li>ingest_market_policies(policy_type, provider?)</li>
           </ul>
-          <div class="comp-detail" style="margin-top:.4rem;color:#fbbf24;">Still Python-side tenant_id only — DB RPCs already accept business_id (migration 011), server.py not yet updated to pass it</div>
+          <div class="comp-detail" style="margin-top:.4rem;color:#86efac;">business_id now passed by the Worker on every call (migration 011's p_business_id RPC params); tenant_id kept for backward compat only</div>
         </div>
         <div class="comp-box">
           <div class="comp-title">insurance-quote-mcp</div>
@@ -729,7 +729,7 @@
         </div>
       </div>
       <div class="svc-row" style="margin-top:.5rem;"><span class="k">Auth:</span><span class="v amber">SUPABASE_URL · SUPABASE_ANON_KEY (read) · SUPABASE_SERVICE_ROLE_KEY (write)</span></div>
-      <div class="svc-row"><span class="k">Migrations:</span><span class="v">011 total — 001 create → 008 tenant_id → 009 coverage_analysis → 010 policy_types[] → 011 business_accounts</span></div>
+      <div class="svc-row"><span class="k">Migrations:</span><span class="v">012 total — 001 create → 008 tenant_id → 009 coverage_analysis → 010 policy_types[] → 011 business_accounts → 012 scope mutations by business</span></div>
     </div>
 
     <div class="svc-box" style="border-color:#e11d48;">
@@ -753,7 +753,7 @@
         <tr><td class="from-to">Worker /api/auth/* → Supabase Auth</td><td class="label">SUPABASE_SERVICE_ROLE_KEY</td><td class="detail">signInWithOtp, verifyOtp, refreshSession — Worker holds one service-role client for both auth and table access</td></tr>
         <tr><td class="from-to">Supabase Auth → Resend</td><td class="label">SMTP (in progress)</td><td class="detail">smtp.resend.com:587 · sends the OTP-code email from noreply@auth.denney.insure</td></tr>
         <tr><td class="from-to">Worker /api/chat → Anthropic API</td><td class="label">ANTHROPIC_API_KEY</td><td class="detail">POST /v1/messages · claude-sonnet-4-6 · agentic tool-use loop (up to 10 iterations)</td></tr>
-        <tr><td class="from-to">Worker /api/chat → broker-mcp / quote-mcp</td><td class="label">—</td><td class="detail">HTTPS MCP tool calls — not yet session-gated, doesn't pass business_id (see Build Status)</td></tr>
+        <tr><td class="from-to">Worker /api/chat → broker-mcp / quote-mcp</td><td class="label">—</td><td class="detail">HTTPS MCP tool calls — session-gated (401 without a valid cookie), business_id injected server-side for the 3 personal-document tools</td></tr>
         <tr><td class="from-to">Worker /api/policies, /upload, /update-policy, /delete-policy → broker-mcp</td><td class="label">—</td><td class="detail">Direct HTTPS proxies, unchanged since the Pages→Worker migration</td></tr>
         <tr class="section-header"><td colspan="3">Legacy — Claude Desktop</td></tr>
         <tr><td class="from-to">Claude Desktop → supergateway → broker-mcp / quote-mcp</td><td class="label">--streamableHttp</td><td class="detail">stdio↔HTTP bridge, local process — still functional, out of scope going forward</td></tr>

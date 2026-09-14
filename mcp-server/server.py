@@ -87,11 +87,12 @@ def _embed_query(query: str) -> list[float]:
 # ---------------------------------------------------------------------------
 
 @mcp.tool()
-def search_insurance_docs(query: str, policy_type: str = None, limit: int = 5, tenant_id: str = None) -> str:
+def search_insurance_docs(query: str, policy_type: str = None, limit: int = 5, tenant_id: str = None, business_id: str = None) -> str:
     """Semantic search across all insurance policy and asset documents.
     Use for any question about coverage, terms, exclusions, or limits.
     policy_type values: car, home, breakdown, life, phone, travel, asset, public_liability, employers_liability, professional_indemnity, cyber.
-    tenant_id: pass the Xero organisation tenant ID to scope results to a specific company."""
+    tenant_id: legacy — pass the Xero organisation tenant ID to scope results to a specific company.
+    business_id: pass the caller's business id (uuid) to scope results to that business."""
     embedding = _embed_query(query)
     # Build metadata filter — combine policy_type and tenant_id if provided
     filter_meta: dict | None = None
@@ -108,6 +109,7 @@ def search_insurance_docs(query: str, policy_type: str = None, limit: int = 5, t
             "query_embedding": embedding,
             "match_count": limit,
             "filter_metadata": filter_meta,
+            "p_business_id": business_id,
         },
     ).execute()
 
@@ -131,11 +133,16 @@ def search_insurance_docs(query: str, policy_type: str = None, limit: int = 5, t
 
 
 @mcp.tool()
-def list_policies(tenant_id: str = None) -> str:
+def list_policies(tenant_id: str = None, business_id: str = None) -> str:
     """List all documents in the knowledge base.
     Use first to check what's available before searching.
-    tenant_id: pass the Xero organisation tenant ID to scope results to a specific company."""
-    rpc_args = {"p_tenant_id": tenant_id} if tenant_id else {}
+    tenant_id: legacy — pass the Xero organisation tenant ID to scope results to a specific company.
+    business_id: pass the caller's business id (uuid) to scope results to that business."""
+    rpc_args: dict = {}
+    if tenant_id:
+        rpc_args["p_tenant_id"] = tenant_id
+    if business_id:
+        rpc_args["p_business_id"] = business_id
     resp = _supabase().rpc("list_policies", rpc_args).execute()
     if not resp.data:
         return "No policies found in the knowledge base."
@@ -171,11 +178,16 @@ def list_policies(tenant_id: str = None) -> str:
 
 
 @mcp.tool()
-def get_renewal_calendar(tenant_id: str = None) -> str:
+def get_renewal_calendar(tenant_id: str = None, business_id: str = None) -> str:
     """All policies with recorded renewal dates, sorted chronologically.
     Flags renewals within 60 days. Use for renewal overview requests.
-    tenant_id: pass the Xero organisation tenant ID to scope results to a specific company."""
-    rpc_args = {"p_tenant_id": tenant_id} if tenant_id else {}
+    tenant_id: legacy — pass the Xero organisation tenant ID to scope results to a specific company.
+    business_id: pass the caller's business id (uuid) to scope results to that business."""
+    rpc_args: dict = {}
+    if tenant_id:
+        rpc_args["p_tenant_id"] = tenant_id
+    if business_id:
+        rpc_args["p_business_id"] = business_id
     resp = _supabase().rpc("get_renewal_calendar", rpc_args).execute()
     if not resp.data:
         return "No renewal dates found in the knowledge base."
@@ -328,6 +340,7 @@ async def delete_policy(request: Request) -> JSONResponse:
     try:
         body = await request.json()
         source_paths = body.get("source_paths", [])
+        business_id = body.get("business_id") or None
 
         if not source_paths:
             return JSONResponse({"error": "source_paths is required"}, status_code=400)
@@ -336,7 +349,8 @@ async def delete_policy(request: Request) -> JSONResponse:
         sb = _supabase_service()
         for sp in source_paths:
             resp = sb.rpc(
-                "delete_documents_by_source_path", {"p_source_path": sp}
+                "delete_documents_by_source_path",
+                {"p_source_path": sp, "p_business_id": business_id},
             ).execute()
             total += resp.data or 0
 
@@ -353,6 +367,7 @@ async def update_policy(request: Request) -> JSONResponse:
         body = await request.json()
         source_paths = body.get("source_paths", [])
         updates = body.get("updates", {})
+        business_id = body.get("business_id") or None
 
         if not source_paths or not updates:
             return JSONResponse(
@@ -361,7 +376,7 @@ async def update_policy(request: Request) -> JSONResponse:
 
         _supabase_service().rpc(
             "update_policy_metadata",
-            {"p_source_paths": source_paths, "p_updates": updates},
+            {"p_source_paths": source_paths, "p_updates": updates, "p_business_id": business_id},
         ).execute()
 
         return JSONResponse({"status": "ok"})
@@ -448,6 +463,9 @@ async def upload_document(request: Request) -> JSONResponse:
         filename = file.filename or "upload.pdf"
         source_folder = form.get("source_folder")
         tenant_id = form.get("tenant_id") or None
+        # business_id travels as a query param, not a form field — the Worker
+        # forwards the multipart body byte-for-byte without parsing it.
+        business_id = request.query_params.get("business_id") or None
 
         with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
             tmp.write(contents)
@@ -509,7 +527,7 @@ async def upload_document(request: Request) -> JSONResponse:
                 e for c, e in zip(chunks, embeddings) if c.chunk_hash not in existing
             ]
 
-            stored = upsert_chunks(new_chunks, new_embeddings, sb)
+            stored = upsert_chunks(new_chunks, new_embeddings, sb, business_id=business_id)
             return JSONResponse({"status": "ok", "chunks": stored, "filename": filename})
 
         finally:

@@ -61,8 +61,8 @@ Cloudflare Worker            ← broker.denney.insure — static SPA assets + /a
                               └─► Quote MCP Server (Railway)  ──► OpenAI (GPT-4o-mini, photo analysis)
                                   mcp-quote/server.py
 
-  NOTE: existing routes (chat/policies/upload/etc.) are not yet session-gated and don't derive
-  business_id from the session — see /admin/architecture.html Build Status for what's wired up.
+  NOTE: existing routes (chat/policies/upload/etc.) are session-gated and derive business_id
+  from the session server-side — see /admin/architecture.html Build Status for what's next.
 
 
 CLAUDE DESKTOP (legacy — personal-broker interface, being phased out with the SME pivot)
@@ -159,16 +159,18 @@ login method ends in the same kind of session regardless of how someone signed u
 
 **URL:** `https://insurance-broker-production-85e3.up.railway.app/sse`
 
-**Four MCP tools** (all accept an optional `tenant_id` — legacy free-text scoping from the
-`xero-insurance` prototype — and the underlying Supabase RPCs now also accept `business_id`;
-`mcp-server`'s Python code hasn't been updated to pass `business_id` yet, so it's still
-`tenant_id`-only in practice):
-- `search_insurance_docs(query, policy_type?, limit?, tenant_id?)` — semantic search across all docs (personal + market)
-- `list_policies(tenant_id?)` — inventory of all ingested documents
-- `get_renewal_calendar(tenant_id?)` — renewal dates, flags within 60 days
-- `ingest_market_policies(policy_type, provider?)` — download & ingest public policy booklets from major UK insurers; `policy_type`: car/home/pet; `provider` optional (e.g. "Admiral")
+**Four MCP tools** (each accepts both `tenant_id` — legacy free-text scoping from the
+`xero-insurance` prototype, kept for backward compat — and `business_id`, the real FK the Worker
+now derives from the session and passes on every call):
+- `search_insurance_docs(query, policy_type?, limit?, tenant_id?, business_id?)` — semantic search across all docs (personal + market)
+- `list_policies(tenant_id?, business_id?)` — inventory of all ingested documents
+- `get_renewal_calendar(tenant_id?, business_id?)` — renewal dates, flags within 60 days
+- `ingest_market_policies(policy_type, provider?)` — download & ingest public policy booklets from major UK insurers; `policy_type`: car/home/pet; `provider` optional (e.g. "Admiral") — global market data, deliberately not business-scoped
 
-**Three HTTP endpoints (non-MCP):**
+**Three HTTP endpoints (non-MCP)**, all accepting an optional `business_id` (`/upload` as a
+query param, the other two in the JSON body) — migration 012 made the latter two actually
+enforce it, closing a real gap where **no ownership check existed at all**: any caller could
+previously mutate or delete any document by source_path, globally:
 - `POST /upload` — PDF ingestion (chunked, embedded, upserted)
 - `PATCH /update-policy` — merge-update metadata fields for a set of source_paths
 - `DELETE /delete-policy` — delete all chunks for a set of source_paths
@@ -244,7 +246,7 @@ yet (`/api/upload` still only forwards to `mcp-server` for chunking, originals a
 
 `doc_type` values: `policy` (insurance policies, warranties), `invoice` (purchase receipts), `other` (manuals, correspondence — not shown in UI cards).
 
-Migrations: 001 create, 002 add provider, 003 rename property→insured_entity + add update_policy_metadata RPC, 004 add doc_type/asset_name/asset_value, 005 add premium/renewal_date, 006 fix list_policies DISTINCT ON source_path, 007 add delete_documents_by_source_path RPC, 008 add tenant_id filtering to list_policies/get_renewal_calendar, 009 add coverage_analysis table, 010 add policy_types array to list_policies, 011 add businesses/business_connections/business_financials, business_id on documents/coverage_analysis, p_business_id on RPCs, policy-documents Storage bucket.
+Migrations: 001 create, 002 add provider, 003 rename property→insured_entity + add update_policy_metadata RPC, 004 add doc_type/asset_name/asset_value, 005 add premium/renewal_date, 006 fix list_policies DISTINCT ON source_path, 007 add delete_documents_by_source_path RPC, 008 add tenant_id filtering to list_policies/get_renewal_calendar, 009 add coverage_analysis table, 010 add policy_types array to list_policies, 011 add businesses/business_connections/business_financials, business_id on documents/coverage_analysis, p_business_id on RPCs, policy-documents Storage bucket, 012 add p_business_id ownership enforcement to update_policy_metadata/delete_documents_by_source_path.
 
 RLS is enabled from day one, service-role only throughout (app-layer authorization — the Worker
 derives `business_id` from the session, never from client input). Real per-row RLS keyed to
@@ -308,18 +310,19 @@ not yet in `chat.ts`'s `TOOLS[]` array — Claude can't call them from the web a
 In rough order (see `/admin/architecture.html` Build Status for the live/in-progress/planned
 state of each):
 
-1. Session-gate the existing routes (`chat`, `policies`, `upload`, `update-policy`,
-   `delete-policy`, `requote`) and have them derive `business_id` from the session instead of
-   running unauthenticated.
+1. ~~Session-gate the existing routes~~ **Done** — `chat`, `policies`, `upload`,
+   `update-policy`, `delete-policy`, `requote` all require a valid session
+   (`requireBusiness()` in `worker/src/auth/require.ts`) and derive `business_id` from it
+   server-side; `mcp-server`'s three MCP tools plus `/upload` now accept and use `business_id`
+   (migration 012 also closes a real gap: `/update-policy` and `/delete-policy` previously had
+   **no ownership check at all** — any caller could mutate/delete any document by source_path).
 2. Xero OAuth bridge — port `xero-insurance/backend/xero_auth.py`'s flow into the Worker,
    generalized so QuickBooks can reuse the same shape.
 3. QuickBooks OAuth bridge — blocked on registering an Intuit Developer app (manual step).
-4. `mcp-server` Python code: start passing `business_id` (the RPCs already accept it), retire
-   `tenant_id` once nothing depends on it.
-5. Coverage-checklist UI (port `xero-insurance`'s `CompanyPanel.tsx` + `analyse_tenant_policies`
+4. Coverage-checklist UI (port `xero-insurance`'s `CompanyPanel.tsx` + `analyse_tenant_policies`
    / `identify_uploaded_policy`) replacing the personal-use `FilingCabinet`.
-6. Full restyle to `denney.insure`'s "Navy Teal Coral" design system.
-7. Decommission `xero-insurance` (Railway backend + Cloudflare Pages frontend) once the above is
+5. Full restyle to `denney.insure`'s "Navy Teal Coral" design system.
+6. Decommission `xero-insurance` (Railway backend + Cloudflare Pages frontend) once the above is
    verified working end-to-end.
 
 ## Future Hardening (not urgent, flagged for later)

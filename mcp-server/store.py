@@ -33,6 +33,7 @@ def upsert_chunks(
     chunks: list[Chunk],
     embeddings: list[list[float]],
     client: Client,
+    business_id: str | None = None,
 ) -> int:
     """Upsert chunks with their embeddings. Returns count of rows upserted."""
     if not chunks:
@@ -44,6 +45,7 @@ def upsert_chunks(
             "embedding": embedding,
             "metadata": chunk.to_metadata(),
             "chunk_hash": chunk.chunk_hash,
+            **({"business_id": business_id} if business_id else {}),
         }
         for chunk, embedding in zip(chunks, embeddings)
     ]

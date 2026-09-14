@@ -1,6 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { callMCPTool } from "../mcp-client";
 import type { Env } from "../index";
+import { requireBusiness, unauthorizedResponse, withRefreshedCookie } from "../auth/require";
 
 // Railway MCP server endpoints
 const BROKER_MCP_URL =
@@ -21,13 +22,26 @@ const QUOTE_TOOLS = new Set([
   "get_pet_quote",
   "analyze_photo",
 ]);
+// Personal-document tools that need scoping to the caller's business.
+// ingest_market_policies is deliberately excluded — it populates the shared
+// market-comparison data, not anything business-specific.
+const BUSINESS_SCOPED_TOOLS = new Set([
+  "search_insurance_docs",
+  "list_policies",
+  "get_renewal_calendar",
+]);
 
 async function executeTool(
   toolName: string,
-  toolInput: Record<string, unknown>
+  toolInput: Record<string, unknown>,
+  businessId: string
 ): Promise<string> {
   if (BROKER_TOOLS.has(toolName)) {
-    return callMCPTool(BROKER_MCP_URL, toolName, toolInput);
+    // business_id is always injected server-side, never left to whatever Claude passed.
+    const input = BUSINESS_SCOPED_TOOLS.has(toolName)
+      ? { ...toolInput, business_id: businessId }
+      : toolInput;
+    return callMCPTool(BROKER_MCP_URL, toolName, input);
   }
   if (QUOTE_TOOLS.has(toolName)) {
     return callMCPTool(QUOTE_MCP_URL, toolName, toolInput);
@@ -475,6 +489,9 @@ you can, flagging any uncertainty.`;
 // ---------------------------------------------------------------------------
 
 export async function handleChat(request: Request, env: Env): Promise<Response> {
+  const auth = await requireBusiness(request, env);
+  if (!auth) return unauthorizedResponse();
+
   try {
     const body = (await request.json()) as {
       messages: Array<{ role: string; content: string }>;
@@ -525,7 +542,8 @@ export async function handleChat(request: Request, env: Env): Promise<Response> 
           try {
             toolOutput = await executeTool(
               block.name,
-              block.input as Record<string, unknown>
+              block.input as Record<string, unknown>,
+              auth.businessId
             );
           } catch (err) {
             toolOutput = `Error: ${err instanceof Error ? err.message : String(err)}`;
@@ -565,9 +583,10 @@ export async function handleChat(request: Request, env: Env): Promise<Response> 
     if (quoteToolName) result.quoteToolName = quoteToolName;
     if (quoteToolArgs) result.quoteToolArgs = quoteToolArgs;
 
-    return new Response(JSON.stringify(result), {
-      headers: { "Content-Type": "application/json" },
-    });
+    return withRefreshedCookie(
+      new Response(JSON.stringify(result), { headers: { "Content-Type": "application/json" } }),
+      auth.refreshedCookie
+    );
   } catch (err) {
     console.error("Chat route error:", err);
     return new Response(

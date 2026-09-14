@@ -1,4 +1,6 @@
 import { callMCPTool } from "../mcp-client";
+import type { Env } from "../index";
+import { requireBusiness, unauthorizedResponse, withRefreshedCookie } from "../auth/require";
 
 const QUOTE_MCP_URL = "https://alluring-prosperity-production-5644.up.railway.app/mcp";
 
@@ -57,7 +59,10 @@ function parseQuoteResult(toolName: string, text: string): QuoteResult | null {
   return insurers.length > 0 ? { type, ref, insurers } : null;
 }
 
-export async function handleRequote(request: Request): Promise<Response> {
+export async function handleRequote(request: Request, env: Env): Promise<Response> {
+  const auth = await requireBusiness(request, env);
+  if (!auth) return unauthorizedResponse();
+
   try {
     const body = (await request.json()) as {
       toolName: string;
@@ -77,9 +82,10 @@ export async function handleRequote(request: Request): Promise<Response> {
       return new Response(JSON.stringify({ error: "Failed to parse quote" }), { status: 502 });
     }
 
-    return new Response(JSON.stringify({ quote }), {
-      headers: { "Content-Type": "application/json" },
-    });
+    return withRefreshedCookie(
+      new Response(JSON.stringify({ quote }), { headers: { "Content-Type": "application/json" } }),
+      auth.refreshedCookie
+    );
   } catch (err) {
     return new Response(
       JSON.stringify({ error: err instanceof Error ? err.message : "Internal error" }),

@@ -5,6 +5,8 @@
  */
 
 import { callMCPTool } from "../mcp-client";
+import type { Env } from "../index";
+import { requireBusiness, unauthorizedResponse, withRefreshedCookie } from "../auth/require";
 
 const BROKER_MCP_URL =
   "https://insurance-broker-production-85e3.up.railway.app/mcp";
@@ -102,11 +104,14 @@ function parseRenewalCalendar(
 // Handler
 // ---------------------------------------------------------------------------
 
-export async function handlePolicies(): Promise<Response> {
+export async function handlePolicies(request: Request, env: Env): Promise<Response> {
+  const auth = await requireBusiness(request, env);
+  if (!auth) return unauthorizedResponse();
+
   try {
     const [policiesText, renewalText] = await Promise.all([
-      callMCPTool(BROKER_MCP_URL, "list_policies", {}),
-      callMCPTool(BROKER_MCP_URL, "get_renewal_calendar", {}),
+      callMCPTool(BROKER_MCP_URL, "list_policies", { business_id: auth.businessId }),
+      callMCPTool(BROKER_MCP_URL, "get_renewal_calendar", { business_id: auth.businessId }),
     ]);
 
     const policies = parsePolicies(policiesText);
@@ -121,9 +126,10 @@ export async function handlePolicies(): Promise<Response> {
       }
     }
 
-    return new Response(JSON.stringify(policies), {
-      headers: { "Content-Type": "application/json" },
-    });
+    return withRefreshedCookie(
+      new Response(JSON.stringify(policies), { headers: { "Content-Type": "application/json" } }),
+      auth.refreshedCookie
+    );
   } catch (err) {
     console.error("Policies route error:", err);
     return new Response(

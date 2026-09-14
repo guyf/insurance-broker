@@ -37,11 +37,11 @@ export default {
     if (pathname === "/api/business" && method === "GET") return handleGetBusiness(request, env);
 
     if (pathname === "/api/chat" && method === "POST") return handleChat(request, env);
-    if (pathname === "/api/policies" && method === "GET") return handlePolicies();
-    if (pathname === "/api/requote" && method === "POST") return handleRequote(request);
-    if (pathname === "/api/upload" && method === "POST") return handleUpload(request);
-    if (pathname === "/api/delete-policy" && method === "DELETE") return handleDeletePolicy(request);
-    if (pathname === "/api/update-policy" && method === "PATCH") return handleUpdatePolicy(request);
+    if (pathname === "/api/policies" && method === "GET") return handlePolicies(request, env);
+    if (pathname === "/api/requote" && method === "POST") return handleRequote(request, env);
+    if (pathname === "/api/upload" && method === "POST") return handleUpload(request, env);
+    if (pathname === "/api/delete-policy" && method === "DELETE") return handleDeletePolicy(request, env);
+    if (pathname === "/api/update-policy" && method === "PATCH") return handleUpdatePolicy(request, env);
 
     return env.ASSETS.fetch(request);
   },
