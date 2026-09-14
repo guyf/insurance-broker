@@ -366,6 +366,9 @@ function RiskBox({
                     )}
                   </div>
                 )}
+                <p className="text-slate-400 italic leading-snug">
+                  Uploaded — click "Analyse Policies" above for a detailed summary.
+                </p>
               </>
             ) : null}
             {policy && (
