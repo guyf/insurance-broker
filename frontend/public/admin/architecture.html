@@ -278,6 +278,16 @@
           <td><span class="status status-live">Live</span></td>
           <td class="detail">tailwind.config.ts carries denney's exact slate/primary(rose)/accent(teal) palette + 0.85rem/1.1rem radii, Inter + Outfit fonts. Every component restyled (LoginGate, BusinessPanel, Broker, QuotePanel).</td>
         </tr>
+        <tr>
+          <td class="item">Bot blocking</td>
+          <td><span class="status status-live">Live</span></td>
+          <td class="detail">robots.txt disallow-all, noindex/nofollow meta tag, and an X-Robots-Tag header on every Worker response (including /api/* JSON).</td>
+        </tr>
+        <tr>
+          <td class="item">/admin/* gated by Cloudflare Access</td>
+          <td><span class="status status-live">Live</span></td>
+          <td class="detail">Zero Trust → Access → Applications, self-hosted app scoped to broker.denney.insure/admin*, email one-time-PIN login. This page (/admin/architecture.html) and the ingestion-status admin.html both sit behind it. Account-level config, not in this repo — same setup mirrored on denney.insure/admin* in the denney-site repo.</td>
+        </tr>
         <tr class="section-header"><td colspan="3">Auth</td></tr>
         <tr>
           <td class="item">Email OTP (passwordless)</td>

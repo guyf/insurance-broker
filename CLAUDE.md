@@ -272,7 +272,7 @@ derives `business_id` from the session, never from client input). Real per-row R
 
 `insured_entity` can also be set freely via the web UI card editor (e.g. "BMW i3") and is persisted back to Supabase via `PATCH /api/update-policy`.
 
-Market policy paths (`market/…`) are filtered out of the Filing Cabinet UI — they live in the DB for comparison queries only. Ingestion status is visible at `/admin`.
+Market policy paths (`market/…`) aren't shown in the current business dashboard UI (`BusinessPanel`, née `FilingCabinet`) — they live in the DB for comparison queries only. Ingestion status is visible at `/admin`, which is gated by **Cloudflare Access** (Zero Trust — dashboard → Zero Trust → Access → Applications, scoped to `broker.denney.insure/admin*`, email one-time-PIN login). Account-level config, not anything in this repo; `/admin/architecture.html` sits behind the same gate.
 
 ## Quote MCP Server (Railway)
 
