@@ -316,9 +316,17 @@ state of each):
    server-side; `mcp-server`'s three MCP tools plus `/upload` now accept and use `business_id`
    (migration 012 also closes a real gap: `/update-policy` and `/delete-policy` previously had
    **no ownership check at all** — any caller could mutate/delete any document by source_path).
-2. Xero OAuth bridge — port `xero-insurance/backend/xero_auth.py`'s flow into the Worker,
-   generalized so QuickBooks can reuse the same shape.
-3. QuickBooks OAuth bridge — blocked on registering an Intuit Developer app (manual step).
+2. ~~Xero OAuth bridge~~ **Built, not yet credentialed/tested live** — `worker/src/auth/{oauth-xero,xero-data,bridge}.ts` +
+   `routes/auth/{xero-start,xero-callback}.ts`. Ported from `xero-insurance/backend/xero_auth.py`/`xero_data.py`, with two
+   changes: `state` is actually validated now (the original generated it but never checked it back — a CSRF gap), and
+   login identity bridges into a real Supabase Auth session via `bridgeEmailToSession()` (`auth/bridge.ts`) rather than a
+   bespoke signed cookie, so it's the same identity store email-OTP users are in. "Continue with Xero" also doubles as
+   "connect Xero" for an already-logged-in user — the callback checks for an existing session before deciding whether to
+   bridge a new login or just link the connection to the current business. **Needs**: a Xero Developer app
+   (`XERO_CLIENT_ID`/`XERO_CLIENT_SECRET` Worker secrets) with `https://broker.denney.insure/api/auth/xero-callback`
+   registered as an allowed redirect URI — not yet done.
+3. QuickBooks OAuth bridge — blocked on registering an Intuit Developer app (manual step). Should follow the same
+   provider-agnostic shape as Xero above once built.
 4. Coverage-checklist UI (port `xero-insurance`'s `CompanyPanel.tsx` + `analyse_tenant_policies`
    / `identify_uploaded_policy`) replacing the personal-use `FilingCabinet`.
 5. Full restyle to `denney.insure`'s "Navy Teal Coral" design system.

@@ -15,12 +15,16 @@ import { handleOtpRequest } from "./routes/auth/otp-request";
 import { handleOtpVerify } from "./routes/auth/otp-verify";
 import { handleLinkVerify } from "./routes/auth/link-verify";
 import { handleLogout } from "./routes/auth/logout";
+import { handleXeroStart } from "./routes/auth/xero-start";
+import { handleXeroCallback } from "./routes/auth/xero-callback";
 import { handleGetBusiness } from "./routes/business";
 
 export interface Env {
   ANTHROPIC_API_KEY: string;
   SUPABASE_URL: string;
   SUPABASE_SERVICE_ROLE_KEY: string;
+  XERO_CLIENT_ID: string;
+  XERO_CLIENT_SECRET: string;
   ASSETS: Fetcher;
 }
 
@@ -33,6 +37,8 @@ export default {
     if (pathname === "/api/auth/otp-request" && method === "POST") return handleOtpRequest(request, env);
     if (pathname === "/api/auth/otp-verify" && method === "POST") return handleOtpVerify(request, env);
     if (pathname === "/api/auth/link-verify" && method === "GET") return handleLinkVerify(request, env);
+    if (pathname === "/api/auth/xero-start" && method === "GET") return handleXeroStart(request, env);
+    if (pathname === "/api/auth/xero-callback" && method === "GET") return handleXeroCallback(request, env);
     if (pathname === "/api/auth/logout" && method === "POST") return handleLogout();
     if (pathname === "/api/business" && method === "GET") return handleGetBusiness(request, env);
 

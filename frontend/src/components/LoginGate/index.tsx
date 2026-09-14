@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { requestOtp, verifyOtp } from "../../lib/auth";
 
 interface Props {
@@ -7,12 +7,30 @@ interface Props {
 
 type Stage = "email" | "code";
 
+const AUTH_ERROR_MESSAGES: Record<string, string> = {
+  xero_state_mismatch: "Xero sign-in expired or was tampered with — please try again.",
+  xero_no_code: "Xero didn't return an authorization code — please try again.",
+  xero_no_email: "Couldn't read an email address from your Xero account.",
+  xero_callback_failed: "Xero sign-in failed — please try again.",
+  missing_token: "That link is missing its verification token.",
+  invalid_or_expired: "That link is invalid or has expired — request a new one.",
+};
+
 export default function LoginGate({ onAuthenticated }: Props) {
   const [stage, setStage] = useState<Stage>("email");
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const authError = params.get("auth_error");
+    if (authError) {
+      setError(AUTH_ERROR_MESSAGES[authError] ?? "Sign-in failed — please try again.");
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+  }, []);
 
   const handleSendCode = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -103,14 +121,12 @@ export default function LoginGate({ onAuthenticated }: Props) {
         {error && <p className="mt-3 text-xs text-red-600">{error}</p>}
 
         <div className="mt-6 pt-6 border-t border-gray-100 space-y-2">
-          <button
-            type="button"
-            disabled
-            title="Coming soon"
-            className="w-full rounded-lg border border-gray-200 text-gray-400 text-sm font-medium py-2 cursor-not-allowed"
+          <a
+            href="/api/auth/xero-start"
+            className="block w-full text-center rounded-lg border border-gray-300 text-gray-700 text-sm font-medium py-2 hover:bg-gray-50 transition-colors"
           >
             Continue with Xero
-          </button>
+          </a>
           <button
             type="button"
             disabled

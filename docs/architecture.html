@@ -296,8 +296,8 @@
         </tr>
         <tr>
           <td class="item">Xero OAuth login</td>
-          <td><span class="status status-planned">Planned</span></td>
-          <td class="detail">UI button present (disabled). Backend bridge not built — ports the OAuth flow from xero-insurance/backend/xero_auth.py.</td>
+          <td><span class="status status-progress">In progress</span></td>
+          <td class="detail">Code built and enabled in the UI (worker/src/auth/oauth-xero.ts, xero-data.ts, bridge.ts, routes/auth/xero-start.ts + xero-callback.ts) — state-validated (the ported xero-insurance flow generated state but never checked it), bridges into a real Supabase Auth session. Not yet credentialed: needs a Xero Developer app (XERO_CLIENT_ID/SECRET) with broker.denney.insure/api/auth/xero-callback registered, and a live end-to-end test.</td>
         </tr>
         <tr>
           <td class="item">QuickBooks OAuth login</td>
@@ -313,7 +313,7 @@
         <tr>
           <td class="item">businesses / business_connections / business_financials</td>
           <td><span class="status status-live">Live</span></td>
-          <td class="detail">Migration 011, applied. business_connections has no real rows yet (nothing writes to it until the Xero/QuickBooks bridges exist).</td>
+          <td class="detail">Migration 011, applied. Xero callback writes business_connections/business_financials now, but is uncredentialed — no real rows yet in practice. QuickBooks bridge still has no writer.</td>
         </tr>
         <tr>
           <td class="item">documents.business_id, coverage_analysis.business_id</td>
@@ -388,7 +388,7 @@
           <div class="flow-label">No session → gate</div>
           <div class="comp-box">
             <div class="comp-title">LoginGate.tsx</div>
-            <div class="comp-detail">Email → 6-digit code, or<br/>Xero / QuickBooks <span style="color:var(--muted);">(disabled — planned)</span></div>
+            <div class="comp-detail">Email → 6-digit code, or<br/>Xero <span style="color:#fbbf24;">(built, uncredentialed)</span> / QuickBooks <span style="color:var(--muted);">(disabled — planned)</span></div>
           </div>
         </div>
         <div class="flow-divider"></div>
@@ -496,7 +496,7 @@
           <div class="comp-detail">id · owner_user_id → auth.users<br/>one business per user (v1)</div>
         </div>
         <div class="comp-box" style="border-style:dashed;opacity:.7;">
-          <div class="comp-title">business_connections <span class="status status-planned" style="font-size:9px;">No writer yet</span></div>
+          <div class="comp-title">business_connections <span class="status status-progress" style="font-size:9px;">Xero writes, uncredentialed</span></div>
           <div class="comp-detail">provider (xero/quickbooks)<br/>access_token · refresh_token<br/>unique(business_id, provider)</div>
         </div>
         <div class="comp-box" style="border-style:dashed;opacity:.7;">

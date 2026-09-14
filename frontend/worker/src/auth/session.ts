@@ -14,7 +14,7 @@ export interface AuthedUser {
   email: string | null;
 }
 
-function parseCookies(request: Request): Record<string, string> {
+export function parseCookies(request: Request): Record<string, string> {
   const header = request.headers.get("cookie");
   if (!header) return {};
   const out: Record<string, string> = {};
