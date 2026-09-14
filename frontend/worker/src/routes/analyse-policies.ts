@@ -163,14 +163,23 @@ Return ONLY valid JSON, no other text:
       if (block.type === "text") analysis = extractJson(block.text, analysis);
     }
 
-    // Persist so subsequent page loads don't need to re-run this — best-effort,
-    // the freshly computed result is returned below regardless of whether the
-    // store succeeds.
-    fetch(`${BROKER_HTTP_BASE}/coverage-analysis?business_id=${encodeURIComponent(auth.businessId)}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ analysis }),
-    }).catch(() => {/* best-effort */});
+    // Persist so subsequent page loads don't need to re-run this. Must be
+    // awaited, not fire-and-forget: an un-awaited fetch here has no
+    // guarantee of completing (this Worker doesn't thread ctx.waitUntil
+    // through), so it was getting cancelled once the response below was
+    // sent — the analysis showed immediately (rendered from this same
+    // response) but silently never made it to the DB, reappearing empty
+    // on the next login. Logged, not thrown, if it fails — the freshly
+    // computed result still returns to the caller either way.
+    try {
+      await fetch(`${BROKER_HTTP_BASE}/coverage-analysis?business_id=${encodeURIComponent(auth.businessId)}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ analysis }),
+      });
+    } catch (err) {
+      console.error("Failed to persist coverage analysis:", err);
+    }
 
     return withRefreshedCookie(
       new Response(JSON.stringify(analysis), { headers: { "Content-Type": "application/json" } }),
