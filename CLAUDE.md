@@ -86,8 +86,7 @@ insurance-broker/
 │   ├── railway.toml
 │   └── .env.example
 ├── docs/
-│   ├── architecture.html             # Architecture diagrams (source; copied to frontend/public/)
-│   └── pitch.html                    # Pitch presentation (source; copied to frontend/public/)
+│   └── architecture.html             # Architecture diagrams (source; copied to frontend/public/)
 └── mcp-quote/
     ├── server.py                     # FastMCP streamable-http, 4 tools
     ├── pricer.py                     # Deterministic home/motor/pet pricing
@@ -164,7 +163,7 @@ Table: `public.documents`
 
 `doc_type` values: `policy` (insurance policies, warranties), `invoice` (purchase receipts), `other` (manuals, correspondence — not shown in UI cards).
 
-Migrations: 001 create, 002 add provider, 003 rename property→insured_entity + add update_policy_metadata RPC, 004 add doc_type/asset_name/asset_value, 005 add premium/renewal_date, 006 fix list_policies DISTINCT ON source_path, 007 add delete_documents_by_source_path RPC.
+Migrations: 001 create, 002 add provider, 003 rename property→insured_entity + add update_policy_metadata RPC, 004 add doc_type/asset_name/asset_value, 005 add premium/renewal_date, 006 fix list_policies DISTINCT ON source_path, 007 add delete_documents_by_source_path RPC, 008 add tenant_id filtering to list_policies/get_renewal_calendar, 009 add coverage_analysis table, 010 add policy_types array to list_policies.
 
 RLS is enabled from day one. Phase 1 allows service role only.
 
