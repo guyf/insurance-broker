@@ -157,6 +157,12 @@ login method ends in the same kind of session regardless of how someone signed u
 - **Authorization model (v1)**: the Worker derives `business_id` from the verified session only —
   never trusts a client-supplied id. No per-row Postgres RLS beyond service-role-only yet (that's
   a deliberate deferral, not an oversight — see `/admin/architecture.html`).
+- **Bot blocking**: app-layer signals (robots.txt disallow-all, noindex/nofollow meta tag,
+  X-Robots-Tag header on every Worker response) only stop well-behaved crawlers. Actually
+  enforced at the edge by a Cloudflare WAF custom rule scoped to `broker.denney.insure`, blocking
+  requests whose User-Agent contains bot/crawl/spider/scrape (Block action). Account-level config
+  (Security → WAF → Custom rules), not in this repo — doesn't catch a scraper spoofing a normal
+  browser User-Agent; see `/admin/architecture.html` for that tradeoff.
 
 ## MCP Server (Railway)
 

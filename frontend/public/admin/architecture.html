@@ -281,7 +281,7 @@
         <tr>
           <td class="item">Bot blocking</td>
           <td><span class="status status-live">Live</span></td>
-          <td class="detail">robots.txt disallow-all, noindex/nofollow meta tag, and an X-Robots-Tag header on every Worker response (including /api/* JSON).</td>
+          <td class="detail">App-layer signals (robots.txt disallow-all, noindex/nofollow meta tag, X-Robots-Tag header on every Worker response including /api/* JSON) only stop well-behaved crawlers. Enforced at the edge by a Cloudflare WAF custom rule scoped to broker.denney.insure, blocking requests whose User-Agent contains bot/crawl/spider/scrape: <code>(http.host eq "broker.denney.insure") and (http.user_agent contains "bot" or http.user_agent contains "crawl" or http.user_agent contains "spider" or http.user_agent contains "scrape")</code> → Block. Account-level config (Security → WAF → Custom rules), not in this repo. Doesn't catch a scraper spoofing a normal browser User-Agent — Bot Fight Mode / paid Bot Management score-based rules would, at the cost of applying zone-wide (denney.insure included) or needing a paid plan.</td>
         </tr>
         <tr>
           <td class="item">/admin hub page</td>
