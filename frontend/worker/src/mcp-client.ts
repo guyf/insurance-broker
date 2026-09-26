@@ -48,6 +48,14 @@ export function parseSSEContent(text: string): string {
   return text;
 }
 
+/**
+ * Per-request timeout. Without one, a Railway service that's restarting (e.g.
+ * mid-deploy) can hang the whole chat request until the browser gives up with
+ * a bare "Failed to fetch". With it, the caller gets an error it can handle —
+ * the chat loop turns it into a tool_result the model can explain.
+ */
+const MCP_TIMEOUT_MS = 30_000;
+
 export async function callMCPTool(
   serverUrl: string,
   toolName: string,
@@ -56,6 +64,7 @@ export async function callMCPTool(
   // Step 1: initialize (required by MCP protocol even for stateless servers)
   const initResp = await fetch(serverUrl, {
     method: "POST",
+    signal: AbortSignal.timeout(MCP_TIMEOUT_MS),
     headers: {
       "Content-Type": "application/json",
       Accept: "application/json, text/event-stream",
@@ -91,6 +100,7 @@ export async function callMCPTool(
   // Step 3: tools/call
   const toolResp = await fetch(serverUrl, {
     method: "POST",
+    signal: AbortSignal.timeout(MCP_TIMEOUT_MS),
     headers: baseHeaders,
     body: JSON.stringify({
       jsonrpc: "2.0",

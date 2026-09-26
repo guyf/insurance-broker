@@ -16,6 +16,11 @@ type = "Text"
 globs = ["**/*.md"]
 fallthrough = true
 
+# Workers Logs — console output and request events, viewable in the dashboard
+# (Workers → insurance-broker → Logs) and via the observability API.
+[observability]
+enabled = true
+
 # Runs on every git-connected deploy (Cloudflare Workers Builds).
 [build]
 command = "npm run build"

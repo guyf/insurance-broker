@@ -295,7 +295,9 @@ export async function handleChat(request: Request, env: Env): Promise<Response> 
     }
     addRow({ role: "user", kind: "user", content: [{ type: "text", text }] });
 
-    const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY });
+    // Bounded so one slow model call can't outlast the browser's patience; the
+    // SDK default (10 min, 2 retries) would let a request hang far too long.
+    const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY, timeout: 90_000, maxRetries: 1 });
     const messages = toModelMessages([...history, ...newRows]);
 
     let quoteResult: QuoteResult | null = null;
