@@ -1,10 +1,11 @@
 import type { QuoteResult } from "../../lib/types";
 import { QuoteTable } from "./QuoteTable";
 
-const TYPE_LABELS = {
-  home: "Home",
-  motor: "Motor",
-  pet: "Pet",
+const TYPE_LABELS: Record<QuoteResult["type"], string> = {
+  public_liability: "Public Liability",
+  employers_liability: "Employers' Liability",
+  professional_indemnity: "Professional Indemnity",
+  cyber: "Cyber",
 };
 
 interface QuotePanelProps {

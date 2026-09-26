@@ -9,6 +9,13 @@ compatibility_date = "2024-11-05"
 directory = "./dist"
 binding = "ASSETS"
 
+# Bundle .md imports as plain strings — the chat route imports the repo-root
+# SKILL.md as the broker's base system prompt.
+[[rules]]
+type = "Text"
+globs = ["**/*.md"]
+fallthrough = true
+
 # Runs on every git-connected deploy (Cloudflare Workers Builds).
 [build]
 command = "npm run build"
@@ -26,3 +33,4 @@ SUPABASE_URL = "https://qsnruquxukjkrbhyzsia.supabase.co"
 # when INTUIT_CLIENT_ID/SECRET are swapped back to production keys.
 QUICKBOOKS_API_BASE = "https://sandbox-quickbooks.api.intuit.com"
 QUICKBOOKS_ACCOUNTS_BASE = "https://sandbox-accounts.platform.intuit.com"
+

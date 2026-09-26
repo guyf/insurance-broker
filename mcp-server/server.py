@@ -16,7 +16,6 @@ Also exposes plain HTTP endpoints:
 
 import logging
 import os
-import sys
 import tempfile
 from datetime import date, datetime, timezone
 from pathlib import Path
@@ -88,9 +87,11 @@ def _embed_query(query: str) -> list[float]:
 
 @mcp.tool()
 def search_insurance_docs(query: str, policy_type: str = None, limit: int = 5, tenant_id: str = None, business_id: str = None) -> str:
-    """Semantic search across all insurance policy and asset documents.
+    """Semantic search across a business's uploaded commercial insurance policy documents.
     Use for any question about coverage, terms, exclusions, or limits.
-    policy_type values: car, home, breakdown, life, phone, travel, asset, public_liability, employers_liability, professional_indemnity, cyber.
+    policy_type values: employers_liability, public_liability, professional_indemnity, cyber,
+    commercial_property, business_interruption, product_liability, goods_in_transit,
+    directors_officers, key_person, other.
     tenant_id: legacy — pass the Xero organisation tenant ID to scope results to a specific company.
     business_id: pass the caller's business id (uuid) to scope results to that business."""
     embedding = _embed_query(query)
@@ -134,7 +135,7 @@ def search_insurance_docs(query: str, policy_type: str = None, limit: int = 5, t
 
 @mcp.tool()
 def list_policies(tenant_id: str = None, business_id: str = None) -> str:
-    """List all documents in the knowledge base.
+    """List a business's uploaded policy documents.
     Use first to check what's available before searching.
     tenant_id: legacy — pass the Xero organisation tenant ID to scope results to a specific company.
     business_id: pass the caller's business id (uuid) to scope results to that business."""
@@ -147,31 +148,24 @@ def list_policies(tenant_id: str = None, business_id: str = None) -> str:
     if not resp.data:
         return "No policies found in the knowledge base."
 
-    lines = ["Policy / Asset inventory:\n"]
+    lines = ["Policy inventory:\n"]
     for row in resp.data:
-        doc_type = row.get("doc_type") or "policy"
-        policy_type = row.get("policy_type") or "asset"
+        policy_type = row.get("policy_type") or "unclassified"
         prop = row.get("insured_entity") or ""
         filename = row.get("filename") or ""
         src = row.get("source_path") or ""
         provider = row.get("provider") or ""
         underwriter = row.get("underwriter") or ""
-        asset_name = row.get("asset_name") or ""
-        asset_value = row.get("asset_value") or ""
         premium = row.get("premium") or ""
         renewal_date = row.get("renewal_date") or ""
         prop_part = f" [{prop}]" if prop else ""
-        doc_type_part = f"  [doc_type: {doc_type}]"
         provider_part = f"  [provider: {provider}]" if provider else ""
         underwriter_part = f"  [underwriter: {underwriter}]" if underwriter else ""
-        asset_name_part = f"  [asset_name: {asset_name}]" if asset_name else ""
-        asset_value_part = f"  [asset_value: {asset_value}]" if asset_value else ""
         premium_part = f"  [premium: {premium}]" if premium else ""
         renewal_part = f"  [renewal_date: {renewal_date}]" if renewal_date else ""
         lines.append(
             f"  {policy_type}{prop_part} — {filename}  ({src})"
-            f"{doc_type_part}{provider_part}{underwriter_part}"
-            f"{asset_name_part}{asset_value_part}{premium_part}{renewal_part}"
+            f"{provider_part}{underwriter_part}{premium_part}{renewal_part}"
         )
 
     return "\n".join(lines)
@@ -195,7 +189,7 @@ def get_renewal_calendar(tenant_id: str = None, business_id: str = None) -> str:
     today = date.today()
     lines = ["Renewal calendar:\n"]
     for row in resp.data:
-        policy_type = row.get("policy_type") or "asset"
+        policy_type = row.get("policy_type") or "unclassified"
         prop = row.get("insured_entity") or ""
         filename = row.get("filename") or ""
         renewal_raw = row.get("renewal_date") or ""
@@ -226,9 +220,6 @@ def get_renewal_calendar(tenant_id: str = None, business_id: str = None) -> str:
 # Market policy ingestion tool
 # ---------------------------------------------------------------------------
 
-# Add ingestion modules to path (shared with upload endpoint below)
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../ingestion"))
-
 _BROWSER_HEADERS = {
     "User-Agent": (
         "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
@@ -241,16 +232,20 @@ _BROWSER_HEADERS = {
 
 @mcp.tool()
 def ingest_market_policies(policy_type: str, provider: str = None) -> str:
-    """Download and ingest publicly available policy booklets from major UK insurers
-    into the knowledge base, enabling market-wide coverage comparison.
+    """Download and ingest publicly available policy wordings from UK insurers
+    (the curated registry in market_policies.py) into the shared market data,
+    for coverage comparison. The registry is currently empty — SME policy
+    wordings will be added later.
 
-    policy_type: car, home, or pet
-    provider: optional — ingest only this named provider (e.g. "Admiral").
+    policy_type: a key of MARKET_POLICIES
+    provider: optional — ingest only this named provider.
               If omitted, ingests all providers for the given type.
 
     Call this before comparing the user's current policy against the broader market.
     Re-ingesting the same document is free — duplicates are skipped automatically."""
 
+    if not MARKET_POLICIES:
+        return "The market policy registry is empty — no market policies are available to ingest."
     if policy_type not in MARKET_POLICIES:
         return f"Unknown policy_type '{policy_type}'. Valid values: {', '.join(MARKET_POLICIES)}"
 
@@ -516,8 +511,6 @@ async def upload_document(request: Request) -> JSONResponse:
 
             # Extract metadata (policy_type, provider, renewal_date, etc.) via LLM
             llm_meta = extract_metadata_llm(Path(tmp_path), _openai_client())
-            # Web uploads are always insurance documents — don't let LLM override doc_type
-            llm_meta.pop("doc_type", None)
             base_metadata: dict = {"doc_type": "policy", "filename": filename, **llm_meta}
             if tenant_id:
                 base_metadata["tenant_id"] = tenant_id

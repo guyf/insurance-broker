@@ -109,13 +109,14 @@ def extract_insurer_info_from_pdf(pdf_path: Path) -> dict:
     return info
 
 
-_KNOWN_DOC_TYPES = {"policy", "invoice", "other"}
-
-_KNOWN_POLICY_TYPE_VALUES = (
-    "car, home, life, travel, breakdown, phone, pet, warranty, "
-    "employers_liability, public_liability, professional_indemnity, cyber, commercial_property, "
-    "business_interruption, product_liability, goods_in_transit, directors_officers, key_person, other"
+# SME commercial lines — these map onto the dashboard's risk checklist
+# (POLICY_TYPE_TO_RISK in frontend/src/components/BusinessPanel/index.tsx).
+_KNOWN_POLICY_TYPES = (
+    "employers_liability", "public_liability", "professional_indemnity", "cyber",
+    "commercial_property", "business_interruption", "product_liability",
+    "goods_in_transit", "directors_officers", "key_person", "other",
 )
+_KNOWN_POLICY_TYPE_VALUES = ", ".join(_KNOWN_POLICY_TYPES)
 _POLICY_FIELDS = (
     "- policy_types: JSON array of ALL insurance types this document covers. "
     "Use multiple values for combined policies (e.g. [\"employers_liability\", \"public_liability\"]). "
@@ -125,28 +126,15 @@ _POLICY_FIELDS = (
     "- underwriter: underwriting company if explicitly different from provider\n"
     "- renewal_date: policy renewal date as DD/MM/YYYY\n"
     "- premium: annual premium as digits only, no £ or commas (e.g. '1234')\n"
-    "- insured_entity: the specific thing or person being insured — "
-    "for car: vehicle make/model and/or registration (e.g. 'BMW i3 LD19KFP'); "
-    "for home: the property address; "
-    "for other types: the person or item name. "
-    "NEVER use document type names like 'Certificate of Motor Insurance', 'Policy Schedule', or 'Insurance Document' here."
-)
-_INVOICE_FIELDS = (
-    "- asset_name: full name/description of the purchased item (e.g. 'BMW i3 2020 Electric')\n"
-    "- asset_value: purchase price as digits only, no £ or commas (e.g. '25000')"
-)
-_OTHER_FIELDS = (
-    "- insured_entity: what this document relates to — item name, address, or person (best effort)"
+    "- insured_entity: the insured business or legal entity named on the policy (e.g. 'Acme Widgets Ltd'). "
+    "NEVER use document type names like 'Policy Schedule' or 'Insurance Document' here."
 )
 
 
-def extract_metadata_llm(pdf_path: Path, openai_client, doc_type: str | None = None) -> dict:
-    """Use GPT-4o-mini to extract structured metadata from the first pages of a PDF.
-
-    doc_type hint controls which fields are extracted:
-      "policy"  → provider, underwriter, renewal_date, premium, insured_entity
-      "invoice" → asset_name, asset_value
-      other/None → LLM classifies first, then extracts appropriate fields
+def extract_metadata_llm(pdf_path: Path, openai_client) -> dict:
+    """Use GPT-4o-mini to extract structured metadata from the first pages of a
+    commercial insurance policy PDF: policy_types, provider, underwriter,
+    renewal_date, premium, insured_entity.
 
     Falls back to regex on failure.
     """
@@ -165,46 +153,12 @@ def extract_metadata_llm(pdf_path: Path, openai_client, doc_type: str | None = N
 
     text = "\n\n".join(text_parts)[:4000]
 
-    # Build prompt based on known doc_type
-    if doc_type == "policy":
-        system = (
-            "Extract structured fields from an insurance policy document. "
-            "Return only valid JSON. Omit keys where the value cannot be found."
-        )
-        user = f"Extract these fields:\n{_POLICY_FIELDS}\n\nDocument:\n{text}"
-        allowed = {"policy_types", "provider", "underwriter", "renewal_date", "premium", "insured_entity"}
-
-    elif doc_type == "invoice":
-        system = (
-            "Extract structured fields from a purchase invoice or receipt. "
-            "Return only valid JSON. Omit keys where the value cannot be found."
-        )
-        user = f"Extract these fields:\n{_INVOICE_FIELDS}\n\nDocument:\n{text}"
-        allowed = {"asset_name", "asset_value"}
-
-    else:
-        # Unknown — ask LLM to classify and extract in one shot
-        system = (
-            "Classify this document and extract relevant fields. "
-            "Return only valid JSON. Omit keys where the value cannot be found."
-        )
-        user = (
-            "First, classify this document as exactly one of: policy, invoice, other.\n"
-            "Use 'policy' for: insurance policies, extended warranties, guarantees, "
-            "service contracts, cover notes, or any document providing financial protection.\n"
-            "Use 'invoice' for: purchase receipts, invoices, bills of sale.\n"
-            "Use 'other' for: manuals, specifications, correspondence, or anything else.\n\n"
-            "Then extract the fields appropriate for that type:\n\n"
-            f"If policy:\n{_POLICY_FIELDS}\n\n"
-            f"If invoice:\n{_INVOICE_FIELDS}\n\n"
-            f"If other:\n{_OTHER_FIELDS}\n\n"
-            "Always include a 'doc_type' key with your classification.\n\n"
-            f"Document:\n{text}"
-        )
-        allowed = {
-            "doc_type", "policy_types", "provider", "underwriter", "renewal_date", "premium",
-            "insured_entity", "asset_name", "asset_value",
-        }
+    system = (
+        "Extract structured fields from a commercial insurance policy document. "
+        "Return only valid JSON. Omit keys where the value cannot be found."
+    )
+    user = f"Extract these fields:\n{_POLICY_FIELDS}\n\nDocument:\n{text}"
+    allowed = {"policy_types", "provider", "underwriter", "renewal_date", "premium", "insured_entity"}
 
     try:
         resp = openai_client.chat.completions.create(
@@ -219,20 +173,12 @@ def extract_metadata_llm(pdf_path: Path, openai_client, doc_type: str | None = N
         )
         result = json.loads(resp.choices[0].message.content)
 
-        _KNOWN_POLICY_TYPES = {
-            "car", "home", "life", "travel", "breakdown", "phone", "pet", "warranty",
-            "employers_liability", "public_liability", "professional_indemnity", "cyber",
-            "commercial_property", "business_interruption", "product_liability",
-            "goods_in_transit", "directors_officers", "key_person", "other",
-        }
-        # Sanitise: only known keys, string values, valid doc_type/policy_types
+        # Sanitise: only known keys, string values, valid policy_types
         cleaned: dict = {}
         for k, v in result.items():
             if k not in allowed or not v:
                 continue
-            if k == "doc_type":
-                cleaned[k] = str(v).lower() if str(v).lower() in _KNOWN_DOC_TYPES else "other"
-            elif k == "policy_types":
+            if k == "policy_types":
                 if isinstance(v, list):
                     valid = [str(t).lower() for t in v if str(t).lower() in _KNOWN_POLICY_TYPES]
                 elif isinstance(v, str):

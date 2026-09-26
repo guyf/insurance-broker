@@ -1,9 +1,10 @@
 import type { InsurerQuote, QuoteResult } from "../../lib/types";
 
-const TYPE_LABELS = {
-  home: "Home Insurance",
-  motor: "Motor Insurance",
-  pet: "Pet Insurance",
+const TYPE_LABELS: Record<QuoteResult["type"], string> = {
+  public_liability: "Public Liability Insurance",
+  employers_liability: "Employers' Liability Insurance",
+  professional_indemnity: "Professional Indemnity Insurance",
+  cyber: "Cyber Liability Insurance",
 };
 
 function InsurerCard({ insurer, rank }: { insurer: InsurerQuote; rank: number }) {

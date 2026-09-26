@@ -3,21 +3,33 @@ import BusinessPanel from "./components/BusinessPanel";
 import { Broker } from "./components/Broker";
 import { QuotePanel } from "./components/QuotePanel";
 import LoginGate from "./components/LoginGate";
-import { fetchPolicies, requote, sendMessage, uploadPolicy } from "./lib/api";
+import {
+  fetchPolicies,
+  getChatSession,
+  listChatSessions,
+  requote,
+  sendChatFeedback,
+  sendMessage,
+  uploadPolicy,
+} from "./lib/api";
 import { getCurrentBusiness, logout, type BusinessInfo } from "./lib/auth";
-import type { ChatMessage, Policy, QuoteResult } from "./lib/types";
+import type { ChatMessage, ChatSessionSummary, Policy, QuoteResult } from "./lib/types";
+
+const GREETING: ChatMessage = {
+  role: "assistant",
+  content:
+    "Hello! I'm Denney your AI commercial insurance broker. I can check what your business already has covered, spot gaps against the risks SMEs typically face, and get you illustrative quotes to fill any gaps. I can even tell if you're over insured or paying too much.\n\nHow can I help you today?",
+};
 
 export default function App() {
   const [authChecked, setAuthChecked] = useState(false);
   const [business, setBusiness] = useState<BusinessInfo | null>(null);
   const [policies, setPolicies] = useState<Policy[]>([]);
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      role: "assistant",
-      content:
-        "Hello! I'm Denney your AI commercial insurance broker. I can check what your business already has covered, spot gaps against the risks SMEs typically face, and get you illustrative quotes to fill any gaps. I can even tell if you're over insured or paying too much.\n\nHow can I help you today?",
-    },
-  ]);
+  const [messages, setMessages] = useState<ChatMessage[]>([GREETING]);
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [sessions, setSessions] = useState<ChatSessionSummary[]>([]);
+  // Assistant messages shown outside the chat loop, sent with the next turn so they're persisted
+  const pendingNotes = useRef<string[]>([]);
   const [thinking, setThinking] = useState(false);
   const [quote, setQuote] = useState<QuoteResult | null>(null);
   const [lastQuoteParams, setLastQuoteParams] = useState<{ toolName: string; args: Record<string, unknown> } | null>(null);
@@ -48,10 +60,48 @@ export default function App() {
       .finally(() => setAuthChecked(true));
   }, []);
 
+  const openSession = async (id: string) => {
+    try {
+      const { messages: history } = await getChatSession(id);
+      setSessionId(id);
+      setMessages([GREETING, ...history]);
+      pendingNotes.current = [];
+      const lastQuote = [...history].reverse().find((m) => m.quote)?.quote ?? null;
+      setQuote(lastQuote);
+      setLastQuoteParams(null);
+      if (!lastQuote) setQuotePanelOpen(false);
+    } catch {
+      showToast("Couldn't load that conversation", false);
+    }
+  };
+
+  const startNewChat = () => {
+    setSessionId(null);
+    setMessages([GREETING]);
+    pendingNotes.current = [];
+    setQuote(null);
+    setLastQuoteParams(null);
+    setQuotePanelOpen(false);
+  };
+
+  // Resume the most recent conversation on login
+  const loadSessions = async (resumeLatest: boolean) => {
+    try {
+      const list = await listChatSessions();
+      setSessions(list);
+      if (resumeLatest && list.length) await openSession(list[0].id);
+    } catch {
+      /* start fresh */
+    }
+  };
+
   useEffect(() => {
-    if (business) loadPolicies();
+    if (business) {
+      loadPolicies();
+      loadSessions(true);
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [business]);
+  }, [business?.business?.id]);
 
   const handleAuthenticated = () => {
     getCurrentBusiness().then(setBusiness);
@@ -60,6 +110,8 @@ export default function App() {
   const handleLogout = async () => {
     await logout();
     setBusiness(null);
+    startNewChat();
+    setSessions([]);
   };
 
   const handleBusinessNameUpdate = (name: string) => {
@@ -68,6 +120,7 @@ export default function App() {
 
   const handleAnalysisComplete = (summary: string) => {
     setMessages((prev) => [...prev, { role: "assistant", content: summary }]);
+    pendingNotes.current.push(summary);
   };
 
   const showToast = (text: string, ok = true) => {
@@ -82,8 +135,17 @@ export default function App() {
     setMessages(nextMessages);
     setThinking(true);
     try {
-      const response = await sendMessage(nextMessages);
-      setMessages([...nextMessages, { role: "assistant", content: response.content }]);
+      const notes = pendingNotes.current;
+      pendingNotes.current = [];
+      const response = await sendMessage(sessionId, text, notes);
+      setMessages([
+        ...nextMessages,
+        { id: response.message_id ?? undefined, role: "assistant", content: response.content, quote: response.quote },
+      ]);
+      if (response.session_id !== sessionId) {
+        setSessionId(response.session_id);
+        loadSessions(false);
+      }
       if (response.quote) setQuote(response.quote);
       if (response.quoteToolName && response.quoteToolArgs) {
         setLastQuoteParams({ toolName: response.quoteToolName, args: response.quoteToolArgs });
@@ -98,6 +160,15 @@ export default function App() {
       ]);
     } finally {
       setThinking(false);
+    }
+  };
+
+  const handleFeedback = async (messageId: string, rating: 1 | -1) => {
+    setMessages((prev) => prev.map((m) => (m.id === messageId ? { ...m, rating } : m)));
+    try {
+      await sendChatFeedback(messageId, rating);
+    } catch {
+      showToast("Couldn't save feedback", false);
     }
   };
 
@@ -146,6 +217,11 @@ export default function App() {
           prefillInput={prefillInput}
           onPrefillConsumed={() => setPrefillInput("")}
           onSend={handleSend}
+          onFeedback={handleFeedback}
+          sessions={sessions}
+          currentSessionId={sessionId}
+          onSelectSession={openSession}
+          onNewChat={startNewChat}
         />
 
         {/* Quotes tab — appears on the right edge when panel is closed and a quote exists */}

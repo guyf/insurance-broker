@@ -6,6 +6,7 @@
  * `wrangler pages deploy` step.
  */
 import { handleChat } from "./routes/chat";
+import { handleChatFeedback, handleGetChatSession, handleListChatSessions } from "./routes/chat-sessions";
 import { handlePolicies } from "./routes/policies";
 import { handleRequote } from "./routes/requote";
 import { handleUpload } from "./routes/upload";
@@ -23,6 +24,7 @@ import { handleGetBusiness, handleUpdateBusiness } from "./routes/business";
 import { handleGetCoverageAnalysis } from "./routes/coverage-analysis";
 import { handleAnalysePolicies } from "./routes/analyse-policies";
 import { handleIdentifyPolicy } from "./routes/identify-policy";
+import { handleAdminInstructions } from "./routes/admin/instructions";
 
 export interface Env {
   ANTHROPIC_API_KEY: string;
@@ -54,6 +56,11 @@ async function route(request: Request, env: Env): Promise<Response> {
   if (pathname === "/api/business" && method === "PATCH") return handleUpdateBusiness(request, env);
 
   if (pathname === "/api/chat" && method === "POST") return handleChat(request, env);
+  if (pathname === "/api/chat/sessions" && method === "GET") return handleListChatSessions(request, env);
+  if (pathname.startsWith("/api/chat/sessions/") && method === "GET") {
+    return handleGetChatSession(request, env, decodeURIComponent(pathname.slice("/api/chat/sessions/".length)));
+  }
+  if (pathname === "/api/chat/feedback" && method === "POST") return handleChatFeedback(request, env);
   if (pathname === "/api/policies" && method === "GET") return handlePolicies(request, env);
   if (pathname === "/api/requote" && method === "POST") return handleRequote(request, env);
   if (pathname === "/api/upload" && method === "POST") return handleUpload(request, env);
@@ -62,6 +69,8 @@ async function route(request: Request, env: Env): Promise<Response> {
   if (pathname === "/api/coverage-analysis" && method === "GET") return handleGetCoverageAnalysis(request, env);
   if (pathname === "/api/analyse-policies" && method === "POST") return handleAnalysePolicies(request, env);
   if (pathname === "/api/identify-policy" && method === "POST") return handleIdentifyPolicy(request, env);
+
+  if (pathname === "/admin/api/instructions") return handleAdminInstructions(request, env);
 
   return env.ASSETS.fetch(request);
 }

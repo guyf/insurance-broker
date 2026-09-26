@@ -9,8 +9,6 @@ export interface Policy {
   premium: string | null;
   provider: string | null;
   underwriter: string | null;
-  asset_name: string | null;
-  asset_value: string | null;
 }
 
 export type RenewalStatus = "current" | "expiring" | "overdue";
@@ -33,8 +31,19 @@ export interface IdentifyResult {
 }
 
 export interface ChatMessage {
+  /** Set on persisted assistant replies — used for feedback. */
+  id?: string;
   role: "user" | "assistant";
   content: string;
+  quote?: QuoteResult;
+  rating?: 1 | -1;
+}
+
+export interface ChatSessionSummary {
+  id: string;
+  title: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface InsurerQuote {
@@ -46,12 +55,18 @@ export interface InsurerQuote {
 }
 
 export interface QuoteResult {
-  type: "home" | "motor" | "pet";
+  type:
+    | "public_liability"
+    | "employers_liability"
+    | "professional_indemnity"
+    | "cyber";
   ref: string;
   insurers: InsurerQuote[];
 }
 
 export interface ChatResponse {
+  session_id: string;
+  message_id: string | null;
   content: string;
   quote?: QuoteResult;
   quoteToolName?: string;

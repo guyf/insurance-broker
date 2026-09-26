@@ -14,7 +14,45 @@ function DenneyMark({ className }: { className?: string }) {
   );
 }
 
-export function Message({ message }: { message: ChatMessage }) {
+function FeedbackButtons({
+  messageId,
+  rating,
+  onFeedback,
+}: {
+  messageId: string;
+  rating?: 1 | -1;
+  onFeedback: (messageId: string, rating: 1 | -1) => void;
+}) {
+  const button = (value: 1 | -1, label: string, path: string) => (
+    <button
+      onClick={() => onFeedback(messageId, value)}
+      title={label}
+      aria-label={label}
+      aria-pressed={rating === value}
+      className={`p-1 rounded transition-colors ${
+        rating === value ? (value === 1 ? "text-accent" : "text-primary") : "text-slate-300 hover:text-slate-500"
+      }`}
+    >
+      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d={path} />
+      </svg>
+    </button>
+  );
+  return (
+    <div className="flex gap-0.5 mt-1 -ml-1">
+      {button(1, "Helpful", "M7 11v9H4v-9h3zm0 0l4-8a2 2 0 012 2v4h5.5a2 2 0 012 2.3l-1.2 7A2 2 0 0117.3 20H7")}
+      {button(-1, "Not helpful", "M17 13V4h3v9h-3zm0 0l-4 8a2 2 0 01-2-2v-4H5.5a2 2 0 01-2-2.3l1.2-7A2 2 0 016.7 4H17")}
+    </div>
+  );
+}
+
+export function Message({
+  message,
+  onFeedback,
+}: {
+  message: ChatMessage;
+  onFeedback?: (messageId: string, rating: 1 | -1) => void;
+}) {
   if (message.role === "user") {
     return (
       <div className="flex justify-end px-6 py-1.5">
@@ -71,6 +109,9 @@ export function Message({ message }: { message: ChatMessage }) {
         >
           {message.content}
         </ReactMarkdown>
+        {message.id && onFeedback && (
+          <FeedbackButtons messageId={message.id} rating={message.rating} onFeedback={onFeedback} />
+        )}
       </div>
     </div>
   );

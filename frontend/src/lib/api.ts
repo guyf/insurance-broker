@@ -1,16 +1,42 @@
-import type { ChatMessage, ChatResponse, CoverageAnalysis, IdentifyResult, Policy, QuoteResult } from "./types";
+import type { ChatMessage, ChatResponse, ChatSessionSummary, CoverageAnalysis, IdentifyResult, Policy, QuoteResult } from "./types";
 
-export async function sendMessage(messages: ChatMessage[]): Promise<ChatResponse> {
+/**
+ * Sends one new message; the server holds the history. Omit sessionId to
+ * start a new session. `notes` are assistant messages the UI showed outside
+ * the chat (e.g. Analyse Policies summaries) so the broker sees them too.
+ */
+export async function sendMessage(sessionId: string | null, message: string, notes: string[] = []): Promise<ChatResponse> {
   const res = await fetch("/api/chat", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ messages }),
+    body: JSON.stringify({ session_id: sessionId ?? undefined, message, notes }),
   });
   if (!res.ok) {
     const err = await res.text().catch(() => "Unknown error");
     throw new Error(`Chat failed: ${err}`);
   }
   return res.json() as Promise<ChatResponse>;
+}
+
+export async function listChatSessions(): Promise<ChatSessionSummary[]> {
+  const res = await fetch("/api/chat/sessions");
+  if (!res.ok) throw new Error("Failed to list chat sessions");
+  return res.json();
+}
+
+export async function getChatSession(id: string): Promise<{ session: ChatSessionSummary; messages: ChatMessage[] }> {
+  const res = await fetch(`/api/chat/sessions/${encodeURIComponent(id)}`);
+  if (!res.ok) throw new Error("Failed to load chat session");
+  return res.json();
+}
+
+export async function sendChatFeedback(messageId: string, rating: 1 | -1, comment?: string): Promise<void> {
+  const res = await fetch("/api/chat/feedback", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ message_id: messageId, rating, comment }),
+  });
+  if (!res.ok) throw new Error("Failed to save feedback");
 }
 
 export async function fetchPolicies(): Promise<Policy[]> {

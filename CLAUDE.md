@@ -2,14 +2,15 @@
 
 ## What This Project Is
 
-**Mid-pivot.** Originally a RAG pipeline for one person's own insurance policies (personal
-home/car/pet/travel/phone cover). Being rebuilt into **Denney Insurance's SME/commercial
-insurance broker product**: businesses register or log in (email OTP, or "Continue with Xero" /
+**Denney Insurance's SME/commercial insurance broker product** (beta). Originally a RAG pipeline
+for one person's own personal insurance policies; all personal-lines code (home/motor/pet quotes,
+photo analysis, the Google Drive ingestion pipeline, personal market booklets) was removed on
+2026-09-26 — the product is SME-only: businesses register or log in (email OTP, or "Continue with Xero" /
 "Continue with QuickBooks"), and if they connect an accounting system, their financial data
 (revenue, employees, assets) is pulled automatically to drive coverage analysis and quotes for
 four UK commercial lines (public liability, employers' liability, professional indemnity,
-cyber). Personal-insurance use is being dropped from the product surface going forward — see
-`/admin/architecture.html` (Build Status section) for exactly what's live vs. still being built.
+cyber). See `/admin/architecture.html` (Build Status section) for exactly what's live vs. still
+being built.
 
 A sibling project, `xero-insurance` (`../xero-insurance`), prototyped the Xero-login + commercial
 broker idea separately. That work is being **merged into this repo and the sibling retired** —
@@ -19,17 +20,6 @@ a second codebase.
 ## Architecture
 
 ```
-INGESTION (one-off, run locally — personal use only, out of scope for SME product)
-────────────────────────────────────────────────────────────────────────────────
-Google Drive PDFs
-       │
-       ▼
-ingestion/ingest.py          ← chunks + embeds via OpenAI text-embedding-3-small
-       │
-       ▼
-Supabase (vector DB)         ← hosted, always on
-
-
 WEB FRONTEND (primary interface)
 ─────────────────────────────────
 Browser
@@ -58,22 +48,12 @@ Cloudflare Worker            ← broker.denney.insure — static SPA assets + /a
        └─ /api/chat ──► Anthropic API (claude-sonnet-4-6)
                               │  agentic tool-use loop
                               ├─► Broker MCP Server (Railway) ──► Supabase
-                              └─► Quote MCP Server (Railway)  ──► OpenAI (GPT-4o-mini, photo analysis)
+                              └─► Quote MCP Server (Railway)  — stateless, deterministic pricing
                                   mcp-quote/server.py
 
   NOTE: existing routes (chat/policies/upload/etc.) are session-gated and derive business_id
   from the session server-side — see /admin/architecture.html Build Status for what's next.
 
-
-CLAUDE DESKTOP (legacy — personal-broker interface, being phased out with the SME pivot)
-──────────────────────────────────────────────────────────────────────────────────────
-Claude Desktop
-       │
-       ▼
-supergateway (local npx)     ← stdio↔streamable-http bridge
-       │
-       ├─► Broker MCP Server (Railway) ──► Supabase
-       └─► Quote MCP Server (Railway)  ──► OpenAI
 ```
 
 **Full architecture detail (live vs. in-progress vs. planned, every service/table/route):
@@ -84,7 +64,8 @@ concise guide, that one is the exhaustive reference.
 
 ```
 insurance-broker/
-├── SKILL.md                          # Claude's broker instructions (also at ~/.claude/skills/) — personal-broker era, being superseded
+├── SKILL.md                          # The SME broker's base system prompt — bundled into the Worker as text at build time
+│                                     # (routes/chat.ts); also usable as a Claude Desktop/Code skill.
 ├── frontend/                         # React SPA + Cloudflare Worker, deployed to broker.denney.insure
 │   ├── src/
 │   │   ├── components/LoginGate/     # Email-OTP + "Continue with Xero" (live) / QuickBooks (disabled)
@@ -100,25 +81,20 @@ insurance-broker/
 │   │       ├── auth/                 # otp-request, otp-verify, logout
 │   │       ├── business.ts           # GET current business + connections + financials
 │   │       └── ...                   # chat, policies, requote, upload, delete-policy, update-policy
-│   ├── public/admin/index.html       # Admin hub — links to Architecture + Market Policy Registry
+│   ├── public/admin/index.html       # Admin hub — Architecture, Broker Instructions, Market Policy Registry
 │   ├── public/admin/architecture.html # Full architecture reference (copied from docs/ at build time)
-│   ├── public/admin/market-policies.html # Market Policy Registry ingestion tool (formerly served at /admin itself)
+│   ├── public/admin/instructions.html # Broker standing instructions editor (/admin/api/instructions)
+│   ├── public/admin/market-policies.html # Market Policy Registry — currently empty (SME wordings to be added)
 │   └── wrangler.toml                 # main + [assets] + [build] + [vars] — deployed via Cloudflare Workers Builds
 ├── supabase/
 │   └── migrations/
 │       ├── 001_create_documents.sql  # vector table, HNSW index, RLS, RPCs
 │       └── 011_business_accounts.sql # businesses / business_connections / business_financials, documents.business_id,
 │                                      # coverage_analysis.business_id, p_business_id on RPCs, policy-documents Storage bucket
-├── ingestion/                        # personal-use only; out of scope for the SME product
-│   ├── ingest.py                     # CLI entry point
-│   ├── chunk.py                      # PDF extraction + chunking (pdfplumber + tiktoken)
-│   ├── embed.py                      # OpenAI embeddings, batched
-│   ├── store.py                      # Supabase upsert with dedup
-│   ├── requirements.txt
-│   └── .env.example
 ├── mcp-server/
 │   ├── server.py                     # FastMCP streamable-http server, 4 MCP tools + 3 HTTP endpoints
-│   ├── market_policies.py            # Curated registry of UK insurer policy booklet URLs
+│   ├── pdf_chunk.py / embed.py / store.py # upload pipeline: SME metadata extraction, chunking, embeddings, upsert
+│   ├── market_policies.py            # Registry of insurer policy wording URLs for market comparison — empty for now
 │   ├── requirements.txt              # mcp<2.0.0 pinned — v2 renamed FastMCP, see git history
 │   ├── Procfile                      # Railway start command
 │   ├── railway.toml
@@ -126,9 +102,8 @@ insurance-broker/
 ├── docs/
 │   └── architecture.html             # Source of truth for the architecture doc; copied to frontend/public/admin/
 └── mcp-quote/
-    ├── server.py                     # FastMCP streamable-http, 8 tools (4 personal + 4 commercial)
-    ├── pricer.py                     # Deterministic pricing (home/motor/pet + commercial lines)
-    ├── photo_analyzer.py             # GPT-4o-mini vision → asset details
+    ├── server.py                     # FastMCP streamable-http, 4 commercial quote tools
+    ├── pricer.py                     # Deterministic illustrative pricing for the 4 commercial lines
     ├── requirements.txt              # mcp<2.0.0 pinned
     ├── Procfile
     ├── railway.toml
@@ -171,10 +146,14 @@ login method ends in the same kind of session regardless of how someone signed u
 **Four MCP tools** (each accepts both `tenant_id` — legacy free-text scoping from the
 `xero-insurance` prototype, kept for backward compat — and `business_id`, the real FK the Worker
 now derives from the session and passes on every call):
-- `search_insurance_docs(query, policy_type?, limit?, tenant_id?, business_id?)` — semantic search across all docs (personal + market)
-- `list_policies(tenant_id?, business_id?)` — inventory of all ingested documents
+- `search_insurance_docs(query, policy_type?, limit?, tenant_id?, business_id?)` — semantic search over the business's documents
+- `list_policies(tenant_id?, business_id?)` — inventory of the business's uploaded documents
 - `get_renewal_calendar(tenant_id?, business_id?)` — renewal dates, flags within 60 days
-- `ingest_market_policies(policy_type, provider?)` — download & ingest public policy booklets from major UK insurers; `policy_type`: car/home/pet; `provider` optional (e.g. "Admiral") — global market data, deliberately not business-scoped
+- `ingest_market_policies(policy_type, provider?)` — ingest insurer policy wordings from `market_policies.py` into shared
+  market data (not business-scoped). The registry is **empty** — the tool returns "registry is empty" until SME wordings
+  are added. Not exposed to the web chat.
+
+The first three are the only broker tools in the web chat's `TOOLS[]`; the Worker always injects the session's `business_id`.
 
 **Three HTTP endpoints (non-MCP)**, all accepting an optional `business_id` (`/upload` as a
 query param, the other two in the JSON body) — migration 012 made the latter two actually
@@ -184,14 +163,6 @@ previously mutate or delete any document by source_path, globally:
 - `PATCH /update-policy` — merge-update metadata fields for a set of source_paths
 - `DELETE /delete-policy` — delete all chunks for a set of source_paths
 
-**Claude Desktop config** uses `supergateway` as a stdio↔streamable-http bridge:
-```json
-"insurance-broker-mcp": {
-  "command": "npx",
-  "args": ["-y", "supergateway", "--streamableHttp", "https://insurance-broker-production-85e3.up.railway.app/mcp"]
-}
-```
-
 **Environment variables** (set in Railway dashboard, not committed):
 - `OPENAI_API_KEY` — for embedding queries at search time
 - `SUPABASE_URL` — Supabase project URL
@@ -199,37 +170,16 @@ previously mutate or delete any document by source_path, globally:
 
 **Deployment:** Railway auto-deploys `mcp-server/` on every push to `main`. To deploy a change, commit and `git push origin main` — Railway picks it up automatically (no manual trigger needed).
 
-## Ingestion Pipeline
-
-**Docs root:** `~/Library/CloudStorage/GoogleDrive-guyfarley@gmail.com/My Drive/AI Broker/personal data/`
-
-**Run ingestion:**
-```bash
-cd ingestion
-python -m venv venv && source venv/bin/activate
-pip install -r requirements.txt
-cp .env.example .env  # fill in keys
-
-python ingest.py --dry-run          # preview, no API calls
-python ingest.py                    # full ingest
-python ingest.py --path "Insurance/Car"  # single subfolder
-python ingest.py --force            # re-embed everything
-python ingest.py --enrich           # backfill LLM-extracted metadata (provider, premium, etc.) for existing records
-python ingest.py --prune            # delete DB records whose source_path no longer exists on disk
-```
-
-**Ingestion uses service role key** (`SUPABASE_SERVICE_ROLE_KEY`) — never commit this.
-
-**Deduplication:** chunks are skipped if their `sha256(source_path|page_num|chunk_index)`
-hash already exists in the DB. Re-running on unchanged files costs $0.
-
 ## Supabase Schema
 
 Table: `public.documents`
 - `embedding` — `vector(1536)`, HNSW index with cosine ops
-- `metadata` — JSONB with GIN index; fields: `doc_type`, `policy_type`, `insured_entity`,
-  `filename`, `source_path`, `page_num`, `chunk_index`, `renewal_date`, `premium`,
-  `provider`, `underwriter`, `asset_name`, `asset_value`
+- `metadata` — JSONB with GIN index; fields: `doc_type` (always `policy` for uploads), `policy_type`,
+  `policy_types` (array — SME lines: `employers_liability`, `public_liability`, `professional_indemnity`,
+  `cyber`, `commercial_property`, `business_interruption`, `product_liability`, `goods_in_transit`,
+  `directors_officers`, `key_person`, `other`), `insured_entity` (the insured business), `filename`,
+  `source_path`, `page_num`, `chunk_index`, `renewal_date`, `premium`, `provider`, `underwriter`.
+  (`asset_name`/`asset_value` columns exist from the personal era but nothing writes them now.)
 - `chunk_hash` — unique dedup key
 - `user_id` — null (unused — see `business_id` below, the FK that's actually being used going forward)
 - `business_id` — `uuid` → `businesses.id` (migration 011). New writes should set this; legacy
@@ -253,60 +203,54 @@ Storage bucket: `policy-documents` (private) — for uploaded policy PDF origina
 rebuilt UI can show users what they uploaded. Created in migration 011; nothing uploads to it
 yet (`/api/upload` still only forwards to `mcp-server` for chunking, originals aren't retained).
 
-`doc_type` values: `policy` (insurance policies, warranties), `invoice` (purchase receipts), `other` (manuals, correspondence — not shown in UI cards).
+Legacy personal-era rows (the original owner's own policies, and the old car/home/pet market
+booklets under `market/…`) are still in `documents` with `business_id` NULL. Every Worker call
+passes a `business_id`, so no business ever sees them.
 
-Migrations: 001 create, 002 add provider, 003 rename property→insured_entity + add update_policy_metadata RPC, 004 add doc_type/asset_name/asset_value, 005 add premium/renewal_date, 006 fix list_policies DISTINCT ON source_path, 007 add delete_documents_by_source_path RPC, 008 add tenant_id filtering to list_policies/get_renewal_calendar, 009 add coverage_analysis table, 010 add policy_types array to list_policies, 011 add businesses/business_connections/business_financials, business_id on documents/coverage_analysis, p_business_id on RPCs, policy-documents Storage bucket, 012 add p_business_id ownership enforcement to update_policy_metadata/delete_documents_by_source_path.
+Migrations: 001 create, 002 add provider, 003 rename property→insured_entity + add update_policy_metadata RPC, 004 add doc_type/asset_name/asset_value, 005 add premium/renewal_date, 006 fix list_policies DISTINCT ON source_path, 007 add delete_documents_by_source_path RPC, 008 add tenant_id filtering to list_policies/get_renewal_calendar, 009 add coverage_analysis table, 010 add policy_types array to list_policies, 011 add businesses/business_connections/business_financials, business_id on documents/coverage_analysis, p_business_id on RPCs, policy-documents Storage bucket, 012 add p_business_id ownership enforcement to update_policy_metadata/delete_documents_by_source_path, 013 add chat_sessions/chat_messages/chat_feedback, 014 add broker_instructions + chat_messages.instructions.
+
+Tables: `public.chat_sessions` / `chat_messages` / `chat_feedback` (migration 013) — persisted broker
+conversations. `/api/chat` is server-authoritative: the client sends `{session_id?, message, notes?}`,
+the Worker loads history (`worker/src/lib/chat-store.ts`), runs the loop, and stores every turn as raw
+Anthropic content blocks (`kind`: user / assistant / tool_call / tool_result / note) with `model`,
+`prompt_version`, tokens and latency. Bump `PROMPT_VERSION` in `routes/chat.ts` whenever the system
+prompt or tools change, so reviewed conversations tie back to the prompt that produced them.
+
+Table: `public.broker_instructions` (migration 014) — standing instructions ("always conclude with a
+list of actions") managed by the team at `/admin/instructions`, appended to the chat system prompt on
+every turn (`buildSystemPrompt()` in `routes/chat.ts`); no deploy needed to change them. Each model
+turn snapshots the instructions in force into `chat_messages.instructions`. API is
+`/admin/api/instructions`, not gated in the Worker — during beta, Cloudflare Access gates the whole
+domain to the team, and workers.dev + preview URLs are disabled (2026-09-26). **When Access is narrowed
+to `/admin*` for launch, re-add a Worker-side check** (verify the `Cf-Access-Jwt-Assertion` JWT).
+
+**Prompt layering** (`buildSystemPrompt()` in `routes/chat.ts`): repo-root `SKILL.md` (edit via git, bump
+`PROMPT_VERSION`) → "This business" section (name + `business_financials` snapshot + connected providers,
+loaded per request) → enabled `broker_instructions` (edit live at `/admin/instructions`). Quote parsing
+for the four quote tools is shared in `worker/src/lib/quotes.ts` (chat + requote).
 
 RLS is enabled from day one, service-role only throughout (app-layer authorization — the Worker
 derives `business_id` from the session, never from client input). Real per-row RLS keyed to
 `auth.uid()` is a deliberate near-term follow-up, not yet done.
 
-## Metadata Conventions
+## Admin
 
-| Path pattern | doc_type | policy_type / asset_category | insured_entity |
-|---|---|---|---|
-| `Insurance/Car/…` | policy | car | — |
-| `Insurance/Home/The Barns/…` | policy | home | the_barns |
-| `Insurance/Home/Ashley Cottages/…` | policy | home | ashley_cottages |
-| `Insurance/Home/Wicks Lane Access/…` | policy | home | wicks_lane_access |
-| `Insurance/Breakdown/…` | policy | breakdown | — |
-| `Insurance/Life/…` | policy | life | — |
-| `Insurance/Phones/…` | policy | phone | — |
-| `Insurance/Travel/…` | policy | travel | — |
-| `Cars/…` | asset | car | — |
-| `Bikes/…` | asset | bike | — |
-| `Appliances & Machines/…` | asset | appliance | — |
-| `market/{type}/{provider}/…` | policy | car / home / pet | — |
-
-`insured_entity` can also be set freely via the web UI card editor (e.g. "BMW i3") and is persisted back to Supabase via `PATCH /api/update-policy`.
-
-Market policy paths (`market/…`) aren't shown in the current business dashboard UI (`BusinessPanel`, née `FilingCabinet`) — they live in the DB for comparison queries only. Ingestion status is visible at `/admin/market-policies.html`, linked from the `/admin` hub page alongside Architecture. The whole `/admin*` surface is gated by **Cloudflare Access** (Zero Trust — dashboard → Zero Trust → Access → Applications, scoped to `broker.denney.insure/admin*`, email one-time-PIN login). Account-level config, not anything in this repo.
+`/admin*` — Architecture, Broker Instructions, Market Policy Registry — is gated only by **Cloudflare
+Access** (Zero Trust → Access → Applications, email one-time-PIN login). During beta the `broker` Access
+app covers **all of** `broker.denney.insure` (team emails only), not just `/admin*`. Account-level
+config, not anything in this repo. Login/authorization will be revisited properly before launch.
 
 ## Quote MCP Server (Railway)
 
 **URL:** `https://alluring-prosperity-production-5644.up.railway.app/mcp`
 
-**Eight tools — four personal (wired into the web chat today), four commercial (built, but
-not yet in `chat.ts`'s `TOOLS[]` array — Claude can't call them from the web app yet):**
-- `get_home_quote(...)` — illustrative home/buildings/contents quote (3 insurers)
-- `get_motor_quote(...)` — illustrative motor insurance quote (3 insurers)
-- `get_pet_quote(...)` — illustrative pet insurance quote (3 insurers)
-- `analyze_photo(image_url, asset_type)` — GPT-4o-mini vision → asset details JSON
+**Four tools, all in the web chat's `TOOLS[]` — illustrative quotes from three fictional insurers:**
 - `get_public_liability_quote(revenue, employees, industry, postcode?, cover_limit?)`
 - `get_employers_liability_quote(employees, annual_payroll, industry)`
 - `get_professional_indemnity_quote(revenue, profession, cover_limit?)`
 - `get_cyber_quote(revenue, employees, industry, data_records_held?)`
 
-**No Supabase needed** — purely stateless, only requires `OPENAI_API_KEY`.
-
-**Claude Desktop config:**
-```json
-"insurance-quote-mcp": {
-  "command": "npx",
-  "args": ["-y", "supergateway", "--streamableHttp",
-           "https://alluring-prosperity-production-5644.up.railway.app/mcp"]
-}
-```
+**No Supabase or API keys needed** — purely stateless, deterministic (same inputs → same quote).
 
 **Deployment:** Same as broker — Railway auto-deploys `mcp-quote/` on every push to `main`.
 
