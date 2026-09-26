@@ -213,7 +213,11 @@ Tables: `public.chat_sessions` / `chat_messages` / `chat_feedback` (migration 01
 conversations. `/api/chat` is server-authoritative: the client sends `{session_id?, message, notes?}`,
 the Worker loads history (`worker/src/lib/chat-store.ts`), runs the loop, and stores every turn as raw
 Anthropic content blocks (`kind`: user / assistant / tool_call / tool_result / note) with `model`,
-`prompt_version`, tokens and latency. Bump `PROMPT_VERSION` in `routes/chat.ts` whenever the system
+`prompt_version`, tokens and latency. The response is a **Server-Sent Events stream**, opened as soon as
+the session is verified: `session` → `status` ("Searching your policies…") / `text` deltas → `done` (the
+old JSON payload) or `error`, plus a `ping` every 2s. The pings matter — some networks (seen with a VPN)
+drop connections idle for ~5s, and a full reply takes longer than that. The turn runs under
+`ctx.waitUntil`, so it's still persisted if the browser disconnects mid-reply. Bump `PROMPT_VERSION` in `routes/chat.ts` whenever the system
 prompt or tools change, so reviewed conversations tie back to the prompt that produced them.
 
 Table: `public.broker_instructions` (migration 014) — standing instructions ("always conclude with a

@@ -359,7 +359,7 @@
         <tr>
           <td class="item">Persistent chat sessions + feedback</td>
           <td><span class="status status-progress">In progress</span></td>
-          <td class="detail">Migration 013 (chat_sessions / chat_messages / chat_feedback). /api/chat is now server-authoritative: the client sends session_id + one message, the Worker loads history, runs the loop and stores every turn incl. tool_use/tool_result, with model, PROMPT_VERSION, tokens and latency. GET /api/chat/sessions[/:id], POST /api/chat/feedback (👍/👎 on replies). Built; needs migration 013 applied. Next: eval set, per-business memory.</td>
+          <td class="detail">Migration 013 (chat_sessions / chat_messages / chat_feedback). /api/chat streams its reply as Server-Sent Events (text deltas, tool status, 2s keep-alive pings — a VPN was dropping connections idle for ~5s) and persists the turn under ctx.waitUntil. It is server-authoritative: the client sends session_id + one message, the Worker loads history, runs the loop and stores every turn incl. tool_use/tool_result, with model, PROMPT_VERSION, tokens and latency. GET /api/chat/sessions[/:id], POST /api/chat/feedback (👍/👎 on replies). Built; needs migration 013 applied. Next: eval set, per-business memory.</td>
         </tr>
         <tr>
           <td class="item">Broker standing instructions</td>

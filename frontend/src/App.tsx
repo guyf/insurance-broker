@@ -31,6 +31,9 @@ export default function App() {
   // Assistant messages shown outside the chat loop, sent with the next turn so they're persisted
   const pendingNotes = useRef<string[]>([]);
   const [thinking, setThinking] = useState(false);
+  // While a reply streams: what the broker is doing ("Searching your policies…"), and whether any text has arrived
+  const [status, setStatus] = useState<string | null>(null);
+  const [replyStarted, setReplyStarted] = useState(false);
   const [quote, setQuote] = useState<QuoteResult | null>(null);
   const [lastQuoteParams, setLastQuoteParams] = useState<{ toolName: string; args: Record<string, unknown> } | null>(null);
   const [quotePanelOpen, setQuotePanelOpen] = useState(false);
@@ -134,32 +137,42 @@ export default function App() {
     const nextMessages = [...messages, userMessage];
     setMessages(nextMessages);
     setThinking(true);
+    setStatus(null);
+    setReplyStarted(false);
+    let streamed = "";
     try {
       const notes = pendingNotes.current;
       pendingNotes.current = [];
-      const response = await sendMessage(sessionId, text, notes);
+      const response = await sendMessage(sessionId, text, notes, {
+        // Adopt the session straight away, so a turn interrupted mid-reply still continues the same conversation
+        onSession: (id) => setSessionId(id),
+        onStatus: setStatus,
+        onText: (delta) => {
+          streamed += delta;
+          setStatus(null);
+          setReplyStarted(true);
+          setMessages([...nextMessages, { role: "assistant", content: streamed }]);
+        },
+      });
       setMessages([
         ...nextMessages,
         { id: response.message_id ?? undefined, role: "assistant", content: response.content, quote: response.quote },
       ]);
-      if (response.session_id !== sessionId) {
-        setSessionId(response.session_id);
-        loadSessions(false);
-      }
+      if (response.session_id !== sessionId) loadSessions(false);
       if (response.quote) setQuote(response.quote);
       if (response.quoteToolName && response.quoteToolArgs) {
         setLastQuoteParams({ toolName: response.quoteToolName, args: response.quoteToolArgs });
       }
     } catch (err) {
+      const error = `I encountered an error: ${err instanceof Error ? err.message : "Unknown error"}. Please try again.`;
       setMessages([
         ...nextMessages,
-        {
-          role: "assistant",
-          content: `I encountered an error: ${err instanceof Error ? err.message : "Unknown error"}. Please try again.`,
-        },
+        { role: "assistant", content: streamed ? `${streamed}\n\n_${error}_` : error },
       ]);
     } finally {
       setThinking(false);
+      setStatus(null);
+      setReplyStarted(false);
     }
   };
 
@@ -214,6 +227,8 @@ export default function App() {
         <Broker
           messages={messages}
           thinking={thinking}
+          working={thinking && (!replyStarted || status !== null)}
+          status={status}
           prefillInput={prefillInput}
           onPrefillConsumed={() => setPrefillInput("")}
           onSend={handleSend}

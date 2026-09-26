@@ -37,9 +37,24 @@ export async function handleGetChatSession(request: Request, env: Env, sessionId
   const session = await getOwnedSession(env, sessionId, auth.businessId);
   if (!session) return json({ error: "Chat session not found" }, 404);
 
-  const rows = (await loadHistory(env, session.id)).filter(
-    (r) => r.kind === "user" || r.kind === "assistant" || r.kind === "note"
-  );
+  // Rebuild what the user saw live: a reply streams the text of every model
+  // turn — including text written before a tool call — joined by a blank line
+  // (see runChatTurn in chat.ts), so fold tool_call text into the reply it led to.
+  const rows: Array<{ id?: string; role: "user" | "assistant"; kind: string; text: string; quote?: unknown }> = [];
+  let pending: string[] = [];
+  for (const r of await loadHistory(env, session.id)) {
+    if (r.kind === "tool_call") {
+      const t = textOf(r.content);
+      if (t) pending.push(t);
+    } else if (r.kind === "assistant") {
+      const t = textOf(r.content);
+      rows.push({ id: r.id, role: "assistant", kind: r.kind, text: [...pending, ...(t ? [t] : [])].join("\n\n"), quote: r.quote });
+      pending = [];
+    } else if (r.kind === "user" || r.kind === "note") {
+      pending = [];
+      rows.push({ id: r.id, role: r.role, kind: r.kind, text: textOf(r.content) });
+    }
+  }
 
   const assistantIds = rows.filter((r) => r.kind === "assistant").map((r) => r.id!);
   const ratings = new Map<string, number>();
@@ -54,7 +69,7 @@ export async function handleGetChatSession(request: Request, env: Env, sessionId
   const messages = rows.map((r) => ({
     id: r.kind === "assistant" ? r.id : undefined,
     role: r.role,
-    content: textOf(r.content),
+    content: r.text,
     quote: r.quote ?? undefined,
     rating: r.id ? ratings.get(r.id) : undefined,
   }));

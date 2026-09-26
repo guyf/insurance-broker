@@ -1,21 +1,84 @@
 import type { ChatMessage, ChatResponse, ChatSessionSummary, CoverageAnalysis, IdentifyResult, Policy, QuoteResult } from "./types";
 
+export interface ChatStreamHandlers {
+  /** The session this turn belongs to — sent first, before any reply text. */
+  onSession?: (sessionId: string) => void;
+  /** What the broker is doing right now, e.g. "Searching your policies…". */
+  onStatus?: (text: string) => void;
+  /** The next piece of reply text. */
+  onText?: (delta: string) => void;
+}
+
 /**
  * Sends one new message; the server holds the history. Omit sessionId to
  * start a new session. `notes` are assistant messages the UI showed outside
  * the chat (e.g. Analyse Policies summaries) so the broker sees them too.
+ *
+ * The reply arrives as a Server-Sent Events stream (see handleChat in
+ * worker/src/routes/chat.ts): session / status / text events as it's
+ * produced, pings to keep the connection alive, then a final "done" event
+ * whose payload this resolves with.
  */
-export async function sendMessage(sessionId: string | null, message: string, notes: string[] = []): Promise<ChatResponse> {
+export async function sendMessage(
+  sessionId: string | null,
+  message: string,
+  notes: string[] = [],
+  handlers: ChatStreamHandlers = {}
+): Promise<ChatResponse> {
   const res = await fetch("/api/chat", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", Accept: "text/event-stream" },
     body: JSON.stringify({ session_id: sessionId ?? undefined, message, notes }),
   });
-  if (!res.ok) {
+  if (!res.ok || !res.body) {
     const err = await res.text().catch(() => "Unknown error");
     throw new Error(`Chat failed: ${err}`);
   }
-  return res.json() as Promise<ChatResponse>;
+
+  const reader = res.body.pipeThrough(new TextDecoderStream()).getReader();
+  let buffer = "";
+  for (;;) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    buffer += value;
+    let boundary: number;
+    while ((boundary = buffer.indexOf("\n\n")) !== -1) {
+      const frame = buffer.slice(0, boundary);
+      buffer = buffer.slice(boundary + 2);
+      const data = frame
+        .split("\n")
+        .filter((line) => line.startsWith("data: "))
+        .map((line) => line.slice(6))
+        .join("\n");
+      if (!data) continue;
+      const event = JSON.parse(data) as
+        | { type: "ping" }
+        | { type: "session"; session_id: string }
+        | { type: "status"; text: string }
+        | { type: "text"; delta: string }
+        | ({ type: "done" } & ChatResponse)
+        | { type: "error"; error: string };
+      switch (event.type) {
+        case "session":
+          handlers.onSession?.(event.session_id);
+          break;
+        case "status":
+          handlers.onStatus?.(event.text);
+          break;
+        case "text":
+          handlers.onText?.(event.delta);
+          break;
+        case "error":
+          throw new Error(event.error);
+        case "done": {
+          reader.cancel().catch(() => {});
+          const { type: _type, ...response } = event;
+          return response;
+        }
+      }
+    }
+  }
+  throw new Error("The connection was interrupted before the broker finished replying.");
 }
 
 export async function listChatSessions(): Promise<ChatSessionSummary[]> {

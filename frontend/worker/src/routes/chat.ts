@@ -254,165 +254,244 @@ above, these take precedence.
 ${instructions.map((i) => `- ${i}`).join("\n")}`;
 }
 
-export async function handleChat(request: Request, env: Env): Promise<Response> {
-  const auth = await requireBusiness(request, env);
-  if (!auth) return unauthorizedResponse();
+/** What the UI shows while a tool runs — keeps the user informed during the silent parts of the loop. */
+const TOOL_STATUS: Record<string, string> = {
+  search_insurance_docs: "Searching your policies…",
+  list_policies: "Checking your uploaded policies…",
+  get_renewal_calendar: "Checking renewal dates…",
+  get_public_liability_quote: "Getting illustrative public liability quotes…",
+  get_employers_liability_quote: "Getting illustrative employers' liability quotes…",
+  get_professional_indemnity_quote: "Getting illustrative professional indemnity quotes…",
+  get_cyber_quote: "Getting illustrative cyber quotes…",
+};
 
-  try {
-    const body = (await request.json()) as {
-      session_id?: string;
-      message?: string;
-      /** Assistant text the UI showed outside the chat loop since the last turn (e.g. Analyse Policies summary). */
-      notes?: string[];
-    };
-    const text = typeof body.message === "string" ? body.message.trim() : "";
-    if (!text) return jsonError("message is required", 400);
+/** Heartbeat interval. Some networks (e.g. VPNs) drop connections idle for ~5s. */
+const PING_MS = 2_000;
 
-    // Resolve the session — always scoped to the caller's business, never trusted from the client.
-    let sessionId: string;
-    if (body.session_id) {
-      const session = await getOwnedSession(env, body.session_id, auth.businessId);
-      if (!session) return jsonError("Chat session not found", 404);
-      sessionId = session.id;
-    } else {
-      sessionId = await createSession(env, auth.businessId, auth.userId, text.slice(0, 80));
-    }
-
-    const [history, instructions, businessContext] = await Promise.all([
-      loadHistory(env, sessionId),
-      loadInstructions(env),
-      loadBusinessContext(env, auth.businessId),
-    ]);
-    const systemPrompt = buildSystemPrompt(businessContext, instructions);
-    let seq = history.length ? history[history.length - 1].seq + 1 : 0;
-    const newRows: StoredChatMessage[] = [];
-    const addRow = (row: Omit<StoredChatMessage, "seq">) => newRows.push({ ...row, seq: seq++ });
-
-    for (const note of body.notes ?? []) {
-      if (typeof note === "string" && note.trim()) {
-        addRow({ role: "assistant", kind: "note", content: [{ type: "text", text: note }] });
-      }
-    }
-    addRow({ role: "user", kind: "user", content: [{ type: "text", text }] });
-
-    // Bounded so one slow model call can't outlast the browser's patience; the
-    // SDK default (10 min, 2 retries) would let a request hang far too long.
-    const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY, timeout: 90_000, maxRetries: 1 });
-    const messages = toModelMessages([...history, ...newRows]);
-
-    let quoteResult: QuoteResult | null = null;
-    let quoteToolName: string | null = null;
-    let quoteToolArgs: Record<string, unknown> | null = null;
-    let finalText = "";
-    let finalSeq: number | null = null;
-    let loopError: unknown = null;
-
-    try {
-      // Agentic loop
-      for (let iteration = 0; iteration < 10; iteration++) {
-        const started = Date.now();
-        const response = await client.messages.create({
-          model: MODEL,
-          max_tokens: 4096,
-          system: systemPrompt,
-          tools: TOOLS,
-          messages,
-        });
-        const turnMeta = {
-          model: MODEL,
-          prompt_version: PROMPT_VERSION,
-          instructions,
-          input_tokens: response.usage.input_tokens,
-          output_tokens: response.usage.output_tokens,
-          latency_ms: Date.now() - started,
-        };
-
-        if (response.stop_reason === "tool_use") {
-          // Append assistant message with all content blocks
-          messages.push({ role: "assistant", content: response.content });
-
-          // Execute all tool calls, collect results
-          const toolResults: Anthropic.ToolResultBlockParam[] = [];
-
-          for (const block of response.content) {
-            if (block.type !== "tool_use") continue;
-
-            let toolOutput: string;
-            try {
-              toolOutput = await executeTool(
-                block.name,
-                block.input as Record<string, unknown>,
-                auth.businessId
-              );
-            } catch (err) {
-              toolOutput = `Error: ${err instanceof Error ? err.message : String(err)}`;
-            }
-
-            // Check if this is a quote tool call
-            if (QUOTE_TOOLS.has(block.name)) {
-              const parsed = parseQuoteResult(block.name, toolOutput);
-              if (parsed) {
-                quoteResult = parsed;
-                quoteToolName = block.name;
-                quoteToolArgs = block.input as Record<string, unknown>;
-              }
-            }
-
-            toolResults.push({
-              type: "tool_result",
-              tool_use_id: block.id,
-              content: toolOutput,
-            });
-          }
-
-          // Append tool results as user message
-          messages.push({ role: "user", content: toolResults });
-          // Recorded as a pair so persisted history never has a tool_use without its result
-          addRow({ role: "assistant", kind: "tool_call", content: response.content, ...turnMeta });
-          addRow({ role: "user", kind: "tool_result", content: toolResults });
-          continue;
-        }
-
-        // end_turn, or an unexpected stop reason — extract any text and stop
-        for (const block of response.content) {
-          if (block.type === "text") finalText += block.text;
-        }
-        finalSeq = seq;
-        addRow({ role: "assistant", kind: "assistant", content: response.content, quote: quoteResult, ...turnMeta });
-        break;
-      }
-    } catch (err) {
-      loopError = err;
-    }
-
-    // Persist whatever completed, even if the loop failed part-way
-    const ids = await appendMessages(env, sessionId, newRows);
-    if (loopError) throw loopError;
-
-    const result: {
+type ChatEvent =
+  | { type: "ping" }
+  | { type: "session"; session_id: string }
+  | { type: "status"; text: string }
+  | { type: "text"; delta: string }
+  | {
+      type: "done";
       session_id: string;
       message_id: string | null;
       content: string;
       quote?: QuoteResult;
       quoteToolName?: string;
       quoteToolArgs?: Record<string, unknown>;
-    } = {
-      session_id: sessionId,
-      message_id: finalSeq !== null ? ids.get(finalSeq) ?? null : null,
-      content: finalText,
-    };
-    if (quoteResult) result.quote = quoteResult;
-    if (quoteToolName) result.quoteToolName = quoteToolName;
-    if (quoteToolArgs) result.quoteToolArgs = quoteToolArgs;
+    }
+  | { type: "error"; error: string };
 
-    return withRefreshedCookie(
-      new Response(JSON.stringify(result), { headers: { "Content-Type": "application/json" } }),
-      auth.refreshedCookie
-    );
-  } catch (err) {
-    console.error("Chat route error:", err);
-    return jsonError(err instanceof Error ? err.message : "Internal error", 500);
+/**
+ * POST /api/chat — body { session_id?, message, notes? }.
+ *
+ * Responds with a Server-Sent Events stream as soon as the caller is
+ * authenticated, rather than one JSON body at the end: the reply streams in as
+ * Claude writes it, tool activity is reported as "status" events, and a ping
+ * every PING_MS keeps the connection from ever sitting idle — a full reply can
+ * take well over the ~5s some networks tolerate. The final "done" event
+ * carries what the old JSON response did. The work runs under ctx.waitUntil
+ * so the turn is still persisted if the browser disconnects part-way.
+ */
+export async function handleChat(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+  const auth = await requireBusiness(request, env);
+  if (!auth) return unauthorizedResponse();
+
+  let body: { session_id?: string; message?: string; notes?: string[] };
+  try {
+    body = (await request.json()) as typeof body;
+  } catch {
+    return jsonError("Invalid JSON body", 400);
   }
+  const text = typeof body.message === "string" ? body.message.trim() : "";
+  if (!text) return jsonError("message is required", 400);
+
+  const { readable, writable } = new TransformStream<Uint8Array, Uint8Array>();
+  const writer = writable.getWriter();
+  const encoder = new TextEncoder();
+  let open = true;
+  const send = (event: ChatEvent) => {
+    if (!open) return;
+    writer.write(encoder.encode(`data: ${JSON.stringify(event)}\n\n`)).catch(() => {
+      open = false; // client went away — keep working (waitUntil) so the turn is still saved
+    });
+  };
+
+  const heartbeat = setInterval(() => send({ type: "ping" }), PING_MS);
+  send({ type: "ping" });
+
+  const work = runChatTurn(env, auth, text, body, send)
+    .catch((err) => {
+      console.error("Chat route error:", err);
+      send({ type: "error", error: err instanceof Error ? err.message : "Internal error" });
+    })
+    .finally(() => {
+      clearInterval(heartbeat);
+      open = false;
+      writer.close().catch(() => {});
+    });
+  ctx.waitUntil(work);
+
+  return withRefreshedCookie(
+    new Response(readable, {
+      headers: {
+        "Content-Type": "text/event-stream; charset=utf-8",
+        "Cache-Control": "no-cache, no-transform",
+      },
+    }),
+    auth.refreshedCookie
+  );
+}
+
+async function runChatTurn(
+  env: Env,
+  auth: { businessId: string; userId: string },
+  text: string,
+  body: { session_id?: string; notes?: string[] },
+  send: (event: ChatEvent) => void
+): Promise<void> {
+  // Resolve the session — always scoped to the caller's business, never trusted from the client.
+  let sessionId: string;
+  if (body.session_id) {
+    const session = await getOwnedSession(env, body.session_id, auth.businessId);
+    if (!session) throw new Error("Chat session not found");
+    sessionId = session.id;
+  } else {
+    sessionId = await createSession(env, auth.businessId, auth.userId, text.slice(0, 80));
+  }
+  send({ type: "session", session_id: sessionId });
+
+  const [history, instructions, businessContext] = await Promise.all([
+    loadHistory(env, sessionId),
+    loadInstructions(env),
+    loadBusinessContext(env, auth.businessId),
+  ]);
+  const systemPrompt = buildSystemPrompt(businessContext, instructions);
+  let seq = history.length ? history[history.length - 1].seq + 1 : 0;
+  const newRows: StoredChatMessage[] = [];
+  const addRow = (row: Omit<StoredChatMessage, "seq">) => newRows.push({ ...row, seq: seq++ });
+
+  for (const note of body.notes ?? []) {
+    if (typeof note === "string" && note.trim()) {
+      addRow({ role: "assistant", kind: "note", content: [{ type: "text", text: note }] });
+    }
+  }
+  addRow({ role: "user", kind: "user", content: [{ type: "text", text }] });
+
+  // Bounded so one slow model call can't hang the turn; the SDK default is 10 min, 2 retries.
+  const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY, timeout: 90_000, maxRetries: 1 });
+  const messages = toModelMessages([...history, ...newRows]);
+
+  let quoteResult: QuoteResult | null = null;
+  let quoteToolName: string | null = null;
+  let quoteToolArgs: Record<string, unknown> | null = null;
+  // Everything the user has seen streamed, across every model turn — text Claude
+  // writes before a tool call ("Let me check your policies…") included. Turns are
+  // joined with a blank line; chat-sessions.ts rebuilds the same text on reload.
+  let displayText = "";
+  let finalSeq: number | null = null;
+  let loopError: unknown = null;
+
+  try {
+    // Agentic loop
+    for (let iteration = 0; iteration < 10; iteration++) {
+      const started = Date.now();
+      let firstDelta = true;
+      const stream = client.messages.stream({
+        model: MODEL,
+        max_tokens: 4096,
+        system: systemPrompt,
+        tools: TOOLS,
+        messages,
+      });
+      stream.on("text", (delta) => {
+        if (firstDelta && displayText) delta = `\n\n${delta}`;
+        firstDelta = false;
+        displayText += delta;
+        send({ type: "text", delta });
+      });
+      const response = await stream.finalMessage();
+      const turnMeta = {
+        model: MODEL,
+        prompt_version: PROMPT_VERSION,
+        instructions,
+        input_tokens: response.usage.input_tokens,
+        output_tokens: response.usage.output_tokens,
+        latency_ms: Date.now() - started,
+      };
+
+      if (response.stop_reason === "tool_use") {
+        // Append assistant message with all content blocks
+        messages.push({ role: "assistant", content: response.content });
+
+        // Execute all tool calls, collect results
+        const toolResults: Anthropic.ToolResultBlockParam[] = [];
+
+        for (const block of response.content) {
+          if (block.type !== "tool_use") continue;
+          send({ type: "status", text: TOOL_STATUS[block.name] ?? "Working…" });
+
+          let toolOutput: string;
+          try {
+            toolOutput = await executeTool(
+              block.name,
+              block.input as Record<string, unknown>,
+              auth.businessId
+            );
+          } catch (err) {
+            toolOutput = `Error: ${err instanceof Error ? err.message : String(err)}`;
+          }
+
+          // Check if this is a quote tool call
+          if (QUOTE_TOOLS.has(block.name)) {
+            const parsed = parseQuoteResult(block.name, toolOutput);
+            if (parsed) {
+              quoteResult = parsed;
+              quoteToolName = block.name;
+              quoteToolArgs = block.input as Record<string, unknown>;
+            }
+          }
+
+          toolResults.push({
+            type: "tool_result",
+            tool_use_id: block.id,
+            content: toolOutput,
+          });
+        }
+
+        // Append tool results as user message
+        messages.push({ role: "user", content: toolResults });
+        // Recorded as a pair so persisted history never has a tool_use without its result
+        addRow({ role: "assistant", kind: "tool_call", content: response.content, ...turnMeta });
+        addRow({ role: "user", kind: "tool_result", content: toolResults });
+        send({ type: "status", text: "Thinking…" });
+        continue;
+      }
+
+      // end_turn, or an unexpected stop reason — this turn's text has already streamed
+      finalSeq = seq;
+      addRow({ role: "assistant", kind: "assistant", content: response.content, quote: quoteResult, ...turnMeta });
+      break;
+    }
+  } catch (err) {
+    loopError = err;
+  }
+
+  // Persist whatever completed, even if the loop failed part-way
+  const ids = await appendMessages(env, sessionId, newRows);
+  if (loopError) throw loopError;
+
+  send({
+    type: "done",
+    session_id: sessionId,
+    message_id: finalSeq !== null ? ids.get(finalSeq) ?? null : null,
+    content: displayText,
+    ...(quoteResult ? { quote: quoteResult } : {}),
+    ...(quoteToolName ? { quoteToolName } : {}),
+    ...(quoteToolArgs ? { quoteToolArgs } : {}),
+  });
 }
 
 function jsonError(error: string, status: number): Response {

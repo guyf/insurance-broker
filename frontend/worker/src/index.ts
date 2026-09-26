@@ -39,7 +39,7 @@ export interface Env {
   ASSETS: Fetcher;
 }
 
-async function route(request: Request, env: Env): Promise<Response> {
+async function route(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
   const url = new URL(request.url);
   const { pathname } = url;
   const { method } = request;
@@ -55,7 +55,7 @@ async function route(request: Request, env: Env): Promise<Response> {
   if (pathname === "/api/business" && method === "GET") return handleGetBusiness(request, env);
   if (pathname === "/api/business" && method === "PATCH") return handleUpdateBusiness(request, env);
 
-  if (pathname === "/api/chat" && method === "POST") return handleChat(request, env);
+  if (pathname === "/api/chat" && method === "POST") return handleChat(request, env, ctx);
   if (pathname === "/api/chat/sessions" && method === "GET") return handleListChatSessions(request, env);
   if (pathname.startsWith("/api/chat/sessions/") && method === "GET") {
     return handleGetChatSession(request, env, decodeURIComponent(pathname.slice("/api/chat/sessions/".length)));
@@ -76,8 +76,8 @@ async function route(request: Request, env: Env): Promise<Response> {
 }
 
 export default {
-  async fetch(request: Request, env: Env): Promise<Response> {
-    const response = await route(request, env);
+  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+    const response = await route(request, env, ctx);
     // This whole app sits behind a login and has nothing worth indexing —
     // belt-and-suspenders alongside robots.txt and the HTML meta tag, since
     // this header also covers /api/* JSON responses a crawler might hit.

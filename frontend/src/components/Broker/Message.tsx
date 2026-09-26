@@ -117,18 +117,21 @@ export function Message({
   );
 }
 
-export function ThinkingIndicator() {
+export function ThinkingIndicator({ status }: { status?: string | null }) {
   return (
     <div className="flex gap-3 px-6 py-1.5">
       <DenneyMark className="w-7 h-7 flex-shrink-0" />
-      <div className="flex items-center gap-1 py-2">
-        {[0, 1, 2].map((i) => (
-          <span
-            key={i}
-            className="inline-block w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce"
-            style={{ animationDelay: `${i * 160}ms` }}
-          />
-        ))}
+      <div className="flex items-center gap-2 py-2" role="status" aria-live="polite">
+        <div className="flex items-center gap-1">
+          {[0, 1, 2].map((i) => (
+            <span
+              key={i}
+              className="inline-block w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce"
+              style={{ animationDelay: `${i * 160}ms` }}
+            />
+          ))}
+        </div>
+        {status && <span className="text-xs text-slate-500">{status}</span>}
       </div>
     </div>
   );

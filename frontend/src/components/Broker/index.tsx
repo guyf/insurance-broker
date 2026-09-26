@@ -4,7 +4,11 @@ import { MessageList } from "./MessageList";
 
 interface Props {
   messages: ChatMessage[];
+  /** A reply is in progress — input is disabled. */
   thinking: boolean;
+  /** Show the working indicator: before any reply text arrives, or while a tool runs mid-reply. */
+  working: boolean;
+  status: string | null;
   prefillInput: string;
   onPrefillConsumed: () => void;
   onSend: (text: string) => void;
@@ -18,6 +22,8 @@ interface Props {
 export function Broker({
   messages,
   thinking,
+  working,
+  status,
   prefillInput,
   onPrefillConsumed,
   onSend,
@@ -61,7 +67,7 @@ export function Broker({
         </div>
       </div>
 
-      <MessageList messages={messages} thinking={thinking} onFeedback={onFeedback} />
+      <MessageList messages={messages} working={working} status={status} onFeedback={onFeedback} />
 
       <InputBar
         onSend={onSend}
