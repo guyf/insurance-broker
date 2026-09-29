@@ -239,7 +239,8 @@ derives `business_id` from the session, never from client input). Real per-row R
 
 ## Admin
 
-`/admin*` — Architecture, Broker Instructions, Market Policy Registry — is gated only by **Cloudflare
+`/admin*` — Architecture, Broker Instructions, Market Policy Registry, Businesses (per-business data counts + reset
+buttons for test accounts; `/admin/api/businesses`, destructive, so add the Worker-side Access JWT check before narrowing Access) — is gated only by **Cloudflare
 Access** (Zero Trust → Access → Applications, email one-time-PIN login). During beta the `broker` Access
 app covers **all of** `broker.denney.insure` (team emails only), not just `/admin*`. Account-level
 config, not anything in this repo. Login/authorization will be revisited properly before launch.

@@ -25,6 +25,7 @@ import { handleGetCoverageAnalysis } from "./routes/coverage-analysis";
 import { handleAnalysePolicies } from "./routes/analyse-policies";
 import { handleIdentifyPolicy } from "./routes/identify-policy";
 import { handlePins } from "./routes/pins";
+import { handleAdminBusinesses } from "./routes/admin/businesses";
 import { handleAdminInstructions } from "./routes/admin/instructions";
 
 export interface Env {
@@ -76,6 +77,7 @@ async function route(request: Request, env: Env, ctx: ExecutionContext): Promise
   if (pathname === "/api/identify-policy" && method === "POST") return handleIdentifyPolicy(request, env);
 
   if (pathname === "/admin/api/instructions") return handleAdminInstructions(request, env);
+  if (pathname === "/admin/api/businesses") return handleAdminBusinesses(request, env);
 
   return env.ASSETS.fetch(request);
 }

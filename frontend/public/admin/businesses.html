@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Businesses — Denney Insurance</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0f172a; --surface: #1e293b; --border: #334155;
+      --text: #e2e8f0; --muted: #94a3b8; --teal: #0d9488; --rose: #f43f5e;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg); color: var(--text); min-height: 100vh; padding: 40px 16px 80px;
+    }
+    .wrap { max-width: 960px; margin: 0 auto; }
+    header { margin-bottom: 28px; }
+    header a { color: var(--muted); font-size: 0.8125rem; text-decoration: none; }
+    header a:hover { color: var(--text); }
+    header h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; margin: 8px 0 4px; }
+    header p { font-size: 0.875rem; color: var(--muted); line-height: 1.5; }
+    .status { font-size: 0.875rem; color: var(--muted); margin-bottom: 16px; }
+    .status.error { color: var(--rose); }
+    .biz { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px 20px; margin-bottom: 12px; }
+    .biz h2 { font-size: 1rem; font-weight: 600; }
+    .biz .meta { font-size: 0.75rem; color: var(--muted); margin-top: 2px; word-break: break-all; }
+    .counts { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+    .count { border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; min-width: 150px; flex: 1; }
+    .count .n { font-size: 1.25rem; font-weight: 700; margin-bottom: 8px; }
+    .count .label { font-size: 0.75rem; color: var(--muted); }
+    button {
+      font: inherit; font-size: 0.75rem; color: var(--rose); background: none;
+      border: 1px solid var(--rose); border-radius: 999px; padding: 4px 12px; cursor: pointer;
+    }
+    button:hover:not(:disabled) { background: var(--rose); color: #fff; }
+    button:disabled { opacity: 0.35; cursor: not-allowed; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <a href="/admin">← Admin</a>
+      <h1>Businesses</h1>
+      <p>Every business with its owner and what it has stored. Delete buttons wipe that entity type for that business only — permanent, for resetting test accounts.</p>
+    </header>
+    <div id="status" class="status" hidden></div>
+    <div id="list"></div>
+  </div>
+
+  <script>
+    const API = "/admin/api/businesses";
+    const listEl = document.getElementById("list");
+    const statusEl = document.getElementById("status");
+
+    const ENTITIES = [
+      { key: "documents", label: "Documents", unit: "documents", detail: "including all their chunks and embeddings" },
+      { key: "chats", label: "Chats", unit: "chat sessions", detail: "including messages and feedback" },
+      { key: "coverage", label: "Coverage analysis", unit: "analysed risks", detail: "" },
+      { key: "pins", label: "Saved answers", unit: "pinned answers", detail: "" },
+    ];
+
+    async function api(method, body) {
+      const res = await fetch(API, {
+        method,
+        headers: body ? { "Content-Type": "application/json" } : undefined,
+        body: body ? JSON.stringify(body) : undefined,
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || `Request failed (${res.status})`);
+      return data;
+    }
+
+    function setStatus(text, isError) {
+      statusEl.textContent = text;
+      statusEl.className = "status" + (isError ? " error" : "");
+      statusEl.hidden = !text;
+    }
+
+    function el(tag, props = {}, children = []) {
+      const node = Object.assign(document.createElement(tag), props);
+      for (const c of children) node.append(c);
+      return node;
+    }
+
+    async function load() {
+      try {
+        const rows = await api("GET");
+        setStatus(rows.length ? "" : "No businesses yet.");
+        render(rows);
+      } catch (err) {
+        setStatus(err.message, true);
+      }
+    }
+
+    async function wipe(biz, entity) {
+      const n = biz.counts[entity.key];
+      const name = biz.name || biz.id;
+      const detail = entity.detail ? ", " + entity.detail : "";
+      if (!confirm(`Delete ALL ${entity.label.toLowerCase()} (${n} ${entity.unit}${detail}) for "${name}"?\n\nThis cannot be undone.`)) return;
+      try {
+        await api("DELETE", { business_id: biz.id, entity: entity.key });
+        await load();
+        setStatus(`Deleted ${entity.label.toLowerCase()} for ${name}.`);
+      } catch (err) {
+        setStatus(err.message, true);
+      }
+    }
+
+    function render(rows) {
+      listEl.replaceChildren(...rows.map((biz) => {
+        const counts = el("div", { className: "counts" }, ENTITIES.map((entity) => {
+          const n = biz.counts[entity.key];
+          const btn = el("button", { textContent: "Delete all", disabled: n === 0 });
+          btn.addEventListener("click", () => wipe(biz, entity));
+          return el("div", { className: "count" }, [
+            el("div", { className: "label", textContent: entity.label }),
+            el("div", { className: "n", textContent: String(n) }),
+            btn,
+          ]);
+        }));
+        const created = new Date(biz.created_at).toLocaleDateString("en-GB", { dateStyle: "medium" });
+        return el("div", { className: "biz" }, [
+          el("h2", { textContent: biz.name || "(unnamed business)" }),
+          el("div", { className: "meta", textContent: `${biz.id} · owner ${biz.owner_email ?? "unknown"} · created ${created}` }),
+          counts,
+        ]);
+      }));
+    }
+
+    load();
+  </script>
+</body>
+</html>
