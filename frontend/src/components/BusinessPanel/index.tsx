@@ -52,23 +52,25 @@ const RISK_NAMES: Record<string, string> = Object.fromEntries(RISKS.map((r) => [
 /** Turns a fresh coverage-analysis result into a readable chat message, so
  * "Analyse Policies" surfaces what it found without a separate Claude call —
  * the analysis already ran server-side, this just formats what came back. */
+function firstSentence(text: string, max = 110): string {
+  const first = text.split(/(?<=[.!?])\s/)[0] ?? text;
+  return first.length > max ? `${first.slice(0, max - 1).trimEnd()}…` : first;
+}
+
+/** Short chat message — the per-risk detail lives on the risk cards. */
 function buildAnalysisSummary(analysis: CoverageAnalysis): string {
   const covered = Object.entries(analysis);
+  const gaps = RISKS.filter((r) => !analysis[r.id]);
   const lines = [
-    `**Coverage analysis complete** — found ${covered.length} risk${covered.length === 1 ? "" : "s"} covered in your uploaded policies:`,
+    `Analysis done: **${covered.length} of ${RISKS.length} risks covered**${gaps.length ? `, ${gaps.length} not found` : ""}.`,
     "",
   ];
   for (const [riskId, data] of covered) {
-    lines.push(`- **${RISK_NAMES[riskId] ?? riskId}**: ${data.summary}`);
-    if (data.exclusions.length > 0) lines.push(`  Exclusions: ${data.exclusions.join(", ")}`);
-    if (data.concerns.length > 0) lines.push(`  ⚠ ${data.concerns.join("; ")}`);
+    const flag = data.concerns.length > 0 ? " ⚠" : "";
+    lines.push(`- **${RISK_NAMES[riskId] ?? riskId}**${flag}: ${firstSentence(data.summary)}`);
   }
-
-  const gaps = RISKS.filter((r) => !analysis[r.id]);
-  if (gaps.length > 0) {
-    lines.push("", `No coverage found for: ${gaps.map((r) => r.name).join(", ")}.`);
-  }
-
+  if (gaps.length > 0) lines.push("", `Not found: ${gaps.map((r) => r.name).join(", ")}.`);
+  lines.push("", "Full details are on the cards. Want me to explain any of these, or price a gap?");
   return lines.join("\n");
 }
 

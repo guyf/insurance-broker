@@ -4,6 +4,7 @@ import hashlib
 import json
 import logging
 import re
+from datetime import date, datetime, timedelta
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -80,6 +81,21 @@ def _sliding_window(tokens: list[int], enc: tiktoken.Encoding) -> list[str]:
     return chunks
 
 
+def _plausible_renewal_date(value: str) -> bool:
+    """A renewal date is plausible if it parses and sits within ~2y back / 3y forward of today.
+
+    Guards against mis-reads (e.g. 06/06/2255, or an unrelated historic date).
+    """
+    for fmt in ("%d/%m/%Y", "%d-%m-%Y", "%d %B %Y", "%d %b %Y", "%Y-%m-%d"):
+        try:
+            d = datetime.strptime(value.strip(), fmt).date()
+        except ValueError:
+            continue
+        today = date.today()
+        return today - timedelta(days=730) <= d <= today + timedelta(days=1095)
+    return False
+
+
 def _extract_renewal_date(text: str) -> str | None:
     m = _RENEWAL_DATE_RE.search(text)
     return m.group(1).strip() if m else None
@@ -124,7 +140,8 @@ _POLICY_FIELDS = (
     f"Each value must be one of: {_KNOWN_POLICY_TYPE_VALUES}\n"
     "- provider: the insurance company name (e.g. 'NFU Mutual')\n"
     "- underwriter: underwriting company if explicitly different from provider\n"
-    "- renewal_date: policy renewal date as DD/MM/YYYY\n"
+    "- renewal_date: the END date of the current policy period (the renewal/expiry date) as DD/MM/YYYY. "
+    "Not the start date, issue date or a previous year's date\n"
     "- premium: annual premium as digits only, no £ or commas (e.g. '1234')\n"
     "- insured_entity: the insured business or legal entity named on the policy (e.g. 'Acme Widgets Ltd'). "
     "NEVER use document type names like 'Policy Schedule' or 'Insurance Document' here."
@@ -188,6 +205,11 @@ def extract_metadata_llm(pdf_path: Path, openai_client) -> dict:
                 if valid:
                     cleaned["policy_types"] = valid
                     cleaned["policy_type"] = valid[0]  # keep single field for backward compat
+            elif k == "renewal_date":
+                if _plausible_renewal_date(str(v)):
+                    cleaned[k] = str(v)
+                else:
+                    logger.info("Dropping implausible renewal_date %r for %s", v, pdf_path.name)
             else:
                 cleaned[k] = str(v)
         return cleaned
@@ -218,7 +240,7 @@ def chunk_pdf(pdf_path: Path, source_path: str, base_metadata: dict) -> list[Chu
                 # Best-effort metadata extraction
                 page_meta: dict = {}
                 renewal_date = _extract_renewal_date(text)
-                if renewal_date:
+                if renewal_date and _plausible_renewal_date(renewal_date):
                     page_meta["renewal_date"] = renewal_date
                 premium = _extract_premium(text)
                 if premium:

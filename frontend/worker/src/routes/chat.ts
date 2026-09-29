@@ -166,7 +166,7 @@ const MODEL = "claude-sonnet-4-6";
  * persisted chat turn so reviewed conversations can be tied back to the
  * prompt that produced them.
  */
-export const PROMPT_VERSION = "2026-09-26.3";
+export const PROMPT_VERSION = "2026-09-29.1";
 
 /**
  * The broker's base prompt is the repo-root SKILL.md — one source of truth,
@@ -234,9 +234,19 @@ async function loadBusinessContext(env: Env, businessId: string): Promise<string
 }
 
 function buildSystemPrompt(businessContext: string, instructions: string[]): string {
+  const today = new Date().toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "Europe/London",
+  });
   const base = `${SYSTEM_PROMPT}
 
 ---
+
+## Today's date
+
+Today is ${today}. Use it to judge renewals: a date before today has already passed.
 
 ## This business
 

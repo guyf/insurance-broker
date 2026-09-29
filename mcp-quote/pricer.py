@@ -350,6 +350,6 @@ def build_panel(base_price: float, quote_ref: str, insurance_type: str) -> str:
 
     lines.append("─" * 41)
     lines.append("⚠️  Illustrative quotes only — not a real insurance offer.")
-    lines.append("    Speak to an FCA-authorised broker for actual cover.")
+    lines.append("    Get real cover through a broker such as Simply Business.")
 
     return "\n".join(lines)

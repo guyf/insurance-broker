@@ -1,3 +1,4 @@
+import { GET_COVER_URL, GET_COVER_LABEL } from "../../lib/config";
 import type { InsurerQuote, QuoteResult } from "../../lib/types";
 
 const TYPE_LABELS: Record<QuoteResult["type"], string> = {
@@ -69,7 +70,11 @@ function InsurerCard({ insurer, rank }: { insurer: InsurerQuote; rank: number })
           real quotes from an insurer, so there's no live "buy" link to send anyone to. */}
       <div className="px-4 pb-3.5">
         <p className="text-center text-[11px] text-slate-400 leading-snug">
-          Illustrative only — speak to an FCA-authorised broker for actual cover.
+          Illustrative only.{" "}
+          <a href={GET_COVER_URL} target="_blank" rel="noopener noreferrer" className="underline">
+            Get real cover with {GET_COVER_LABEL}
+          </a>
+          .
         </p>
       </div>
     </div>
@@ -124,7 +129,11 @@ export function QuoteTable({
       ))}
 
       <p className="text-[10px] text-slate-400 leading-relaxed text-center mt-2">
-        Illustrative quotes only. Speak to an FCA-authorised broker for actual cover.
+        Illustrative quotes only.{" "}
+        <a href={GET_COVER_URL} target="_blank" rel="noopener noreferrer" className="underline">
+          Get real cover with {GET_COVER_LABEL}
+        </a>
+        .
       </p>
     </div>
   );
