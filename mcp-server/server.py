@@ -339,6 +339,8 @@ async def delete_policy(request: Request) -> JSONResponse:
 
         if not source_paths:
             return JSONResponse({"error": "source_paths is required"}, status_code=400)
+        if not business_id:
+            return JSONResponse({"error": "business_id is required"}, status_code=400)
 
         total = 0
         sb = _supabase_service()
@@ -368,6 +370,8 @@ async def update_policy(request: Request) -> JSONResponse:
             return JSONResponse(
                 {"error": "source_paths and updates are required"}, status_code=400
             )
+        if not business_id:
+            return JSONResponse({"error": "business_id is required"}, status_code=400)
 
         _supabase_service().rpc(
             "update_policy_metadata",

@@ -16,8 +16,7 @@ export async function handleUpdatePolicy(request: Request, env: Env): Promise<Re
   try {
     const body = await request.json() as Record<string, unknown>;
     // Server-derived, never trust a client-supplied business_id even if one were sent.
-    // NOTE: mcp-server accepts this but doesn't yet enforce that the source_paths
-    // actually belong to this business — see CLAUDE.md's SME Rebuild "what's next".
+    // mcp-server requires it and the RPC only touches this business's own rows (migration 016).
     body.business_id = auth.businessId;
 
     const resp = await fetch(UPDATE_URL, {
