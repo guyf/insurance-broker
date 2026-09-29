@@ -1,3 +1,4 @@
+import { useUploadQueue } from "./lib/uploadQueue";
 import { useEffect, useRef, useState } from "react";
 import BusinessPanel from "./components/BusinessPanel";
 import { Broker } from "./components/Broker";
@@ -10,7 +11,6 @@ import {
   requote,
   sendChatFeedback,
   sendMessage,
-  uploadPolicy,
 } from "./lib/api";
 import { getCurrentBusiness, logout, type BusinessInfo } from "./lib/auth";
 import type { ChatMessage, ChatSessionSummary, Policy, QuoteResult } from "./lib/types";
@@ -132,6 +132,15 @@ export default function App() {
     toastTimer.current = setTimeout(() => setToast(null), 4000);
   };
 
+  const uploads = useUploadQueue(({ done, failed, skipped }) => {
+    void loadPolicies();
+    const parts = [];
+    if (done) parts.push(`${done} document${done === 1 ? "" : "s"} uploaded`);
+    if (failed) parts.push(`${failed} failed`);
+    if (skipped.length) parts.push(`${skipped.length} skipped (not PDF)`);
+    if (parts.length) showToast(parts.join(", "), failed === 0);
+  });
+
   const handleSend = async (text: string) => {
     const userMessage: ChatMessage = { role: "user", content: text };
     const nextMessages = [...messages, userMessage];
@@ -198,11 +207,6 @@ export default function App() {
     }
   };
 
-  const handleUpload = async (file: File) => {
-    const result = await uploadPolicy(file);
-    showToast(`${result.filename} uploaded — ${result.chunks} chunks stored`);
-    await loadPolicies();
-  };
 
   if (!authChecked) return <div className="h-full bg-slate-50" />;
   if (!business) return <LoginGate onAuthenticated={handleAuthenticated} />;
@@ -214,7 +218,10 @@ export default function App() {
         <BusinessPanel
           business={business}
           policies={policies}
-          onUpload={handleUpload}
+          uploads={uploads.items}
+          uploadBusy={uploads.busy}
+          onFiles={(files) => void uploads.enqueue(files)}
+          onClearUploads={uploads.clearFinished}
           onSendMessage={(prompt) => setPrefillInput(prompt)}
           onLogout={handleLogout}
           onBusinessNameUpdate={handleBusinessNameUpdate}
@@ -232,6 +239,7 @@ export default function App() {
           prefillInput={prefillInput}
           onPrefillConsumed={() => setPrefillInput("")}
           onSend={handleSend}
+          onFiles={(files) => void uploads.enqueue(files)}
           onFeedback={handleFeedback}
           sessions={sessions}
           currentSessionId={sessionId}

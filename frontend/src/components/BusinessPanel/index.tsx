@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import { getCoverageAnalysis, identifyPolicy, refreshCoverageAnalysis } from "../../lib/api";
+import { getCoverageAnalysis, refreshCoverageAnalysis } from "../../lib/api";
 import { updateBusinessName, type BusinessInfo } from "../../lib/auth";
+import type { UploadItem } from "../../lib/uploadQueue";
 import type { CoverageAnalysis, Policy, RiskAnalysis } from "../../lib/types";
 
 // ---------------------------------------------------------------------------
@@ -402,22 +403,58 @@ function RiskBox({
 
 // ---------------------------------------------------------------------------
 // BusinessPanel
+function UploadList({ items, onClear }: { items: UploadItem[]; onClear: () => void }) {
+  const finished = items.filter((i) => i.status === "done" || i.status === "failed").length;
+  const label: Record<UploadItem["status"], string> = {
+    queued: "Waiting",
+    uploading: "Processing…",
+    done: "Done",
+    failed: "Failed",
+  };
+  return (
+    <div className="bg-white border border-slate-200 rounded-lg px-3 py-2 mb-2 text-xs">
+      <div className="flex items-center justify-between mb-1">
+        <span className="font-medium text-slate-700">
+          {finished} of {items.length} processed
+        </span>
+        {finished === items.length && (
+          <button onClick={onClear} className="text-slate-400 hover:text-slate-600">
+            Clear
+          </button>
+        )}
+      </div>
+      <ul className="max-h-28 overflow-y-auto panel-scroll space-y-0.5">
+        {items.map((i) => (
+          <li key={i.id} className="flex justify-between gap-2" title={i.error}>
+            <span className="truncate text-slate-600">{i.name}</span>
+            <span className={i.status === "failed" ? "text-red-600" : i.status === "done" ? "text-emerald-600" : "text-slate-400"}>
+              {label[i.status]}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 // ---------------------------------------------------------------------------
 
 interface Props {
   business: BusinessInfo;
   policies: Policy[];
-  onUpload: (file: File) => Promise<void>;
+  uploads: UploadItem[];
+  uploadBusy: boolean;
+  onFiles: (files: File[]) => void;
+  onClearUploads: () => void;
   onSendMessage?: (msg: string) => void;
   onLogout: () => void;
   onBusinessNameUpdate: (name: string) => void;
   onAnalysisComplete?: (summary: string) => void;
 }
 
-export default function BusinessPanel({ business, policies, onUpload, onSendMessage, onLogout, onBusinessNameUpdate, onAnalysisComplete }: Props) {
+export default function BusinessPanel({ business, policies, uploads, uploadBusy, onFiles, onClearUploads, onSendMessage, onLogout, onBusinessNameUpdate, onAnalysisComplete }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [uploadStatus, setUploadStatus] = useState<string | null>(null);
-  const [pendingAnalysis, setPendingAnalysis] = useState<{ filename: string; typeNames: string[] } | null>(null);
+  const [dragging, setDragging] = useState(false);
   const [coverageAnalysis, setCoverageAnalysis] = useState<CoverageAnalysis>({});
   const [isAnalysing, setIsAnalysing] = useState(false);
   const [analyseError, setAnalyseError] = useState<string | null>(null);
@@ -426,26 +463,17 @@ export default function BusinessPanel({ business, policies, onUpload, onSendMess
     getCoverageAnalysis().then(setCoverageAnalysis).catch(() => {});
   }, []);
 
-  async function handleUploadChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setUploadStatus("Uploading…");
-    try {
-      await onUpload(file);
-      setUploadStatus("Identifying…");
-      const analysis = await identifyPolicy(file.name);
-      setUploadStatus(null);
-      if (analysis.types.length > 0) {
-        setPendingAnalysis({
-          filename: file.name,
-          typeNames: analysis.types.map((t) => RISK_NAMES[t] ?? t),
-        });
-      }
-    } catch {
-      setUploadStatus("Upload failed");
-      setTimeout(() => setUploadStatus(null), 4000);
-    }
+  function handleUploadChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? []);
     e.target.value = "";
+    if (files.length) onFiles(files);
+  }
+
+  function handleDrop(e: React.DragEvent) {
+    e.preventDefault();
+    setDragging(false);
+    const files = Array.from(e.dataTransfer.files);
+    if (files.length) onFiles(files);
   }
 
   async function handleAnalyse() {
@@ -470,7 +498,24 @@ export default function BusinessPanel({ business, policies, onUpload, onSendMess
   const policiesForRisk = (riskId: string) => policies.filter((p) => riskIdsForPolicy(p).includes(riskId));
 
   return (
-    <div className="h-full w-full border-r border-slate-200 bg-slate-50 flex flex-col">
+    <div
+      className="h-full w-full border-r border-slate-200 bg-slate-50 flex flex-col relative"
+      onDragOver={(e) => {
+        if (e.dataTransfer.types.includes("Files")) {
+          e.preventDefault();
+          setDragging(true);
+        }
+      }}
+      onDragLeave={(e) => {
+        if (e.currentTarget === e.target) setDragging(false);
+      }}
+      onDrop={handleDrop}
+    >
+      {dragging && (
+        <div className="absolute inset-0 z-10 m-2 rounded-xl border-2 border-dashed border-primary bg-primary-tint/90 flex items-center justify-center text-primary font-medium pointer-events-none">
+          Drop PDFs or a zip to upload
+        </div>
+      )}
       <div className="flex-1 overflow-y-auto panel-scroll px-3 py-3 space-y-4">
         <BusinessCard business={business} onLogout={onLogout} onNameUpdate={onBusinessNameUpdate} />
 
@@ -479,30 +524,17 @@ export default function BusinessPanel({ business, policies, onUpload, onSendMess
             <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Your Policies</h2>
             <button
               onClick={() => fileInputRef.current?.click()}
-              disabled={!!uploadStatus}
               className="text-sm bg-white border border-primary/30 text-primary rounded-full px-4 py-1.5 hover:bg-primary-tint transition-colors font-medium disabled:opacity-60"
             >
-              {uploadStatus ?? "Upload Policy"}
+              {uploadBusy ? "Uploading…" : "Upload Policies"}
             </button>
-            <input ref={fileInputRef} type="file" accept=".pdf" className="hidden" onChange={handleUploadChange} />
+            <input ref={fileInputRef} type="file" multiple accept=".pdf,.zip,application/pdf,application/zip" className="hidden" onChange={handleUploadChange} />
           </div>
 
-          {pendingAnalysis && (
-            <div className="bg-primary-tint border border-primary/20 rounded-lg px-3 py-2.5 text-sm mb-2">
-              <p className="text-slate-800 font-medium mb-1.5">
-                Identified: {pendingAnalysis.typeNames.join(" + ") || "Unknown type"}
-              </p>
-              <button
-                onClick={() => setPendingAnalysis(null)}
-                className="bg-primary text-white rounded-full px-3 py-1 hover:bg-primary/90 transition-colors font-medium"
-              >
-                Dismiss
-              </button>
-            </div>
-          )}
+          {uploads.length > 0 && <UploadList items={uploads} onClear={onClearUploads} />}
 
           {policies.length === 0 ? (
-            <p className="text-sm text-slate-400 italic px-0.5">No policies uploaded yet.</p>
+            <p className="text-sm text-slate-400 italic px-0.5">No policies uploaded yet — drop PDFs or a zip anywhere on this panel.</p>
           ) : (
             <div className="space-y-2">
               {policies.map((p) => (

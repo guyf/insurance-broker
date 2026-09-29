@@ -3,6 +3,7 @@ import { InputBar } from "./InputBar";
 import { MessageList } from "./MessageList";
 
 interface Props {
+  onFiles?: (files: File[]) => void;
   messages: ChatMessage[];
   /** A reply is in progress — input is disabled. */
   thinking: boolean;
@@ -27,6 +28,7 @@ export function Broker({
   prefillInput,
   onPrefillConsumed,
   onSend,
+  onFiles,
   onFeedback,
   sessions,
   currentSessionId,
@@ -71,6 +73,7 @@ export function Broker({
 
       <InputBar
         onSend={onSend}
+        onFiles={onFiles}
         disabled={thinking}
         prefill={prefillInput}
         onPrefillConsumed={onPrefillConsumed}

@@ -5,11 +5,14 @@ interface Props {
   disabled: boolean;
   prefill: string;
   onPrefillConsumed: () => void;
+  /** Attach PDFs / zips — goes through the same upload queue as the left panel. */
+  onFiles?: (files: File[]) => void;
 }
 
-export function InputBar({ onSend, disabled, prefill, onPrefillConsumed }: Props) {
+export function InputBar({ onSend, disabled, prefill, onPrefillConsumed, onFiles }: Props) {
   const [text, setText] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (prefill) {
@@ -43,8 +46,43 @@ export function InputBar({ onSend, disabled, prefill, onPrefillConsumed }: Props
   const canSend = !!text.trim() && !disabled;
 
   return (
-    <div className="flex-shrink-0 p-4">
+    <div
+      className="flex-shrink-0 p-4"
+      onDragOver={(e) => onFiles && e.dataTransfer.types.includes("Files") && e.preventDefault()}
+      onDrop={(e) => {
+        if (!onFiles) return;
+        e.preventDefault();
+        const files = Array.from(e.dataTransfer.files);
+        if (files.length) onFiles(files);
+      }}
+    >
       <div className="relative flex items-end rounded-2xl border border-slate-200 bg-white shadow-sm focus-within:border-slate-400 focus-within:shadow-md transition-all">
+        {onFiles && (
+          <>
+            <button
+              type="button"
+              onClick={() => fileRef.current?.click()}
+              title="Attach policy PDFs or a zip"
+              className="flex-shrink-0 pl-3 pb-3 text-slate-400 hover:text-slate-600"
+            >
+              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 12.5l-8.6 8.6a5 5 0 01-7-7l8.6-8.6a3.3 3.3 0 014.7 4.7l-8.6 8.6a1.7 1.7 0 01-2.4-2.4l7.9-7.9" />
+              </svg>
+            </button>
+            <input
+              ref={fileRef}
+              type="file"
+              multiple
+              accept=".pdf,.zip,application/pdf,application/zip"
+              className="hidden"
+              onChange={(e) => {
+                const files = Array.from(e.target.files ?? []);
+                e.target.value = "";
+                if (files.length) onFiles(files);
+              }}
+            />
+          </>
+        )}
         <textarea
           ref={textareaRef}
           rows={1}
