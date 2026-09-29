@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { getCoverageAnalysis, refreshCoverageAnalysis } from "../../lib/api";
+import { deletePolicy, getCoverageAnalysis, refreshCoverageAnalysis } from "../../lib/api";
 import { updateBusinessName, type BusinessInfo } from "../../lib/auth";
 import type { UploadItem } from "../../lib/uploadQueue";
 import type { CoverageAnalysis, Policy, RiskAnalysis } from "../../lib/types";
@@ -237,36 +237,48 @@ function BusinessCard({
 // PolicyDocCard — "Your Policies" section
 // ---------------------------------------------------------------------------
 
-function PolicyDocCard({ policy, onSendMessage }: { policy: Policy; onSendMessage?: (msg: string) => void }) {
+function PolicyDocCard({
+  policy,
+  onSendMessage,
+  onDelete,
+}: {
+  policy: Policy;
+  onSendMessage?: (msg: string) => void;
+  onDelete: (policy: Policy) => void;
+}) {
   const riskIds = riskIdsForPolicy(policy);
+  const meta = [policy.provider, policy.renewal_date && `renews ${policy.renewal_date}`].filter(Boolean).join(" · ");
   return (
-    <div className="bg-white rounded-lg border border-slate-200 px-3 py-2.5 flex items-start gap-2">
-      <svg className="w-4 h-4 text-slate-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-      </svg>
+    <div className="group bg-white rounded-md border border-slate-200 px-2.5 py-1.5 flex items-center gap-2">
       <div className="flex-1 min-w-0">
         <button
           onClick={() => onSendMessage?.(`Tell me about my ${policy.filename}`)}
-          className="text-sm font-medium text-accent hover:text-accent/80 underline truncate block text-left w-full"
+          className="text-sm font-medium text-accent hover:text-accent/80 truncate block text-left w-full"
           title={policy.filename}
         >
           {policy.filename}
         </button>
-        <div className="flex flex-wrap items-center gap-1.5 mt-1">
-          {policy.provider && <span className="text-sm text-slate-500">{policy.provider}</span>}
-          {policy.premium && <span className="text-sm text-slate-400">· {policy.premium}</span>}
-          {policy.renewal_date && <span className="text-sm text-slate-400">· Renews {policy.renewal_date}</span>}
-        </div>
-        {riskIds.length > 0 && (
-          <div className="flex flex-wrap gap-1 mt-1">
-            {riskIds.map((id) => (
-              <span key={id} className="text-xs bg-accent-tint text-accent rounded px-1.5 py-0.5 font-medium uppercase">
-                {id}
-              </span>
-            ))}
-          </div>
-        )}
+        {meta && <div className="text-xs text-slate-400 truncate">{meta}</div>}
       </div>
+      {riskIds.length > 0 && (
+        <div className="flex gap-1 flex-shrink-0">
+          {riskIds.map((id) => (
+            <span key={id} className="text-[10px] bg-accent-tint text-accent rounded px-1 py-0.5 font-medium uppercase">
+              {id}
+            </span>
+          ))}
+        </div>
+      )}
+      <button
+        onClick={() => onDelete(policy)}
+        title="Delete this document"
+        aria-label={`Delete ${policy.filename}`}
+        className="flex-shrink-0 text-slate-300 hover:text-primary transition-colors"
+      >
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M6 7h12M9 7V4h6v3m-8 0l1 13h8l1-13" />
+        </svg>
+      </button>
     </div>
   );
 }
@@ -277,20 +289,23 @@ function PolicyDocCard({ policy, onSendMessage }: { policy: Policy; onSendMessag
 
 function RiskBox({
   risk,
-  policy,
-  isDuplicate,
+  policies,
   onSendMessage,
   business,
   analysisData,
 }: {
   risk: RiskDef;
-  policy?: Policy;
-  isDuplicate?: boolean;
+  policies: Policy[];
   onSendMessage?: (msg: string) => void;
   business: BusinessInfo;
   analysisData?: RiskAnalysis;
 }) {
-  const isCovered = !!policy || !!analysisData;
+  const policy = policies.find((p) => p.premium || p.renewal_date) ?? policies[0];
+  const isCovered = policies.length > 0 || !!analysisData;
+  // Only flag overlap when different insurers cover the same risk — several documents from one
+  // insurer (schedule, wording, certificate) are just one policy.
+  const insurers = new Set(policies.map((p) => p.provider).filter(Boolean));
+  const isOverlap = insurers.size > 1;
   const f = business.financials;
   const revenue = fmt(f?.revenue);
   const employees = f?.employees != null ? String(f.employees) : "unknown";
@@ -320,9 +335,9 @@ function RiskBox({
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-semibold text-slate-900 leading-snug">{risk.name}</h3>
           {isCovered ? (
-            <span className={`text-sm font-medium flex items-center gap-0.5 flex-shrink-0 ml-1 ${isDuplicate ? "text-amber-600" : "text-accent"}`}>
+            <span className={`text-sm font-medium flex items-center gap-0.5 flex-shrink-0 ml-1 ${isOverlap ? "text-amber-600" : "text-accent"}`}>
               <CheckIcon className="w-3 h-3" />
-              {isDuplicate ? "Duplicate" : "Covered"}
+              {isOverlap ? "Possible overlap" : "Covered"}
             </span>
           ) : (
             <span className="text-sm font-medium text-primary flex items-center gap-0.5 flex-shrink-0 ml-1">
@@ -374,15 +389,16 @@ function RiskBox({
                 </p>
               </>
             ) : null}
-            {policy && (
+            {policies.map((p) => (
               <button
-                onClick={() => onSendMessage?.(`Tell me about my ${policy.filename}`)}
+                key={p.source_path}
+                onClick={() => onSendMessage?.(`Tell me about my ${p.filename}`)}
                 className="text-accent hover:text-accent/80 underline truncate block max-w-full text-left"
-                title={policy.filename}
+                title={p.filename}
               >
-                {policy.filename}
+                {p.filename}
               </button>
-            )}
+            ))}
           </>
         ) : (
           <>
@@ -446,15 +462,17 @@ interface Props {
   uploadBusy: boolean;
   onFiles: (files: File[]) => void;
   onClearUploads: () => void;
+  onPoliciesChanged: () => void;
   onSendMessage?: (msg: string) => void;
   onLogout: () => void;
   onBusinessNameUpdate: (name: string) => void;
   onAnalysisComplete?: (summary: string) => void;
 }
 
-export default function BusinessPanel({ business, policies, uploads, uploadBusy, onFiles, onClearUploads, onSendMessage, onLogout, onBusinessNameUpdate, onAnalysisComplete }: Props) {
+export default function BusinessPanel({ business, policies, uploads, uploadBusy, onFiles, onClearUploads, onPoliciesChanged, onSendMessage, onLogout, onBusinessNameUpdate, onAnalysisComplete }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
+  const [showDocs, setShowDocs] = useState(false);
   const [coverageAnalysis, setCoverageAnalysis] = useState<CoverageAnalysis>({});
   const [isAnalysing, setIsAnalysing] = useState(false);
   const [analyseError, setAnalyseError] = useState<string | null>(null);
@@ -467,6 +485,16 @@ export default function BusinessPanel({ business, policies, uploads, uploadBusy,
     const files = Array.from(e.target.files ?? []);
     e.target.value = "";
     if (files.length) onFiles(files);
+  }
+
+  async function handleDelete(policy: Policy) {
+    if (!window.confirm(`Delete "${policy.filename}"? This can't be undone.`)) return;
+    try {
+      await deletePolicy([policy.source_path]);
+      onPoliciesChanged();
+    } catch {
+      window.alert("Couldn't delete that document — please try again.");
+    }
   }
 
   function handleDrop(e: React.DragEvent) {
@@ -536,11 +564,21 @@ export default function BusinessPanel({ business, policies, uploads, uploadBusy,
           {policies.length === 0 ? (
             <p className="text-sm text-slate-400 italic px-0.5">No policies uploaded yet — drop PDFs or a zip anywhere on this panel.</p>
           ) : (
-            <div className="space-y-2">
-              {policies.map((p) => (
-                <PolicyDocCard key={p.source_path} policy={p} onSendMessage={onSendMessage} />
-              ))}
-            </div>
+            <>
+              <button
+                onClick={() => setShowDocs((v) => !v)}
+                className="text-sm text-slate-600 hover:text-slate-900 mb-1.5"
+              >
+                {showDocs ? "▾" : "▸"} {policies.length} document{policies.length === 1 ? "" : "s"}
+              </button>
+              {showDocs && (
+                <div className="space-y-1 max-h-64 overflow-y-auto panel-scroll">
+                  {policies.map((p) => (
+                    <PolicyDocCard key={p.source_path} policy={p} onSendMessage={onSendMessage} onDelete={handleDelete} />
+                  ))}
+                </div>
+              )}
+            </>
           )}
         </section>
 
@@ -559,26 +597,15 @@ export default function BusinessPanel({ business, policies, uploads, uploadBusy,
           <div className="space-y-3">
             {categories.map((category) => {
               const categoryRisks = RISKS.filter((r) => r.category === category);
-              const gridItems: { risk: RiskDef; policy?: Policy; isDuplicate: boolean }[] = [];
-              categoryRisks.forEach((risk) => {
-                const covering = policiesForRisk(risk.id);
-                if (covering.length === 0) {
-                  gridItems.push({ risk, isDuplicate: false });
-                } else {
-                  covering.forEach((policy) => gridItems.push({ risk, policy, isDuplicate: covering.length > 1 }));
-                }
-              });
-
               return (
                 <div key={category}>
                   <p className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-1.5">{category}</p>
                   <div className="grid grid-cols-2 gap-2">
-                    {gridItems.map(({ risk, policy, isDuplicate }, i) => (
+                    {categoryRisks.map((risk) => (
                       <RiskBox
-                        key={`${risk.id}-${policy?.source_path ?? "none"}-${i}`}
+                        key={risk.id}
                         risk={risk}
-                        policy={policy}
-                        isDuplicate={isDuplicate}
+                        policies={policiesForRisk(risk.id)}
                         onSendMessage={onSendMessage}
                         business={business}
                         analysisData={coverageAnalysis[risk.id]}

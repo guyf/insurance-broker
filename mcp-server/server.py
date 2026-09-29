@@ -521,6 +521,13 @@ async def upload_document(request: Request) -> JSONResponse:
             # different vehicles) don't collide on the same chunk hashes.
             if source_folder and isinstance(source_folder, str):
                 source_path = f"{str(source_folder).rstrip('/')}/{filename}"
+            elif business_id:
+                # Content fingerprint, not the LLM-extracted entity: the same file always maps to
+                # the same source_path (re-uploads replace it), different files never collide.
+                import hashlib as _hashlib
+                fingerprint = _hashlib.sha256(contents).hexdigest()[:12]
+                type_dir = (llm_meta.get("policy_type") or "other").capitalize()
+                source_path = f"Insurance/{type_dir}/{fingerprint}/{filename}"
             else:
                 policy_type = llm_meta.get("policy_type", "")
                 insured_entity = llm_meta.get("insured_entity", "")
@@ -539,6 +546,7 @@ async def upload_document(request: Request) -> JSONResponse:
                 Path(tmp_path),
                 source_path=source_path,
                 base_metadata=base_metadata,
+                hash_salt=business_id or "",
             )
 
             if not chunks:
@@ -551,6 +559,12 @@ async def upload_document(request: Request) -> JSONResponse:
             embeddings = embed_texts(texts, _openai_client())
 
             sb = _supabase_service()
+            if business_id:
+                # Re-uploading the same document replaces it rather than stacking a second copy.
+                sb.rpc(
+                    "delete_documents_by_source_path",
+                    {"p_source_path": source_path, "p_business_id": business_id},
+                ).execute()
             existing = get_existing_hashes([c.chunk_hash for c in chunks], sb)
             new_chunks = [c for c in chunks if c.chunk_hash not in existing]
             new_embeddings = [

@@ -222,6 +222,7 @@ export default function App() {
           uploadBusy={uploads.busy}
           onFiles={(files) => void uploads.enqueue(files)}
           onClearUploads={uploads.clearFinished}
+          onPoliciesChanged={() => void loadPolicies()}
           onSendMessage={(prompt) => setPrefillInput(prompt)}
           onLogout={handleLogout}
           onBusinessNameUpdate={handleBusinessNameUpdate}

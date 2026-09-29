@@ -48,10 +48,13 @@ class Chunk:
     page_num: int      # 1-based
     chunk_index: int   # 0-based within page
     metadata: dict = field(default_factory=dict)
+    hash_salt: str = ""  # business_id, so two businesses' identical filenames never collide
 
     @property
     def chunk_hash(self) -> str:
         raw = f"{self.source_path}|{self.page_num}|{self.chunk_index}"
+        if self.hash_salt:
+            raw = f"{self.hash_salt}|{raw}"
         return hashlib.sha256(raw.encode()).hexdigest()
 
     def to_metadata(self) -> dict:
@@ -219,7 +222,7 @@ def extract_metadata_llm(pdf_path: Path, openai_client) -> dict:
         return extract_insurer_info_from_pdf(pdf_path)
 
 
-def chunk_pdf(pdf_path: Path, source_path: str, base_metadata: dict) -> list[Chunk]:
+def chunk_pdf(pdf_path: Path, source_path: str, base_metadata: dict, hash_salt: str = "") -> list[Chunk]:
     """Extract text from PDF and return Chunk objects."""
     enc = tiktoken.get_encoding("cl100k_base")
     chunks: list[Chunk] = []
@@ -261,6 +264,7 @@ def chunk_pdf(pdf_path: Path, source_path: str, base_metadata: dict) -> list[Chu
                         page_num=page_num,
                         chunk_index=chunk_index,
                         metadata=merged_meta,
+                        hash_salt=hash_salt,
                     ))
     except Exception as exc:
         logger.error("Failed to process %s: %s", pdf_path, exc)
