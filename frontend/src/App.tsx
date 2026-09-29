@@ -10,10 +10,13 @@ import {
   listChatSessions,
   requote,
   sendChatFeedback,
+  listPins,
+  pinMessage,
+  unpin,
   sendMessage,
 } from "./lib/api";
 import { getCurrentBusiness, logout, type BusinessInfo } from "./lib/auth";
-import type { ChatMessage, ChatSessionSummary, Policy, QuoteResult } from "./lib/types";
+import type { ChatMessage, ChatSessionSummary, PinnedInsight, Policy, QuoteResult } from "./lib/types";
 
 const GREETING: ChatMessage = {
   role: "assistant",
@@ -27,6 +30,7 @@ export default function App() {
   const [policies, setPolicies] = useState<Policy[]>([]);
   const [messages, setMessages] = useState<ChatMessage[]>([GREETING]);
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const [pins, setPins] = useState<PinnedInsight[]>([]);
   const [sessions, setSessions] = useState<ChatSessionSummary[]>([]);
   // Assistant messages shown outside the chat loop, sent with the next turn so they're persisted
   const pendingNotes = useRef<string[]>([]);
@@ -101,6 +105,7 @@ export default function App() {
   useEffect(() => {
     if (business) {
       loadPolicies();
+      listPins().then(setPins).catch(() => {});
       loadSessions(true);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -194,6 +199,32 @@ export default function App() {
     }
   };
 
+  const handleTogglePin = async (message: ChatMessage) => {
+    if (!message.id) return;
+    const existing = pins.find((p) => p.message_id === message.id);
+    try {
+      if (existing) {
+        await unpin(existing.id);
+        setPins((prev) => prev.filter((p) => p.id !== existing.id));
+      } else {
+        const pin = await pinMessage(message.id, message.content);
+        setPins((prev) => [pin, ...prev.filter((p) => p.id !== pin.id)]);
+        showToast("Pinned to Saved answers");
+      }
+    } catch {
+      showToast("Couldn't update pin", false);
+    }
+  };
+
+  const handleUnpin = async (id: string) => {
+    try {
+      await unpin(id);
+      setPins((prev) => prev.filter((p) => p.id !== id));
+    } catch {
+      showToast("Couldn't unpin", false);
+    }
+  };
+
   const handleGetQuote = async (toolName: string, args: Record<string, unknown>) => {
     const newQuote = await requote(toolName, args);
     setQuote(newQuote);
@@ -231,6 +262,8 @@ export default function App() {
           onClearUploads={uploads.clearFinished}
           onPoliciesChanged={() => void loadPolicies()}
           onGetQuote={handleGetQuote}
+          pins={pins}
+          onUnpin={handleUnpin}
           onSendMessage={(prompt) => setPrefillInput(prompt)}
           onLogout={handleLogout}
           onBusinessNameUpdate={handleBusinessNameUpdate}
@@ -250,6 +283,8 @@ export default function App() {
           onSend={handleSend}
           onFiles={(files) => void uploads.enqueue(files)}
           onFeedback={handleFeedback}
+          pinnedMessageIds={new Set(pins.map((p) => p.message_id).filter((id): id is string => !!id))}
+          onTogglePin={handleTogglePin}
           sessions={sessions}
           currentSessionId={sessionId}
           onSelectSession={openSession}

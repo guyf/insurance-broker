@@ -1,4 +1,4 @@
-import type { ChatMessage, ChatResponse, ChatSessionSummary, CoverageAnalysis, IdentifyResult, Policy, QuoteResult } from "./types";
+import type { ChatMessage, ChatResponse, ChatSessionSummary, CoverageAnalysis, IdentifyResult, PinnedInsight, Policy, QuoteResult } from "./types";
 
 export interface ChatStreamHandlers {
   /** The session this turn belongs to — sent first, before any reply text. */
@@ -183,4 +183,25 @@ export async function refreshCoverageAnalysis(): Promise<CoverageAnalysis> {
     throw new Error(body.error ?? "Failed to analyse policies");
   }
   return res.json();
+}
+
+export async function listPins(): Promise<PinnedInsight[]> {
+  const res = await fetch("/api/pins");
+  if (!res.ok) throw new Error("Failed to load pinned answers");
+  return res.json();
+}
+
+export async function pinMessage(messageId: string, content: string): Promise<PinnedInsight> {
+  const res = await fetch("/api/pins", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ message_id: messageId, content }),
+  });
+  if (!res.ok) throw new Error("Failed to pin answer");
+  return res.json();
+}
+
+export async function unpin(id: string): Promise<void> {
+  const res = await fetch(`/api/pins/${encodeURIComponent(id)}`, { method: "DELETE" });
+  if (!res.ok) throw new Error("Failed to unpin answer");
 }

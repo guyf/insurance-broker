@@ -14,6 +14,8 @@ interface Props {
   onPrefillConsumed: () => void;
   onSend: (text: string) => void;
   onFeedback: (messageId: string, rating: 1 | -1) => void;
+  pinnedMessageIds: Set<string>;
+  onTogglePin: (message: ChatMessage) => void;
   sessions: ChatSessionSummary[];
   currentSessionId: string | null;
   onSelectSession: (id: string) => void;
@@ -30,6 +32,8 @@ export function Broker({
   onSend,
   onFiles,
   onFeedback,
+  pinnedMessageIds,
+  onTogglePin,
   sessions,
   currentSessionId,
   onSelectSession,
@@ -69,7 +73,14 @@ export function Broker({
         </div>
       </div>
 
-      <MessageList messages={messages} working={working} status={status} onFeedback={onFeedback} />
+      <MessageList
+        messages={messages}
+        working={working}
+        status={status}
+        onFeedback={onFeedback}
+        pinnedMessageIds={pinnedMessageIds}
+        onTogglePin={onTogglePin}
+      />
 
       <InputBar
         onSend={onSend}

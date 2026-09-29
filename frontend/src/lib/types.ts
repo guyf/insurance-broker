@@ -72,3 +72,11 @@ export interface ChatResponse {
   quoteToolName?: string;
   quoteToolArgs?: Record<string, unknown>;
 }
+
+export interface PinnedInsight {
+  id: string;
+  message_id: string | null;
+  title: string;
+  content: string;
+  created_at: string;
+}

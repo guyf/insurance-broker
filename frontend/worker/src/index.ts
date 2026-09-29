@@ -24,6 +24,7 @@ import { handleGetBusiness, handleUpdateBusiness } from "./routes/business";
 import { handleGetCoverageAnalysis } from "./routes/coverage-analysis";
 import { handleAnalysePolicies } from "./routes/analyse-policies";
 import { handleIdentifyPolicy } from "./routes/identify-policy";
+import { handlePins } from "./routes/pins";
 import { handleAdminInstructions } from "./routes/admin/instructions";
 
 export interface Env {
@@ -61,6 +62,10 @@ async function route(request: Request, env: Env, ctx: ExecutionContext): Promise
     return handleGetChatSession(request, env, decodeURIComponent(pathname.slice("/api/chat/sessions/".length)));
   }
   if (pathname === "/api/chat/feedback" && method === "POST") return handleChatFeedback(request, env);
+  if (pathname === "/api/pins" && (method === "GET" || method === "POST")) return handlePins(request, env);
+  if (pathname.startsWith("/api/pins/") && method === "DELETE") {
+    return handlePins(request, env, decodeURIComponent(pathname.slice("/api/pins/".length)));
+  }
   if (pathname === "/api/policies" && method === "GET") return handlePolicies(request, env);
   if (pathname === "/api/requote" && method === "POST") return handleRequote(request, env);
   if (pathname === "/api/upload" && method === "POST") return handleUpload(request, env);

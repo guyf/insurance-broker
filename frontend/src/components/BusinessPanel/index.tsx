@@ -3,7 +3,8 @@ import { deletePolicy, getCoverageAnalysis, refreshCoverageAnalysis } from "../.
 import { updateBusinessName, type BusinessInfo } from "../../lib/auth";
 import { QuoteForm, type QuotableRisk } from "./QuoteForm";
 import type { UploadItem } from "../../lib/uploadQueue";
-import type { CoverageAnalysis, Policy, RiskAnalysis } from "../../lib/types";
+import { MarkdownBody } from "../Broker/Message";
+import type { CoverageAnalysis, PinnedInsight, Policy, RiskAnalysis } from "../../lib/types";
 
 // ---------------------------------------------------------------------------
 // Risk definitions — comprehensive SME list, ported from xero-insurance's
@@ -414,6 +415,46 @@ function RiskBox({
 
 // ---------------------------------------------------------------------------
 // BusinessPanel
+function SavedAnswers({ pins, onUnpin }: { pins: PinnedInsight[]; onUnpin: (id: string) => void }) {
+  const [open, setOpen] = useState<string | null>(null);
+  return (
+    <section>
+      <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Saved answers</h2>
+      <div className="space-y-1">
+        {pins.map((p) => (
+          <div key={p.id} className="bg-white rounded-md border border-slate-200">
+            <div className="flex items-center gap-2 px-2.5 py-1.5">
+              <button
+                onClick={() => setOpen(open === p.id ? null : p.id)}
+                className="flex-1 min-w-0 text-left text-sm font-medium text-slate-800 truncate"
+                title={p.title}
+              >
+                {open === p.id ? "▾" : "▸"} {p.title}
+              </button>
+              <span className="text-xs text-slate-400 flex-shrink-0">
+                {new Date(p.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+              </span>
+              <button
+                onClick={() => onUnpin(p.id)}
+                title="Remove from saved answers"
+                aria-label="Remove from saved answers"
+                className="flex-shrink-0 text-slate-300 hover:text-primary text-base leading-none"
+              >
+                ×
+              </button>
+            </div>
+            {open === p.id && (
+              <div className="px-3 pb-2 pt-1 text-sm text-slate-700 leading-relaxed border-t border-slate-100 max-h-80 overflow-y-auto panel-scroll">
+                <MarkdownBody>{p.content}</MarkdownBody>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function UploadList({ items, onClear }: { items: UploadItem[]; onClear: () => void }) {
   const finished = items.filter((i) => i.status === "done" || i.status === "failed").length;
   const label: Record<UploadItem["status"], string> = {
@@ -458,6 +499,8 @@ interface Props {
   onFiles: (files: File[]) => void;
   onClearUploads: () => void;
   onPoliciesChanged: () => void;
+  pins: PinnedInsight[];
+  onUnpin: (id: string) => void;
   onGetQuote: (toolName: string, args: Record<string, unknown>) => Promise<void>;
   onSendMessage?: (msg: string) => void;
   onLogout: () => void;
@@ -465,7 +508,7 @@ interface Props {
   onAnalysisComplete?: (summary: string) => void;
 }
 
-export default function BusinessPanel({ business, policies, uploads, uploadBusy, onFiles, onClearUploads, onPoliciesChanged, onGetQuote, onSendMessage, onLogout, onBusinessNameUpdate, onAnalysisComplete }: Props) {
+export default function BusinessPanel({ business, policies, uploads, uploadBusy, onFiles, onClearUploads, onPoliciesChanged, pins, onUnpin, onGetQuote, onSendMessage, onLogout, onBusinessNameUpdate, onAnalysisComplete }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
   const [showDocs, setShowDocs] = useState(false);
@@ -596,6 +639,8 @@ export default function BusinessPanel({ business, policies, uploads, uploadBusy,
             </>
           )}
         </section>
+
+        {pins.length > 0 && <SavedAnswers pins={pins} onUnpin={onUnpin} />}
 
         <section>
           <div className="flex items-center justify-between mb-2">
