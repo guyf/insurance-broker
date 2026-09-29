@@ -194,6 +194,13 @@ export default function App() {
     }
   };
 
+  const handleGetQuote = async (toolName: string, args: Record<string, unknown>) => {
+    const newQuote = await requote(toolName, args);
+    setQuote(newQuote);
+    setLastQuoteParams({ toolName, args });
+    setQuotePanelOpen(true);
+  };
+
   const handleRequote = async () => {
     if (!lastQuoteParams) return;
     setRequoting(true);
@@ -223,6 +230,7 @@ export default function App() {
           onFiles={(files) => void uploads.enqueue(files)}
           onClearUploads={uploads.clearFinished}
           onPoliciesChanged={() => void loadPolicies()}
+          onGetQuote={handleGetQuote}
           onSendMessage={(prompt) => setPrefillInput(prompt)}
           onLogout={handleLogout}
           onBusinessNameUpdate={handleBusinessNameUpdate}

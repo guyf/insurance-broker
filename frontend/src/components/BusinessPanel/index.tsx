@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { deletePolicy, getCoverageAnalysis, refreshCoverageAnalysis } from "../../lib/api";
 import { updateBusinessName, type BusinessInfo } from "../../lib/auth";
+import { QuoteForm, type QuotableRisk } from "./QuoteForm";
 import type { UploadItem } from "../../lib/uploadQueue";
 import type { CoverageAnalysis, Policy, RiskAnalysis } from "../../lib/types";
 
@@ -291,12 +292,14 @@ function RiskBox({
   risk,
   policies,
   onSendMessage,
+  onQuoteForm,
   business,
   analysisData,
 }: {
   risk: RiskDef;
   policies: Policy[];
   onSendMessage?: (msg: string) => void;
+  onQuoteForm: (riskId: QuotableRisk) => void;
   business: BusinessInfo;
   analysisData?: RiskAnalysis;
 }) {
@@ -307,26 +310,18 @@ function RiskBox({
   const insurers = new Set(policies.map((p) => p.provider).filter(Boolean));
   const isOverlap = insurers.size > 1;
   const f = business.financials;
-  const revenue = fmt(f?.revenue);
-  const employees = f?.employees != null ? String(f.employees) : "unknown";
-  const payroll = fmt(f?.payroll);
-  const industry = f?.industry ?? "unknown";
+  const isQuotable = risk.id === "el" || risk.id === "pl" || risk.id === "pi" || risk.id === "cyber";
 
+  /** Chat prompt for lines we can't price: only mentions figures we actually have. */
   function quoteMessage(): string {
-    const base = `Revenue: ${revenue}, Employees: ${employees}, Industry: ${industry}`;
-    switch (risk.id) {
-      case "el": return `Please get me an Employers' Liability quote. ${base}, Annual Payroll: ${payroll}.`;
-      case "pl": return `Please get me a Public Liability quote. ${base}.`;
-      case "pi": return `Please get me a Professional Indemnity quote. ${base}, Profession: ${industry}.`;
-      case "cyber": return `Please get me a Cyber Liability quote. ${base}.`;
-      case "product": return `Please explain Product Liability insurance and give an indicative quote. ${base}.`;
-      case "do": return `Please explain Directors & Officers insurance and give an indicative price range. ${base}.`;
-      case "property": return `Please explain Commercial Property insurance and give an indicative price range. Fixed assets: ${fmt(f?.fixed_assets)}.`;
-      case "bi": return `Please explain Business Interruption insurance and give an indicative price range. ${base}.`;
-      case "transit": return `Please explain Goods in Transit insurance and give an indicative price range. ${base}.`;
-      case "keyperson": return `Please explain Key Person Insurance and give an indicative price range. ${base}.`;
-      default: return `Please give me information and an indicative quote for ${risk.name}. ${base}.`;
-    }
+    const known = [
+      f?.revenue != null && `revenue ${fmt(f.revenue)}`,
+      f?.employees != null && `${f.employees} employees`,
+      f?.industry && `industry: ${f.industry}`,
+      risk.id === "property" && f?.fixed_assets != null && `fixed assets ${fmt(f.fixed_assets)}`,
+    ].filter(Boolean);
+    const about = known.length ? ` My business: ${known.join(", ")}.` : "";
+    return `Explain ${risk.name} insurance for my business and roughly what it costs.${about}`;
   }
 
   return (
@@ -405,10 +400,10 @@ function RiskBox({
             <p className="text-slate-500 leading-snug">{risk.description}</p>
             {risk.legalNote && <p className="text-amber-600 font-medium">⚠ {risk.legalNote}</p>}
             <button
-              onClick={() => onSendMessage?.(quoteMessage())}
+              onClick={() => (isQuotable ? onQuoteForm(risk.id as QuotableRisk) : onSendMessage?.(quoteMessage()))}
               className="w-full text-sm bg-primary text-white rounded-full py-2 hover:bg-primary/90 transition-colors font-medium mt-1"
             >
-              Get Quote
+              {isQuotable ? "Get Quote" : "Ask about cover"}
             </button>
           </>
         )}
@@ -463,16 +458,18 @@ interface Props {
   onFiles: (files: File[]) => void;
   onClearUploads: () => void;
   onPoliciesChanged: () => void;
+  onGetQuote: (toolName: string, args: Record<string, unknown>) => Promise<void>;
   onSendMessage?: (msg: string) => void;
   onLogout: () => void;
   onBusinessNameUpdate: (name: string) => void;
   onAnalysisComplete?: (summary: string) => void;
 }
 
-export default function BusinessPanel({ business, policies, uploads, uploadBusy, onFiles, onClearUploads, onPoliciesChanged, onSendMessage, onLogout, onBusinessNameUpdate, onAnalysisComplete }: Props) {
+export default function BusinessPanel({ business, policies, uploads, uploadBusy, onFiles, onClearUploads, onPoliciesChanged, onGetQuote, onSendMessage, onLogout, onBusinessNameUpdate, onAnalysisComplete }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
   const [showDocs, setShowDocs] = useState(false);
+  const [quoteRisk, setQuoteRisk] = useState<QuotableRisk | null>(null);
   const [coverageAnalysis, setCoverageAnalysis] = useState<CoverageAnalysis>({});
   const [isAnalysing, setIsAnalysing] = useState(false);
   const [analyseError, setAnalyseError] = useState<string | null>(null);
@@ -539,6 +536,15 @@ export default function BusinessPanel({ business, policies, uploads, uploadBusy,
       }}
       onDrop={handleDrop}
     >
+      {quoteRisk && (
+        <QuoteForm
+          risk={quoteRisk}
+          riskName={RISK_NAMES[quoteRisk]}
+          business={business}
+          onSubmit={onGetQuote}
+          onClose={() => setQuoteRisk(null)}
+        />
+      )}
       {dragging && (
         <div className="absolute inset-0 z-10 m-2 rounded-xl border-2 border-dashed border-primary bg-primary-tint/90 flex items-center justify-center text-primary font-medium pointer-events-none">
           Drop PDFs or a zip to upload
@@ -552,7 +558,11 @@ export default function BusinessPanel({ business, policies, uploads, uploadBusy,
             <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Your Policies</h2>
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="text-sm bg-white border border-primary/30 text-primary rounded-full px-4 py-1.5 hover:bg-primary-tint transition-colors font-medium disabled:opacity-60"
+              className={`text-sm rounded-full px-4 py-1.5 transition-colors font-medium ${
+                policies.length === 0
+                  ? "bg-primary text-white hover:bg-primary/90"
+                  : "bg-white border border-primary/30 text-primary hover:bg-primary-tint"
+              }`}
             >
               {uploadBusy ? "Uploading…" : "Upload Policies"}
             </button>
@@ -562,7 +572,12 @@ export default function BusinessPanel({ business, policies, uploads, uploadBusy,
           {uploads.length > 0 && <UploadList items={uploads} onClear={onClearUploads} />}
 
           {policies.length === 0 ? (
-            <p className="text-sm text-slate-400 italic px-0.5">No policies uploaded yet — drop PDFs or a zip anywhere on this panel.</p>
+            <div className="border-2 border-dashed border-primary/30 rounded-xl px-4 py-5 text-center bg-white">
+              <p className="text-sm font-medium text-slate-800">Start here: upload your policies</p>
+              <p className="text-sm text-slate-500 mt-1">
+                Drop PDFs or a zip anywhere on this panel — as many as you like. Then analyse them to see your gaps.
+              </p>
+            </div>
           ) : (
             <>
               <button
@@ -588,7 +603,12 @@ export default function BusinessPanel({ business, policies, uploads, uploadBusy,
             <button
               onClick={handleAnalyse}
               disabled={isAnalysing || policies.length === 0}
-              className="text-sm bg-white border border-primary/30 text-primary rounded-full px-4 py-1.5 hover:bg-primary-tint transition-colors font-medium disabled:opacity-60"
+              title={policies.length === 0 ? "Upload your policies first" : undefined}
+              className={`text-sm rounded-full px-4 py-1.5 transition-colors font-medium disabled:opacity-40 disabled:cursor-not-allowed ${
+                policies.length > 0 && Object.keys(coverageAnalysis).length === 0
+                  ? "bg-primary text-white hover:bg-primary/90"
+                  : "bg-white border border-primary/30 text-primary hover:bg-primary-tint"
+              }`}
             >
               {isAnalysing ? "Analysing…" : "Analyse Policies"}
             </button>
@@ -607,6 +627,7 @@ export default function BusinessPanel({ business, policies, uploads, uploadBusy,
                         risk={risk}
                         policies={policiesForRisk(risk.id)}
                         onSendMessage={onSendMessage}
+                        onQuoteForm={setQuoteRisk}
                         business={business}
                         analysisData={coverageAnalysis[risk.id]}
                       />
