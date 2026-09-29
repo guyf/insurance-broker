@@ -44,6 +44,9 @@ export default function App() {
   const [requoting, setRequoting] = useState(false);
   const [toast, setToast] = useState<{ text: string; ok: boolean } | null>(null);
   const [prefillInput, setPrefillInput] = useState("");
+  // Chat starts compact so the coverage panel gets the space; it opens up whenever the user
+  // engages with it or something lands in it (a question, an analysis, a quote prompt).
+  const [chatExpanded, setChatExpanded] = useState(false);
   const toastTimer = useRef<ReturnType<typeof setTimeout>>();
 
   // Auto-open panel when a quote arrives
@@ -127,6 +130,7 @@ export default function App() {
   };
 
   const handleAnalysisComplete = (summary: string) => {
+    setChatExpanded(true);
     setMessages((prev) => [...prev, { role: "assistant", content: summary }]);
     pendingNotes.current.push(summary);
   };
@@ -147,6 +151,7 @@ export default function App() {
   });
 
   const handleSend = async (text: string) => {
+    setChatExpanded(true);
     const userMessage: ChatMessage = { role: "user", content: text };
     const nextMessages = [...messages, userMessage];
     setMessages(nextMessages);
@@ -251,8 +256,8 @@ export default function App() {
 
   return (
     <div className="h-full flex overflow-hidden bg-slate-50">
-      {/* Left — Business Panel (50%) */}
-      <aside className="w-1/2 flex-shrink-0 flex flex-col">
+      {/* Left — Business Panel (takes whatever the chat doesn't) */}
+      <aside className="flex-1 min-w-0 flex flex-col">
         <BusinessPanel
           business={business}
           policies={policies}
@@ -264,15 +269,23 @@ export default function App() {
           onGetQuote={handleGetQuote}
           pins={pins}
           onUnpin={handleUnpin}
-          onSendMessage={(prompt) => setPrefillInput(prompt)}
+          onSendMessage={(prompt) => {
+            setPrefillInput(prompt);
+            setChatExpanded(true);
+          }}
           onLogout={handleLogout}
           onBusinessNameUpdate={handleBusinessNameUpdate}
           onAnalysisComplete={handleAnalysisComplete}
         />
       </aside>
 
-      {/* Right — Broker Chat (50%) */}
-      <main className="flex-1 flex flex-col bg-white min-w-0 relative">
+      {/* Right — Broker Chat: compact drawer by default, half the screen when expanded */}
+      <main
+        onFocusCapture={(e) => e.target instanceof HTMLTextAreaElement && setChatExpanded(true)}
+        className={`flex-shrink-0 flex flex-col bg-white min-w-0 relative transition-[width] duration-300 ease-in-out ${
+          chatExpanded ? "w-1/2" : "w-[24rem]"
+        }`}
+      >
         <Broker
           messages={messages}
           thinking={thinking}
@@ -289,6 +302,8 @@ export default function App() {
           currentSessionId={sessionId}
           onSelectSession={openSession}
           onNewChat={startNewChat}
+          expanded={chatExpanded}
+          onToggleExpanded={() => setChatExpanded((v) => !v)}
         />
 
         {/* Quotes tab — appears on the right edge when panel is closed and a quote exists */}

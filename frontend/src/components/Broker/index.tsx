@@ -20,6 +20,8 @@ interface Props {
   currentSessionId: string | null;
   onSelectSession: (id: string) => void;
   onNewChat: () => void;
+  expanded: boolean;
+  onToggleExpanded: () => void;
 }
 
 export function Broker({
@@ -38,11 +40,13 @@ export function Broker({
   currentSessionId,
   onSelectSession,
   onNewChat,
+  expanded,
+  onToggleExpanded,
 }: Props) {
   return (
     <div className="flex flex-col h-full">
       {/* Column header */}
-      <div className="h-14 flex-shrink-0 border-b border-slate-100 flex items-center gap-3 px-6">
+      <div className="h-14 flex-shrink-0 border-b border-slate-100 flex items-center gap-2 px-4">
         <span className="text-lg font-bold font-display text-slate-900 flex-shrink-0">
           Broker Denney<span className="text-primary">.</span>
         </span>
@@ -69,6 +73,17 @@ export function Broker({
             className="flex-shrink-0 text-xs font-medium text-slate-600 border border-slate-200 rounded-lg px-2.5 py-1.5 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             New chat
+          </button>
+          <button
+            onClick={onToggleExpanded}
+            title={expanded ? "Make the chat narrower" : "Make the chat wider"}
+            aria-label={expanded ? "Make the chat narrower" : "Make the chat wider"}
+            aria-pressed={expanded}
+            className="flex-shrink-0 text-slate-400 hover:text-slate-700 border border-slate-200 rounded-lg p-1.5 hover:bg-slate-50 transition-colors"
+          >
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d={expanded ? "M9 5l7 7-7 7" : "M15 5l-7 7 7 7"} />
+            </svg>
           </button>
         </div>
       </div>
